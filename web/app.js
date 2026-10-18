@@ -733,40 +733,64 @@ async function importPatchFile(file) {
 
 async function loadFirmware({ autoRefresh = false } = {}) {
   try { S.fw = await api("firmware"); } catch (e) { toast("Firmware: " + e.message, true); return; }
-  const checked = S.fw.releases?.checked;
+  const checked = S.fw.discovery?.checked || S.fw.releases?.checked;
   if (autoRefresh && (!checked || Date.now() - Date.parse(checked) > 12 * 3600e3)) return refreshFirmware();
   renderFirmware();
 }
 
+/** "Check for updates": the server rescans awesome-fm-1 + GitHub, re-ranks and refreshes releases. */
 async function refreshFirmware() {
   const btn = $("#fwRefresh");
   btn.disabled = true; btn.textContent = "Checking…";
-  try { await api("firmware/refresh", { method: "POST", body: "{}" }); S.fw = await api("firmware"); renderFirmware(); toast("Release info updated"); }
+  try {
+    const before = new Set((S.fw?.ranked || []).slice(0, 10).map((p) => p.id));
+    const r = await api("firmware/refresh", { method: "POST", body: "{}" });
+    S.fw = await api("firmware"); renderFirmware();
+    const entered = before.size ? (r.top || []).filter((id) => !before.has(id)).map(fwName) : [];
+    toast(r.notes?.length ? r.notes[r.notes.length - 1]
+      : entered.length ? `New in the top 10: ${entered.join(", ")}` : "Firmware ranking updated", !!r.notes?.length);
+  }
   catch (e) { toast("Update check failed: " + e.message, true); }
   finally { btn.disabled = false; btn.textContent = "Check for updates"; }
 }
 
 function fwName(id) { return S.fw?.catalog.find((f) => f.id === id)?.name || id; }
 
+/** Header status: when the ranking was checked, and whether it is partial or the offline snapshot. */
+function fwStatus(fw) {
+  const d = fw.discovery || {};
+  const el = $("#fwChecked");
+  const st = d.stats;
+  el.textContent = d.checked ? "checked " + relTime(d.checked) : d.fallback ? `ranking from ${d.fallback} snapshot` : "not checked yet";
+  el.title = [
+    d.checked && `Ranking: awesome-fm-1 + GitHub search${st ? `, ${st.scanned} projects checked, ${st.requests} GitHub requests (${st.notModified} unchanged)` : ""}`,
+    d.auth && `GitHub API: ${d.auth === "anonymous" ? "anonymous (60/h); set GITHUB_TOKEN or FM1_USE_GH=1 for more" : d.auth === "gh" ? "GitHub CLI login" : "GITHUB_TOKEN"}`,
+    ...(d.notes || []),
+  ].filter(Boolean).join("\n");
+  if (d.notes?.length) el.append(" ", h("span", { class: "fw-partial", text: "partial" }));
+}
+
 function renderFirmware() {
   const fw = S.fw;
   if (!fw) return;
   const inst = fw.installed;
-  $("#fwChecked").textContent = fw.releases?.checked ? "checked " + relTime(fw.releases.checked) : "not checked yet";
+  fwStatus(fw);
   $("#fwBadge").textContent = inst ? `firmware: ${fwName(inst.id)} ${inst.version}` : "firmware: not logged";
   $("#homeFw").textContent = inst ? `${fwName(inst.id)} ${inst.version}` : "not logged (see Firmware tab)";
   updateStockWarn();
 
   const sel = $("#fwInstalledSel");
-  sel.replaceChildren(...fw.catalog.map((f) => h("option", { value: f.id, text: f.name, selected: inst?.id === f.id })));
+  const opt = (f) => h("option", { value: f.id, text: f.name, selected: inst?.id === f.id });
+  const uncur = fw.catalog.filter((f) => f.curated === false);
+  sel.replaceChildren(...fw.catalog.filter((f) => f.curated !== false).map(opt),
+    uncur.length > 0 && h("optgroup", { label: "Not curated yet" }, uncur.map(opt)));
   $("#fwHistory tbody").replaceChildren(...(fw.history || []).map((r) =>
     h("tr", {}, h("td", { text: r.date.replace("T", " ") }), h("td", { text: fwName(r.id) }), h("td", { text: r.version }), h("td", { class: "muted", text: r.note }))));
 
-  const stats = (f) => fw.releases?.sources?.[f.id]?.stats;
-  const score = (f) => { const s = stats(f); return s ? Math.log1p(s.stars) + Math.log1p(s.downloads) : -1; };
+  // Community cards = the live top 10 (server-ranked by ln(1+stars) + ln(1+downloads)).
+  const byId = new Map(fw.catalog.map((f) => [f.id, f]));
   const official = fw.catalog.filter((f) => f.kind !== "community");
-  const community = fw.catalog.filter((f) => f.kind === "community")
-    .sort((a, b) => score(b) - score(a) || a.name.localeCompare(b.name));
+  const top = (fw.ranked || []).slice(0, 10).filter((p) => byId.has(p.id));
 
   const known = new Set(fw.catalog.map((f) => f.id));
   const orphans = Object.entries(fw.library || {}).filter(([id]) => !known.has(id));
@@ -776,7 +800,7 @@ function renderFirmware() {
     h("div", { class: "fw-cards" }, official.map((f) => fwCard(f, fw, null))),
     h("h2", { class: "fw-section" }, "Community · top 10 free & open source ",
       h("span", { class: "info", title: fw.ranking || "", text: "ⓘ" })),
-    h("div", { class: "fw-cards" }, community.map((f, i) => fwCard(f, fw, i + 1))),
+    h("div", { class: "fw-cards" }, top.map((p) => fwCard(byId.get(p.id), fw, p.rank))),
     validatedSection(fw, orphans),
     fwDirectory(fw));
   buildChecks();
@@ -784,22 +808,25 @@ function renderFirmware() {
 
 /** The next 20 most popular projects after the cards (#11–#30), one line each. */
 function fwDirectory(fw) {
-  const dir = fw.directory?.projects || [];
+  const dir = (fw.ranked || []).slice(10);
   if (!dir.length) return null;
-  const TAG = { closed: "closed source", other: "not a synth" };
-  const first = fw.catalog.filter((f) => f.kind === "community").length + 1;
+  const first = dir[0].rank;
   return h("section", { class: "card dir" },
     h("div", { class: "section-head" },
-      h("h3", { text: `Also popular · #${first}–#${first + dir.length - 1}` }),
-      h("a", { class: "muted", href: fw.directory.source, target: "_blank", rel: "noopener", text: "full list ↗" })),
-    h("ol", { class: "dir-list" }, dir.map((p, i) =>
-      h("li", { title: `${p.name}: ${p.desc}${p.license ? ` (${p.license})` : ""}` },
-        h("span", { class: "dir-rank", text: `#${first + i}` }),
+      h("h3", { text: `Also popular · #${first}–#${dir[dir.length - 1].rank}` }),
+      h("a", { class: "muted", href: fw.discovery?.source || "https://github.com/cicloid/awesome-fm-1", target: "_blank", rel: "noopener", text: "full list ↗" })),
+    h("ol", { class: "dir-list" }, dir.map((p) => {
+      const f = fw.catalog.find((c) => c.id === p.id);
+      const val = f && validationState(fw, f);
+      const lat = p.latest ? `\nLatest ${shortVer(p.latest.version)} · ${p.latest.date}` : "";
+      return h("li", { title: `${p.name}: ${p.desc}${p.license ? ` (${p.license})` : ""}${lat}${p.live ? "" : "\nNumbers from the offline snapshot"}` },
+        h("span", { class: "dir-rank", text: `#${p.rank}` }),
         h("span", { class: "dir-main" },
           h("a", { href: p.url, target: "_blank", rel: "noopener", text: p.name }),
-          TAG[p.group] && h("span", { class: "dir-tag", text: TAG[p.group] }),
-          h("span", { class: "dir-desc", text: " · " + p.desc })),
-        h("span", { class: "dir-stats", text: `★ ${fmtNum(p.stars)}  ⬇ ${fmtNum(p.downloads)}` })))));
+          val && octo(valTitle(val), val.current ? "" : "older"),
+          p.desc && h("span", { class: "dir-desc", text: " · " + p.desc })),
+        h("span", { class: "dir-stats", text: `★ ${fmtNum(p.stars)}  ⬇ ${fmtNum(p.downloads)}` }));
+    })));
 }
 
 // ---------------------------------------------------------------- firmware art
@@ -844,6 +871,41 @@ function validationsFor(fw, id) {
     .sort((a, b) => String(b.date).localeCompare(String(a.date)));
 }
 
+/**
+ * Comparable version: "ghoulbox-v2.3.2", "v2.3.2" and "2.3.2" are the same release,
+ * "1.6" equals "1.6.0", "V15" → "15"; suffixes like "-rc1" stay significant.
+ */
+function verKey(v) {
+  const s = String(v || "").trim().toLowerCase();
+  const m = s.match(/(\d+(?:\.\d+)+)(.*)$/);
+  if (!m) return normVer(shortVer(s));
+  return m[1].replace(/(\.0+)+$/, "") + m[2].replace(/[\s()[\]]/g, "");
+}
+
+/**
+ * Octopus state for a card: the best validated record and whether it is current.
+ * A newer *stable* release greys it out until revalidated; pre-releases never do.
+ * Without release info (offline, not checked) a validation shows as current.
+ */
+function validationState(fw, f) {
+  const vals = validationsFor(fw, f.id);
+  if (!vals.length) return null;
+  const rels = fw.releases?.sources?.[f.id]?.releases || [];
+  let best = null, idx = -1;
+  for (const v of vals) {
+    const i = rels.findIndex((r) => verKey(r.version) === verKey(v.version));
+    if (i >= 0 && (idx < 0 || i < idx)) { best = v; idx = i; }
+  }
+  if (!rels.length) return { v: vals[0], current: true };
+  // releases are newest first; anything listed before the validated one is newer
+  const newer = (idx >= 0 ? rels.slice(0, idx) : rels).find((r) => !r.prerelease);
+  return { v: best || vals[0], current: !newer, newer };
+}
+
+function valTitle(st) {
+  return validationTip(st.v) + (st.current ? "" : `\nNewer release ${shortVer(st.newer.version)} isn't validated yet.`);
+}
+
 function validationTip(v) {
   return `Validated ${v.version} on ${v.date}: installed, ran${v.checks ? ` (${v.checks})` : ""}, reverted to stock.`
     + (v.notes ? `\n${v.notes}` : "");
@@ -852,7 +914,7 @@ function validationTip(v) {
 /** Library file matching a validation record (by checksum when recorded, else version + name). */
 function validatedFile(fw, v) {
   return (fw.library?.[v.id] || []).find((l) =>
-    v.sha256 ? l.sha256 === v.sha256 : normVer(l.version) === normVer(v.version) && (!v.file || l.name === v.file));
+    v.sha256 ? l.sha256 === v.sha256 : verKey(l.version) === verKey(v.version) && (!v.file || l.name === v.file));
 }
 
 /** "Validated firmware in Library": every validated firmware, and whether its exact file is kept. */
@@ -862,7 +924,7 @@ function validatedSection(fw, orphans) {
   const rows = recs.map((v) => {
     const file = validatedFile(fw, v);
     const f = fw.catalog.find((c) => c.id === v.id);
-    const rel = fw.releases?.sources?.[v.id]?.releases?.find((r) => normVer(r.version) === normVer(v.version));
+    const rel = fw.releases?.sources?.[v.id]?.releases?.find((r) => verKey(r.version) === verKey(v.version));
     const asset = rel?.assets.find((a) => a.name === v.file) || rel?.assets.find((a) => /\.fwsc$/i.test(a.name));
     let action;
     if (file) action = h("span", { class: "badge ok", title: "sha256 " + file.sha256, text: "✓ in library" });
@@ -895,6 +957,10 @@ function fwArt(f) {
   const wrap = h("div", { class: "fw-art" });
   if (f.art?.image) {
     wrap.append(h("img", { src: f.art.image, alt: `${f.name} screen`, title: f.art.credit ? "Screen from " + f.art.credit : "" }));
+  } else {
+    // neutral stand-in screen: no screenshot is ever downloaded automatically
+    wrap.classList.add("ph");
+    wrap.append(h("span", { text: f.name.replace(/[^A-Za-z0-9]+/g, " ").trim().slice(0, 10).toUpperCase() || "FM-1" }));
   }
   return wrap;
 }
@@ -940,20 +1006,16 @@ function fwCard(f, fw, rank) {
   const isCurrent = inst?.id === f.id;
   const rels = src?.releases || [];
   const latest = rels.find((r) => !r.prerelease) || rels[0];
-  const haveLocal = (ver, name) => local.some((l) => normVer(l.version) === normVer(ver) && l.name === name);
-  const updateAvail = isCurrent && latest && normVer(inst.version) !== normVer(latest.version);
+  const haveLocal = (ver, name) => local.some((l) => verKey(l.version) === verKey(ver) && l.name === name);
+  const updateAvail = isCurrent && latest && verKey(inst.version) !== verKey(latest.version);
   const fresh = latest?.date && Date.now() - Date.parse(latest.date) < 2 * 864e5
-    && !local.some((l) => normVer(l.version) === normVer(latest.version));
+    && !local.some((l) => verKey(l.version) === verKey(latest.version));
   const primary = latest?.assets.find((a) => /\.fwsc$/i.test(a.name)) || latest?.assets[0];
   const L = f.links || {};
 
   const art = fwArt(f);
-  const vals = validationsFor(fw, f.id);
-  const valCurrent = vals.find((v) => latest && normVer(v.version) === normVer(latest.version));
-  const valBadge = vals.length > 0 && octo(valCurrent
-    ? validationTip(valCurrent)
-    : `${validationTip(vals[0])}\nLatest ${latest ? shortVer(latest.version) : "release"} isn't validated yet.`,
-    valCurrent ? "" : "older");
+  const val = validationState(fw, f);
+  const valBadge = val && octo(valTitle(val), val.current ? "" : "older");
   const flags = [
     isCurrent && h("span", { class: "flag on", text: "ON DEVICE" }),
     updateAvail && h("span", { class: "flag up", text: "UPDATE" }),
@@ -1004,7 +1066,7 @@ function fwCard(f, fw, rank) {
       h("div", { class: "fw-headtext" },
         h("div", { class: "fw-title" }, rank && h("span", { class: "rank", text: `#${rank}` }), h("b", { text: f.name }), valBadge,
           h("span", { class: "grow" }), iconLink(L.docs, "doc", "Manual / docs"), iconLink(L.repo, "code", "Source code")),
-        h("div", { class: "by", text: f.author }),
+        h("div", { class: "by" }, f.author, f.curated === false && h("span", { class: "fw-uncur", title: "Built from GitHub metadata: entered the top 10 but has no curated catalog entry (screen, tagline) yet", text: "not curated yet" })),
         h("div", { class: "fw-tag", text: f.tagline || "" }))),
     h("div", { class: "fw-body" },
       h("div", { class: "fw-chips" }, (f.tags || []).slice(0, 3).map((t) => h("span", { text: t }))),
@@ -1013,7 +1075,8 @@ function fwCard(f, fw, rank) {
         st && h("span", { title: "GitHub stars" }, "★ ", fmtNum(st.stars)),
         st?.downloads > 0 && h("span", { title: "Firmware downloads, all releases" }, "⬇ ", fmtNum(st.downloads)),
         latest && h("span", { title: `${latest.version} · ${latest.date}` }, h("b", { text: shortVer(latest.version) }), " · " + relTime(latest.date)),
-        src?.error && h("span", { class: "badge bad", title: src.error, text: "check failed" }),
+        src?.error && !st && h("span", { class: "badge bad", title: src.error, text: "check failed" }),
+        src?.stale && st && h("span", { class: "fw-partial", title: src.stale, text: "cached" }),
         !src && f.source?.type !== "manual" && h("span", { class: "muted", text: "press Check for updates" })),
       h("div", { class: "fw-actions" },
         dlBtn,
