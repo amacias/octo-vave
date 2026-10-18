@@ -1133,7 +1133,7 @@ function renderLibrary() {
       hidden && h("button", { class: "ghost", text: `Show all firmwares (${S.patches.length})`, onclick: () => { LIB.filter = "all"; renderLibrary(); } })));
     return;
   }
-  if (!prefs.group) { list.replaceChildren(h("div", { class: "lib-list" }, items.map(libCard))); return; }
+  if (!prefs.group) { list.replaceChildren(libRows(items)); return; }
   const groups = new Map();
   for (const p of items) {
     const id = p.firmware?.id || "unknown";
@@ -1145,21 +1145,22 @@ function renderLibrary() {
     h("h2", { class: "lib-group-head" }, libFwName(id),
       h("span", { class: "muted", text: ` ${groups.get(id).length}` }),
       id === dev?.id && h("span", { class: "badge ok", text: "on the device" })),
-    h("div", { class: "lib-list" }, groups.get(id).map(libCard)))));
+    libRows(groups.get(id)))));
 }
 
 function renderLibStatus(dev) {
   const box = $("#libStatus");
   if (!box) return;
   const reg = LIB.reg;
-  box.replaceChildren(
+  box.replaceChildren(...[
     h("span", {}, "Device: ", h("b", { text: dev ? fwText(dev) : "not logged" }),
       dev ? "" : h("span", { class: "muted", text: " (log it on the Firmware tab; stock is assumed)" })),
     h("span", { class: "muted", title: reg ? reg.files.map((f) => `${f.id}.json: ${f.name} (${f.status})`).join("\n") : "" },
       reg ? `Formats: ${Object.keys(reg.formats).length} from ${reg.files.length} files in firmware/formats/` : "Formats: built-in stock format only"),
     reg?.errors?.length > 0 && h("details", { class: "lib-errors" },
       h("summary", { class: "badge warn", text: `${reg.errors.length} format file problem${reg.errors.length > 1 ? "s" : ""}` }),
-      h("ul", {}, reg.errors.map((e) => h("li", { class: "mono", text: e })))));
+      h("ul", {}, reg.errors.map((e) => h("li", { class: "mono", text: e })))),
+  ].filter(Boolean)); // replaceChildren would print a bare `false`
 }
 
 function libCard(p) {
@@ -1195,17 +1196,22 @@ function libCard(p) {
     await api(patchUrl(p.name), { method: "DELETE" }).catch(err); loadPatches();
   });
 
-  return h("div", { class: "lib-item" + (mm ? " other-fw" : ""), "data-fw": p.firmware?.id || "" },
-    h("div", { class: "title" },
-      h("button", { class: "star" + (p.favorite ? " on" : ""), title: "Favorite (shows on Home)", text: p.favorite ? "★" : "☆", onclick: () => toggleFavorite(p.name) }),
+  // Second line only when there's something worth reading.
+  const sub = [
+    block && h("span", { class: "lib-why", text: block }),
+    p.legacyFirmware && h("span", { text: `Saved while ${libFwName(p.legacyFirmware)} was logged; the content is a stock voice/FX.` }),
+    p.notes && h("span", { text: p.notes }),
+  ].filter(Boolean);
+
+  return h("div", { class: "lib-row" + (mm ? " other-fw" : ""), "data-fw": p.firmware?.id || "" },
+    h("button", { class: "star" + (p.favorite ? " on" : ""), title: "Favorite (shows on Home)", text: p.favorite ? "★" : "☆", onclick: () => toggleFavorite(p.name) }),
+    h("div", { class: "lib-name" },
       h("b", { text: p.name, title: p.name }),
       p.schemaVersion < 2 && h("span", { class: "badge", text: "v1", title: "Older file: read as a stock patch, upgraded to schema v2 the next time it's saved" })),
-    h("div", { class: "lib-fw" },
-      h("span", { class: "fw-chip " + (mm ? "warn" : "ok"), title: mm || "Matches the firmware logged on the device" }, fwText(p.firmware)),
+    h("span", { class: "fw-chip " + (mm ? "warn" : "ok"), title: mm || "Matches the firmware logged on the device" }, fwText(p.firmware)),
+    h("div", { class: "lib-info" },
       h("span", { class: "fmt-chip", title: `${p.format}${fmt?.description ? "\n" + fmt.description : ""}`, text: fmt ? fmt.name : `unknown format ${p.format}` }),
-      fmt && fmt.status !== "confirmed" && h("span", { class: "badge warn", text: fmt.status, title: FORMAT_STATUS[fmt.status] || "" })),
-    p.legacyFirmware && h("div", { class: "muted small", text: `Saved while ${libFwName(p.legacyFirmware)} was logged; the content is a stock voice/FX.` }),
-    h("div", { class: "badges" },
+      fmt && fmt.status !== "confirmed" && h("span", { class: "badge warn", text: fmt.status, title: FORMAT_STATUS[fmt.status] || "" }),
       p.hasVoice && h("span", { class: "badge accent", text: "voice" }),
       p.hasFx && h("span", { class: "badge", text: "fx" }),
       p.program && h("span", { class: "badge", text: `PC ${p.program}` }),
@@ -1213,16 +1219,24 @@ function libCard(p) {
       p.cc > 0 && h("span", { class: "badge", text: `${p.cc} CC` }),
       p.sysex > 0 && h("span", { class: "badge", text: `${p.sysex} SysEx` }),
       (p.tags || []).map((t) => h("span", { class: "badge", text: "#" + t }))),
-    p.notes && h("div", { class: "muted", text: p.notes }),
-    h("div", { class: "muted small", text: p.modified ? "modified " + p.modified.replace("T", " ") : "" }),
-    block && h("div", { class: "lib-why", text: block }),
-    h("div", { class: "row wrap" },
+    h("span", { class: "lib-date", title: p.modified ? "modified " + p.modified.replace("T", " ") : "", text: p.modified ? p.modified.slice(0, 10) : "" }),
+    h("div", { class: "lib-actions" },
       sendBtn,
       canLoad && h("button", { text: "Load", title: "Load into the editors without sending", onclick: () => applyPatch(p.name, { sendNow: false }).catch(err) }),
       detBtn,
       !p.error && h("button", { class: "ghost", text: "JSON", title: "Export (schema v2)", onclick: async () => download(`${p.name}.json`, JSON.stringify(await api(patchUrl(p.name)), null, 2), "application/json") }),
       del),
+    sub.length > 0 && h("div", { class: "lib-sub", title: sub.map((s) => s.textContent).join("\n") }, sub),
     confirmBox, details);
+}
+
+/** Compact list: a header row plus one row per patch. */
+function libRows(items) {
+  return h("div", { class: "lib-rows" },
+    h("div", { class: "lib-row lib-head", "aria-hidden": "true" },
+      h("span"), h("span", { text: "Name" }), h("span", { text: "Firmware" }), h("span", { text: "Format · contents" }),
+      h("span", { text: "Modified" }), h("span", { class: "lib-head-actions", text: "Actions" })),
+    items.map(libCard));
 }
 
 /** The Details panel: what's in the patch, labelled by its format. Params are editable. */
