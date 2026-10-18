@@ -231,7 +231,7 @@ button.got { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 50%, v
 .local { background: var(--panel-2); border-radius: 8px; padding: 8px 10px; font-size: 12.5px; margin-top: 8px; }
 .local .f { display: flex; gap: 8px; align-items: center; padding: 3px 0; flex-wrap: wrap; }
 .local .sha { font: 11px var(--mono); color: var(--muted); flex: 1; }
-.dir { margin-top: 22px; }
+.dir, .val { margin-top: 22px; }
 .dir-list { list-style: none; margin: 0; padding: 0; columns: 2 460px; column-gap: 36px; font-size: 13px; }
 .dir-list li { display: grid; grid-template-columns: 2.6em 1fr auto; gap: 8px; align-items: baseline; padding: 5px 0; border-bottom: 1px solid var(--line); break-inside: avoid; }
 .dir-rank { color: var(--muted); font: 12px var(--mono); }
