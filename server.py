@@ -12,16 +12,19 @@ Standard library only. Binds to 127.0.0.1 so nothing is exposed to the network.
 """
 import hashlib
 import json
+import math
 import os
 import re
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
 import webbrowser
+from concurrent.futures import ThreadPoolExecutor
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlencode, urlparse
 
 ROOT = Path(__file__).resolve().parent
 WEB = ROOT / "web"
@@ -30,6 +33,7 @@ PATCHES = DATA / "patches"
 SETTINGS = DATA / "settings.json"
 FW_STATE = DATA / "firmware-state.json"
 RELEASE_CACHE = DATA / "releases-cache.json"
+DISCOVERY_CACHE = DATA / "discovery-cache.json"  # live community ranking + per-repo GitHub snapshots
 CATALOG = ROOT / "firmware" / "catalog.json"
 DIRECTORY = ROOT / "firmware" / "directory.json"
 VALIDATED = ROOT / "firmware" / "validated.json"  # written by validation sessions, read-only here
@@ -138,72 +142,532 @@ def safe_filename(name):
 
 # ---------------------------------------------------------------- firmware
 
-def refresh_releases():
-    """Query each catalog source for its latest releases and cache the result."""
-    cache = {"checked": time.strftime("%Y-%m-%dT%H:%M:%S"), "sources": {}}
-    for fw in catalog()["firmware"]:
-        src = fw.get("source", {})
-        entry = {"releases": [], "error": None}
+# Discovery: the community ranking is rebuilt on every "Check for updates" from the
+# awesome-fm-1 list ("Custom firmware" sections) plus a GitHub repository search,
+# then ranked by ln(1+stars) + ln(1+total .fwsc downloads). Only projects with a
+# release that carries a .fwsc image count (closed-source and not-a-synth entries of
+# the list are left out). GitHub data is cached per repository with ETags so
+# unchanged data costs nothing (authenticated) or is skipped for a day (anonymous,
+# 60 requests/hour); when the budget runs out the last known numbers are kept and
+# firmware/directory.json serves as the offline fallback.
+
+DISCOVERY = {
+    "awesome": "https://raw.githubusercontent.com/cicloid/awesome-fm-1/HEAD/README.md",
+    "awesomePage": "https://github.com/cicloid/awesome-fm-1",
+    "searches": ["fm-1 firmware archived:false", "fm1 firmware archived:false", "topic:fm-1 archived:false"],
+    "exclude": {},
+}
+TOP_CARDS, TOP_LIST = 10, 30
+META_HOSTS = {"api.github.com", "raw.githubusercontent.com"}
+PRERELEASE_RE = re.compile(r"(?:^|[-_.+\s])(rc|beta|alpha|test|preview|pre|dev|nightly|wip)\d*(?![a-z])", re.I)
+GH_REPO_RE = re.compile(r"^https?://github\.com/([A-Za-z0-9_.\-]+)/([A-Za-z0-9_.\-]+?)(?:\.git)?/?(?:[#?].*)?$")
+_refresh_lock = threading.Lock()
+
+
+class RateLimited(Exception):
+    pass
+
+
+def discovery_config():
+    cfg = dict(DISCOVERY)
+    cfg.update(catalog().get("discovery") or {})
+    return cfg
+
+
+def repo_key(repo):
+    return str(repo or "").strip().lower()
+
+
+def gh_repo(url):
+    m = GH_REPO_RE.match(str(url or "").strip())
+    if not m or m.group(1).lower() in ("orgs", "topics", "sponsors", "features"):
+        return None
+    return f"{m.group(1)}/{m.group(2)}"
+
+
+class GitHub:
+    """api.github.com client with conditional requests and a shared rate-limit budget."""
+
+    def __init__(self, rate):
+        self.rate = rate  # {"core"|"search": {"limit", "remaining", "reset"}}, persisted
+        self.auth = bool(github_token())
+        self.reserve = {"core": 100 if self.auth else 2, "search": 1}
+        self.limited = set()
+        self.calls = self.not_modified = 0
+        self.lock = threading.Lock()
+
+    def _take(self, res):
+        with self.lock:
+            if res in self.limited:
+                raise RateLimited(res)
+            r = self.rate.get(res) or {}
+            if r.get("remaining") is not None and r.get("reset", 0) > time.time():
+                if r["remaining"] <= self.reserve.get(res, 1):
+                    self.limited.add(res)
+                    raise RateLimited(res)
+                r["remaining"] -= 1
+            self.calls += 1
+
+    def _note(self, headers):
+        res = headers.get("X-RateLimit-Resource")
+        if res and headers.get("X-RateLimit-Remaining") is not None:
+            with self.lock:
+                self.rate[res] = {"limit": int(headers.get("X-RateLimit-Limit") or 0),
+                                  "remaining": int(headers["X-RateLimit-Remaining"]),
+                                  "reset": int(headers.get("X-RateLimit-Reset") or 0)}
+
+    def get(self, url, etag=None, resource="core", raw=False):
+        """(status, data, etag): status 304 means unchanged (data None)."""
+        host = urlparse(url).hostname or ""
+        if host not in META_HOSTS:
+            raise ValueError(f"unexpected host {host}")
+        api = host == "api.github.com"
+        if api:
+            self._take(resource)
+        headers = {"User-Agent": USER_AGENT}
+        if api:
+            headers["Accept"] = "application/vnd.github+json"
+            headers["X-GitHub-Api-Version"] = "2022-11-28"
+            if github_token():
+                headers["Authorization"] = f"Bearer {github_token()}"
+        if etag:
+            headers["If-None-Match"] = etag
         try:
-            if src.get("type") == "github":
-                gh = "application/vnd.github+json"
-                repo = json.loads(http_get(f"https://api.github.com/repos/{src['repo']}", accept=gh))
-                rels = [r for r in json.loads(http_get(
-                    f"https://api.github.com/repos/{src['repo']}/releases?per_page=100", accept=gh))
-                    if not r.get("draft")]
-                pats = [re.compile(p, re.I) for p in src.get("assetPatterns", [r"\.fwsc$"])]
-                entry["stats"] = {
-                    "stars": repo.get("stargazers_count", 0),
-                    "license": (repo.get("license") or {}).get("spdx_id"),
-                    "pushed": (repo.get("pushed_at") or "")[:10],
-                    "releases": len(rels),
-                    # total downloads of firmware images across all releases
-                    "downloads": sum(a.get("download_count", 0) for r in rels for a in r.get("assets", [])
-                                     if a["name"].lower().endswith(".fwsc")),
-                }
-                for rel in rels[:6]:
-                    all_assets = rel.get("assets", [])
-                    assets = [
-                        {"name": a["name"], "size": a["size"], "url": a["browser_download_url"],
-                         "downloads": a.get("download_count", 0)}
-                        for a in all_assets if any(p.search(a["name"]) for p in pats)
-                    ]
-                    entry["releases"].append({
-                        "version": rel["tag_name"],
-                        "title": rel.get("name") or rel["tag_name"],
-                        "date": (rel.get("published_at") or "")[:10],
-                        "prerelease": bool(rel.get("prerelease")) or bool(re.search(r"-(rc|beta|alpha|test|preview)", rel["tag_name"], re.I)),
-                        "url": rel.get("html_url"),
-                        "assets": assets,
-                        "sha256sums": next(
-                            (a["browser_download_url"] for a in all_assets
-                             if re.fullmatch(r"SHA256SUMS(-.*)?(\.txt)?", a["name"], re.I)), None),
-                        # per-file checksums such as foo.fwsc.sha256
-                        "sha256files": {a["name"][:-7]: a["browser_download_url"]
-                                        for a in all_assets if a["name"].lower().endswith(".sha256")},
-                    })
-            elif src.get("type") == "official":
-                version, date = "latest", ""
-                try:
-                    notes = http_get(src["releaseNotes"]).decode("latin-1")
-                    m = re.search(r"FM-1_(\d{4})_(\d{2})\s*(\d{2})\s+(V\d+)", notes)
-                    if m:
-                        version, date = m.group(4), f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
-                except Exception as e:  # notes are informational only
-                    entry["error"] = f"release notes: {e}"
-                entry["releases"].append({
-                    "version": version, "title": f"Official {version}", "date": date,
-                    "prerelease": False, "url": src.get("page"),
-                    "assets": src.get("assets", []), "sha256sums": None,
-                })
+            with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=30) as r:
+                if (urlparse(r.geturl()).hostname or "") not in META_HOSTS:
+                    raise ValueError("redirected to unexpected host")
+                self._note(r.headers)
+                body = r.read(8 * 1024 * 1024)
+                return 200, (body if raw else json.loads(body)), r.headers.get("ETag")
         except urllib.error.HTTPError as e:
-            entry["error"] = f"HTTP {e.code} ({'rate limited, set GITHUB_TOKEN' if e.code == 403 else e.reason})"
+            self._note(e.headers)
+            if e.code == 304:
+                with self.lock:
+                    self.not_modified += 1
+                return 304, None, etag
+            if e.code in (403, 429) and (e.headers.get("X-RateLimit-Remaining") == "0" or e.headers.get("Retry-After")):
+                with self.lock:
+                    self.limited.add(resource)
+                raise RateLimited(resource) from None
+            raise
+
+
+def _first_sentence(text, limit=160):
+    text = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", text).replace("`", "").strip()
+    text = re.split(r"(?<=[a-z0-9)\]])\.\s", text, maxsplit=1)[0].rstrip(".")
+    if len(text) > limit:
+        text = text[:limit].rsplit(" ", 1)[0].rstrip(",;:") + "…"
+    return text
+
+
+def parse_awesome(md):
+    """awesome-fm-1 README → open-source firmware entries, plus every other GitHub repo
+    the list mentions (closed source, not a synth, tools, emulators...) for filtering."""
+    h2 = h3 = ""
+    open_, other = [], {}
+    item_re = re.compile(r"^\s*[-*]\s+\[([^\]]+)\]\(([^)\s]+)\)\s*[-–—:]?\s*(.*)$")
+    for line in md.splitlines():
+        if line.startswith("## "):
+            h2, h3 = line[3:].strip().lower(), ""
+            continue
+        if line.startswith("### "):
+            h3 = line[4:].strip().lower()
+            continue
+        m = item_re.match(line)
+        if not m:
+            continue
+        name, url, rest = m.groups()
+        repo = gh_repo(url)
+        links = re.findall(r"\[([^\]]+)\]\((https?://[^)\s]+)\)", rest)
+        if h2.startswith("custom firmware") and h3.startswith("open source"):
+            entry = {"name": name.strip(), "url": url, "repo": repo, "desc": _first_sentence(rest), "links": {}}
+            for label, href in links:
+                lab = label.lower()
+                key = ("install" if "install" in lab else "try" if re.search(r"emulat|simulat|try|play|browser|demo", lab)
+                       else "docs" if re.search(r"manual|guide|docs", lab) else None)
+                if key and key not in entry["links"] and href.startswith("https://"):
+                    entry["links"][key] = href
+            open_.append(entry)
+        elif repo:
+            group = ("closed" if h3.startswith("closed") else "other" if h3.startswith("not a synth")
+                     else "list")
+            other.setdefault(repo_key(repo), group)
+        for _, href in links:  # companion repos (emulators, editors) never rank on their own
+            r2 = gh_repo(href)
+            if r2 and repo_key(r2) != repo_key(repo):
+                other.setdefault(repo_key(r2), "list")
+    for e in open_:
+        if e["repo"]:
+            other.pop(repo_key(e["repo"]), None)
+    return {"open": open_, "other": other}
+
+
+def _trim_meta(d):
+    return {
+        "repo": d.get("full_name", ""), "owner": (d.get("owner") or {}).get("login", ""),
+        "url": d.get("html_url", ""), "stars": d.get("stargazers_count", 0),
+        "license": (d.get("license") or {}).get("spdx_id"), "pushed": (d.get("pushed_at") or "")[:10],
+        "description": (d.get("description") or "").strip(), "homepage": (d.get("homepage") or "").strip(),
+        "topics": (d.get("topics") or [])[:10], "fork": bool(d.get("fork")), "archived": bool(d.get("archived")),
+    }
+
+
+def is_prerelease(rel):
+    return bool(rel.get("prerelease")) or bool(PRERELEASE_RE.search(rel.get("tag_name") or rel.get("version") or ""))
+
+
+def _trim_releases(rels):
+    rels = [r for r in rels if not r.get("draft")]
+    fwsc = [a for r in rels for a in r.get("assets", []) if a["name"].lower().endswith(".fwsc")]
+    return {
+        "count": len(rels),
+        "downloads": sum(a.get("download_count", 0) for a in fwsc),  # all releases, all .fwsc images
+        "installable": bool(fwsc),
+        "releases": [{
+            "version": r["tag_name"], "title": r.get("name") or r["tag_name"],
+            "date": (r.get("published_at") or r.get("created_at") or "")[:10],
+            "prerelease": is_prerelease(r), "url": r.get("html_url"),
+            "assets": [{"name": a["name"], "size": a.get("size", 0), "url": a["browser_download_url"],
+                        "downloads": a.get("download_count", 0)} for a in r.get("assets", [])],
+        } for r in rels[:8]],
+    }
+
+
+def release_entry(rec, patterns):
+    """releases-cache entry (stats + latest releases with matching assets) from a repo snapshot."""
+    meta, rel = rec.get("meta") or {}, rec.get("rel")
+    entry = {"releases": [], "error": None if rel else rec.get("error") or "not checked yet"}
+    if rec.get("stale"):
+        entry["stale"] = rec["stale"]
+    if not rel:
+        return entry
+    pats = [re.compile(p, re.I) for p in patterns or [r"\.fwsc$"]]
+    entry["stats"] = {"stars": meta.get("stars", 0), "license": meta.get("license"), "pushed": meta.get("pushed", ""),
+                      "releases": rel["count"], "downloads": rel["downloads"]}
+    for r in rel["releases"][:6]:
+        allp = r["assets"]
+        entry["releases"].append({
+            **{k: r[k] for k in ("version", "title", "date", "prerelease", "url")},
+            "assets": [a for a in allp if any(p.search(a["name"]) for p in pats)],
+            "sha256sums": next((a["url"] for a in allp if re.fullmatch(r"SHA256SUMS(-.*)?(\.txt)?", a["name"], re.I)), None),
+            # per-file checksums such as foo.fwsc.sha256
+            "sha256files": {a["name"][:-7]: a["url"] for a in allp if a["name"].lower().endswith(".sha256")},
+        })
+    return entry
+
+
+def _slug(s):
+    return re.sub(r"[^a-z0-9]+", "-", str(s).lower()).strip("-")[:32].strip("-") or "fw"
+
+
+def fallback_directory():
+    """firmware/directory.json: the last committed ranking, used until a live check succeeds."""
+    d = read_json(DIRECTORY, {"projects": []})
+    out = {}
+    for p in d.get("projects", []):
+        k = repo_key(p.get("repo") or gh_repo(p.get("url")))
+        if k:
+            out[k] = p
+    return d, out
+
+
+def build_ranking(disc=None):
+    """Live ranking (cards #1-10, list #11-30) from the discovery cache; directory.json
+    fills in projects not fetched yet. Returns (ranked, entries) where entries are
+    card definitions for ranked projects without a curated catalog entry."""
+    disc = disc if disc is not None else read_json(DISCOVERY_CACHE, {})
+    cat = catalog()
+    cfg = discovery_config()
+    repos = disc.get("repos", {})
+    _, fallback = fallback_directory()
+    exclude = {repo_key(k) for k in cfg.get("exclude", {})}
+    curated, official = {}, set()
+    for f in cat["firmware"]:
+        src = f.get("source", {})
+        if src.get("type") == "github":
+            (curated.__setitem__(repo_key(src["repo"]), f) if f.get("kind") == "community"
+             else official.add(repo_key(src["repo"])))
+    aw = disc.get("awesome", {}).get("lists") or {"open": [], "other": {}}
+    other = aw.get("other", {})
+
+    cands = {}
+    for e in aw.get("open", []):
+        if e.get("repo"):
+            cands.setdefault(repo_key(e["repo"]), {"repo": e["repo"], "name": e["name"], "desc": e["desc"],
+                                                   "links": e.get("links", {}), "origin": "awesome-fm-1"})
+    for q in disc.get("search", {}).values():
+        for m in q.get("items", []):
+            k = repo_key(m["repo"])
+            if k in cands or k in other or m["fork"] or m["archived"] or not m.get("license"):
+                continue  # search-only hits must carry a license to count as open source
+            cands[k] = {"repo": m["repo"], "name": m["repo"].split("/")[1], "desc": m["description"],
+                        "links": {}, "origin": "GitHub search"}
+    for k, p in fallback.items():
+        cands.setdefault(k, {"repo": p.get("repo") or gh_repo(p["url"]), "name": p["name"], "desc": p.get("desc", ""),
+                             "links": {}, "origin": "directory.json"})
+    for k, f in curated.items():
+        cands.setdefault(k, {"repo": f["source"]["repo"], "name": f["name"], "desc": f.get("tagline", ""),
+                             "links": {}, "origin": "catalog"})
+
+    ids = dict(disc.get("ids", {}))
+    taken = {f["id"] for f in cat["firmware"]} | {v for k, v in ids.items() if k not in curated}
+    ranked = []
+    for k in sorted(cands):
+        c = cands[k]
+        if k in exclude or k in official or other.get(k) in ("closed", "other"):
+            continue
+        rec = repos.get(k, {})
+        meta, rel, fb = rec.get("meta"), rec.get("rel"), fallback.get(k)
+        if rel:
+            if not rel["installable"]:
+                continue
+            stars = meta["stars"] if meta else (fb or {}).get("stars", 0)
+            downloads, live = rel["downloads"], True
+        elif fb:
+            stars, downloads, live = fb.get("stars", 0), fb.get("downloads", 0), False
+        elif k in curated:
+            stars, downloads, live = (meta or {}).get("stars", 0), 0, False
+        else:
+            continue  # never checked and not in the snapshot: installability unknown
+        if k in curated:
+            fid = curated[k]["id"]
+        elif k in ids:
+            fid = ids[k]
+        elif fb and fb.get("id") and fb["id"] not in taken and ID_RE.match(fb["id"]):
+            fid = ids[k] = fb["id"]
+            taken.add(fid)
+        else:
+            fid = _slug(c["name"])
+            if fid in taken or not ID_RE.match(fid):
+                fid = _slug(c["repo"].replace("/", "-"))
+            n = 2
+            while fid in taken:
+                fid = f"{_slug(c['repo'].replace('/', '-'))[:29]}-{n}"
+                n += 1
+            taken.add(fid)
+            ids[k] = fid
+        latest = next((r for r in (rel or {}).get("releases", []) if not r["prerelease"]), None) \
+            or ((rel or {}).get("releases") or [None])[0]
+        ranked.append({
+            "id": fid, "repo": c["repo"], "name": curated[k]["name"] if k in curated else c["name"],
+            "url": (meta or {}).get("url") or f"https://github.com/{c['repo']}",
+            "desc": c["desc"] or (meta or {}).get("description", ""),
+            "license": (meta or {}).get("license") or (fb or {}).get("license"),
+            "stars": stars, "downloads": downloads,
+            "score": round(math.log1p(stars) + math.log1p(downloads), 3),
+            "curated": k in curated, "origin": c["origin"], "live": live,
+            "latest": latest and {"version": latest["version"], "date": latest["date"]},
+        })
+    ranked.sort(key=lambda p: (-p["score"], p["name"].lower()))
+    ranked = ranked[:TOP_LIST]
+    for i, p in enumerate(ranked, 1):
+        p["rank"] = i
+
+    entries = []
+    for p in ranked:
+        if p["curated"]:
+            continue
+        k = repo_key(p["repo"])
+        meta = repos.get(k, {}).get("meta") or {}
+        links = {"repo": p["url"], **cands[k]["links"]}
+        home = meta.get("homepage", "")
+        if "install" not in links and home.startswith("https://") and not home.startswith(p["url"]):
+            links["install"] = home
+        skip = {"fm-1", "fm1", "m-vave", "mvave", "firmware", "synthesizer", "synth", "fm1-firmware", "m-vave-fm-1"}
+        entries.append({
+            "id": p["id"], "name": p["name"], "author": meta.get("owner") or p["repo"].split("/")[0],
+            "kind": "community", "curated": False,
+            "tagline": meta.get("description") or p["desc"],
+            "tags": [t for t in meta.get("topics", []) if t not in skip][:3],
+            "art": {"hue": int(hashlib.sha1(k.encode()).hexdigest()[:4], 16) % 360},
+            "links": links,
+            "summary": p["desc"] or meta.get("description", ""),
+            "install": "Use the project's own installer (see its page or README). "
+                       "Not curated yet: this card is built from GitHub metadata.",
+            "source": {"type": "github", "repo": p["repo"], "assetPatterns": [r"\.fwsc$"]},
+        })
+    return ranked, entries, ids
+
+
+def _fetch_repo(gh, key, rec, need_meta):
+    """Refresh one repo snapshot in place (conditional requests)."""
+    repo = (rec.get("meta") or {}).get("repo") or rec.get("repo") or key
+    got = False
+    try:
+        # releases first: they decide installability and downloads, the scarcer data
+        st, data, etag = gh.get(f"https://api.github.com/repos/{repo}/releases?per_page=100",
+                                rec.get("relEtag") if rec.get("rel") else None)
+        if st == 200:
+            rec["rel"], rec["relEtag"] = _trim_releases(data), etag
+        got = True
+        if need_meta == "always" or (need_meta and rec["rel"]["installable"]):
+            st, data, etag = gh.get(f"https://api.github.com/repos/{repo}", rec.get("metaEtag") if rec.get("meta") else None)
+            if st == 200:
+                rec["meta"], rec["metaEtag"] = _trim_meta(data), etag
+            rec["metaChecked"] = time.time()
+        rec["checked"] = time.time()
+        rec.pop("error", None)
+        rec.pop("stale", None)
+    except RateLimited:
+        if got:
+            rec["checked"] = time.time()
+            rec.pop("error", None)
+            rec.pop("stale", None)
+        else:
+            rec["stale"] = "rate limited, showing the last known data"
+            rec["error"] = "rate limited (set GITHUB_TOKEN or FM1_USE_GH=1)"
+    except urllib.error.HTTPError as e:
+        rec["error"] = f"HTTP {e.code} ({e.reason})"
+        if e.code == 404:
+            rec["rel"] = {"count": 0, "downloads": 0, "installable": False, "releases": []}
+            rec["checked"] = time.time()
+    except Exception as e:  # network trouble: keep the old snapshot
+        rec["error"] = str(e)[:200]
+
+
+def discover(disc, gh, notes):
+    """Refresh list + search + repo snapshots in disc (in place)."""
+    cfg = discovery_config()
+    now = time.time()
+    # 1. the community list (raw.githubusercontent.com: no API quota)
+    aw = disc.setdefault("awesome", {})
+    try:
+        st, body, etag = gh.get(cfg["awesome"], aw.get("etag") if aw.get("lists") else None, raw=True)
+        if st == 200:
+            aw.update(etag=etag, lists=parse_awesome(body.decode("utf-8", "replace")))
+        aw["checked"] = now
+    except Exception as e:
+        notes.append(f"awesome-fm-1 list: {e}")
+    # 2. GitHub repository search (its own quota: 10/min anonymous, 30/min with a token)
+    search = disc.setdefault("search", {})
+    for q in cfg["searches"]:
+        prev = search.get(q, {})
+        if now - prev.get("checked", 0) < 600:
+            continue
+        try:
+            url = "https://api.github.com/search/repositories?" + urlencode(
+                {"q": q, "sort": "stars", "order": "desc", "per_page": 100})
+            st, data, etag = gh.get(url, prev.get("etag") if prev.get("items") is not None else None, resource="search")
+            if st == 200:
+                prev = {"etag": etag, "total": data.get("total_count", 0),
+                        "items": [_trim_meta(i) for i in data.get("items", [])]}
+            prev["checked"] = now
+            search[q] = prev
+        except RateLimited:
+            notes.append("GitHub search rate limited; using the last results")
+            break
         except Exception as e:
-            entry["error"] = str(e)
-        if src.get("type") in ("github", "official"):
-            cache["sources"][fw["id"]] = entry
-    write_json(RELEASE_CACHE, cache)
-    return cache
+            notes.append(f"GitHub search: {e}")
+    repos = disc.setdefault("repos", {})
+    fresh_meta = set()
+    for q in search.values():
+        for m in q.get("items", []):
+            k = repo_key(m["repo"])
+            rec = repos.setdefault(k, {})
+            if q.get("checked", 0) >= rec.get("metaChecked", 0):
+                rec["meta"], rec["metaChecked"] = m, q.get("checked", 0)
+            if now - q.get("checked", 0) < 3600:
+                fresh_meta.add(k)
+
+    # 3. which repos to (re)check, most important first
+    cat = catalog()
+    lists = aw.get("lists") or {"open": [], "other": {}}
+    want = {}  # key -> priority (0 = always)
+    for f in cat["firmware"]:
+        if f.get("source", {}).get("type") == "github":
+            want[repo_key(f["source"]["repo"])] = 0
+    for p in disc.get("ranked", [])[:TOP_CARDS]:
+        want.setdefault(repo_key(p["repo"]), 0)
+    for p in disc.get("ranked", [])[TOP_CARDS:]:
+        want.setdefault(repo_key(p["repo"]), 1)
+    for e in lists["open"]:
+        if e.get("repo"):
+            want.setdefault(repo_key(e["repo"]), 2)
+    for q in search.values():
+        for m in q.get("items", []):
+            k = repo_key(m["repo"])
+            if k not in lists["other"] and not m["fork"] and not m["archived"] and m.get("license"):
+                want.setdefault(k, 3)
+    exclude = {repo_key(k) for k in cfg.get("exclude", {})}
+    ttl = 900 if gh.auth else 24 * 3600
+    jobs = []
+    for k, prio in want.items():
+        if k in exclude or lists["other"].get(k) in ("closed", "other"):
+            continue
+        rec = repos.setdefault(k, {"repo": k})
+        if prio > 0 and rec.get("rel") is not None and now - rec.get("checked", 0) < ttl:
+            continue
+        jobs.append((prio, 0 if rec.get("rel") is None else 1, -(rec.get("meta") or {}).get("stars", 0),
+                     rec.get("checked", 0), k))
+    jobs.sort()
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        for _, _, _, _, k in jobs:
+            rec = repos[k]
+            need_meta = k not in fresh_meta and (not rec.get("meta") or now - rec.get("metaChecked", 0) > (ttl if gh.auth else 6 * 3600))
+            pool.submit(_fetch_repo, gh, k, rec, "always" if need_meta and want[k] == 0 else need_meta)
+    skipped = sum(1 for *_, k in jobs if repos[k].get("stale"))
+    if skipped:
+        reset = (gh.rate.get("core") or {}).get("reset")
+        when = time.strftime(" until %H:%M", time.localtime(reset)) if reset else ""
+        notes.append(f"GitHub rate limit reached{when}: {skipped} of {len(jobs)} projects kept their last known numbers")
+    return len(jobs), skipped
+
+
+def refresh_releases():
+    """Check for updates: rediscover and rank community firmware, refresh release info
+    for every card, and cache the result (data/discovery-cache.json, releases-cache.json)."""
+    with _refresh_lock:
+        disc = read_json(DISCOVERY_CACHE, {})
+        gh = GitHub(disc.setdefault("rate", {}))
+        notes = []
+        scanned, skipped = discover(disc, gh, notes)
+        ranked, entries, ids = build_ranking(disc)
+        disc.update(checked=time.strftime("%Y-%m-%dT%H:%M:%S"), ranked=ranked, ids=ids, notes=notes,
+                    auth="token" if os.environ.get("GITHUB_TOKEN") else "gh" if gh.auth else "anonymous",
+                    stats={"scanned": scanned, "skipped": skipped, "requests": gh.calls, "notModified": gh.not_modified,
+                           "candidates": len(disc.get("repos", {}))})
+        write_json(DISCOVERY_CACHE, disc)
+
+        cache = {"checked": disc["checked"], "sources": {}}
+        for fw in catalog()["firmware"] + entries:
+            src = fw.get("source", {})
+            if src.get("type") == "github":
+                cache["sources"][fw["id"]] = release_entry(disc["repos"].get(repo_key(src["repo"]), {}),
+                                                           src.get("assetPatterns"))
+            elif src.get("type") == "official":
+                cache["sources"][fw["id"]] = official_release(src)
+        write_json(RELEASE_CACHE, cache)
+        return {"checked": disc["checked"], "notes": notes, "stats": disc["stats"],
+                "top": [p["id"] for p in ranked[:TOP_CARDS]]}
+
+
+def official_release(src):
+    entry = {"releases": [], "error": None}
+    version, date = "latest", ""
+    try:
+        notes = http_get(src["releaseNotes"]).decode("latin-1")
+        m = re.search(r"FM-1_(\d{4})_(\d{2})\s*(\d{2})\s+(V\d+)", notes)
+        if m:
+            version, date = m.group(4), f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
+    except Exception as e:  # notes are informational only
+        entry["error"] = f"release notes: {e}"
+    entry["releases"].append({
+        "version": version, "title": f"Official {version}", "date": date,
+        "prerelease": False, "url": src.get("page"),
+        "assets": src.get("assets", []), "sha256sums": None,
+    })
+    return entry
+
+
+def firmware_entries():
+    """Curated catalog plus card definitions for ranked projects not curated yet."""
+    disc = read_json(DISCOVERY_CACHE, {})
+    ranked, entries, _ = build_ranking(disc)
+    return catalog()["firmware"] + entries, ranked, disc
+
+
+def known_entry(fid):
+    return catalog_entry(fid) or next((e for e in firmware_entries()[0] if e["id"] == fid), None)
 
 
 def local_library():
@@ -443,10 +907,16 @@ class Handler(SimpleHTTPRequestHandler):
             sub = parts[1] if len(parts) > 1 else ""
             if sub == "" and method == "GET":
                 state = read_json(FW_STATE, {})
+                entries, ranked, disc = firmware_entries()
                 return self._send_json({
-                    "catalog": catalog()["firmware"],
+                    "catalog": entries,  # curated catalog + cards for new, not yet curated entrants
                     "ranking": catalog().get("ranking"),
-                    "directory": read_json(DIRECTORY, {"projects": []}),
+                    "ranked": ranked,  # live community ranking: #1-10 cards, #11-30 list
+                    "discovery": {
+                        "checked": disc.get("checked"), "auth": disc.get("auth"), "notes": disc.get("notes", []),
+                        "stats": disc.get("stats"), "source": discovery_config()["awesomePage"],
+                        "fallback": read_json(DIRECTORY, {}).get("updated") if not disc.get("ranked") else None,
+                    },
                     "validated": read_json(VALIDATED, {"validations": []}).get("validations", []),
                     "releases": read_json(RELEASE_CACHE, {"checked": None, "sources": {}}),
                     "library": local_library(),
@@ -461,7 +931,7 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._send_json(download_asset(b["id"], b["version"], b["asset"]))
             if sub == "import" and method == "POST":
                 fid = q.get("id", "")
-                if not ID_RE.match(fid) or not catalog_entry(fid):
+                if not ID_RE.match(fid) or not known_entry(fid):
                     raise ValueError("unknown firmware id")
                 data = self._body(MAX_IMPORT)
                 if not data:
@@ -474,7 +944,7 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._send_json(set_installed(self._json_body()))
             if sub == "reveal" and method == "POST":
                 fid = self._json_body().get("id", "")
-                if fid and (not ID_RE.match(fid) or not catalog_entry(fid)):
+                if fid and (not ID_RE.match(fid) or not known_entry(fid)):
                     raise ValueError("unknown firmware id")
                 # relative, so the local user name never reaches the browser
                 return self._send_json({"path": Path(reveal(fid)).relative_to(ROOT).as_posix()})

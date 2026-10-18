@@ -1,1 +1,20 @@
 /* firmware.css: owned by the firmware feature. Feature-specific styles go here, not in style.css. */
+
+/* Neutral stand-in screen for cards built from GitHub metadata (never a fetched screenshot). */
+.fw-art.ph { display: grid; place-items: center; background:
+  repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 4px), #111; }
+.fw-art.ph span { font: 700 11px var(--mono); letter-spacing: .08em; color: rgba(255,255,255,.38);
+  text-align: center; padding: 0 6px; line-height: 1.3; word-break: break-word; }
+
+/* "not curated yet" marker next to the author */
+.fw-uncur { margin-left: 6px; font-size: 10.5px; padding: 0 6px; border-radius: 999px;
+  border: 1px dashed var(--line); color: var(--muted); cursor: help; }
+
+/* partial / cached data hints */
+.fw-partial { font-size: 10.5px; padding: 0 6px; border-radius: 999px; border: 1px solid var(--warn);
+  color: var(--warn); cursor: help; }
+
+/* greyed octopus: validated, but a newer stable release is out */
+.octo-wrap.older { opacity: .5; filter: grayscale(1); }
+.dir-main .octo-wrap { margin-left: 5px; vertical-align: -3px; }
+.dir-main .octo { width: 15px; height: 15px; }

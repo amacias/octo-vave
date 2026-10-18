@@ -1,6 +1,10 @@
 {
   "updated": "2026-10-18",
-  "ranking": "Community entries: the top 10 free, open-source FM-1 firmwares on 2026-10-18 by GitHub stars × total .fwsc downloads. Live order follows the same score after each update check. Sources: GitHub search and cicloid/awesome-fm-1. Excluded: Groove OS (paid, closed), FM-1+VA (closed source), projects without an installable release (JIANT, Lunar Modulator, TRIBE).",
+  "ranking": "Live ranking of free, open-source FM-1 firmware, rebuilt on every update check from the cicloid/awesome-fm-1 list (Custom firmware → Open source) and a GitHub repository search, scored ln(1+stars) + ln(1+total .fwsc downloads). Top 10 get cards, #11–#30 the list. Only projects with a GitHub release carrying a .fwsc image count; closed-source (Groove OS, FM-1+VA, April OS) and not-a-synth entries are left out. Projects without a curated entry get a card from their GitHub metadata, marked \"not curated yet\". Offline fallback: firmware/directory.json.",
+  "discovery": {
+    "searches": ["fm-1 firmware archived:false", "fm1 firmware archived:false", "topic:fm-1 archived:false"],
+    "exclude": {}
+  },
   "firmware": [
     {
       "id": "official",
