@@ -69,6 +69,7 @@ ALLOWED_DL_HOSTS = {
     "yms-file-store.oss-cn-hongkong.aliyuncs.com",
     "baudgirl.com",
     "beashoko.github.io",
+    "open.m-vave.com",
 }
 NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 _.()\-]{0,63}$")
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9\-]{0,31}$")
@@ -636,6 +637,8 @@ def refresh_releases():
             if src.get("type") == "github":
                 cache["sources"][fw["id"]] = release_entry(disc["repos"].get(repo_key(src["repo"]), {}),
                                                            src.get("assetPatterns"))
+                if src.get("site"):
+                    merge_site_releases(cache["sources"][fw["id"]], src["site"])
             elif src.get("type") == "official":
                 cache["sources"][fw["id"]] = official_release(src)
             elif src.get("type") == "web":
@@ -701,6 +704,41 @@ def web_release(src):
         else:
             entry["error"] = "version not found on the install page"
     return entry
+
+
+def site_releases(site):
+    """Releases published on a project's own site ahead of its GitHub mirror (FM-1 Open:
+    open.m-vave.com links releases/<V>/<hash>/ and lists the files in SHA256SUMS-<V>)."""
+    page = http_get(site["page"], limit=8 * 1024 * 1024).decode("utf-8", "replace")
+    out, seen = [], set()
+    pats = [re.compile(p, re.I) for p in site.get("assetPatterns") or [r"\.fwsc$"]]
+    for m in re.finditer(site["releaseLink"], page):
+        version, base = m.group(1), m.group(0)
+        if version in seen:
+            continue
+        seen.add(version)
+        sums_url = base + site["sums"].format(version=version)
+        assets = []
+        for line in http_get(sums_url, limit=64 * 1024).decode("utf-8", "replace").splitlines():
+            parts = line.split()
+            if len(parts) >= 2 and re.fullmatch(r"[0-9a-fA-F]{64}", parts[0]):
+                name = os.path.basename(parts[-1].lstrip("*"))
+                if any(p.search(name) for p in pats):
+                    assets.append({"name": name, "url": base + name, "sha256": parts[0].lower()})
+        out.append({"version": version, "title": f"{version} (project site)", "date": "",
+                    "prerelease": bool(PRERELEASE_RE.search(version)), "url": site["page"],
+                    "assets": assets, "sha256sums": sums_url})
+    return out
+
+
+def merge_site_releases(entry, site):
+    """Put site releases the GitHub mirror doesn't have yet in front of its list."""
+    try:
+        known = {r["version"].lower() for r in entry.get("releases", [])}
+        extra = [r for r in site_releases(site) if r["version"].lower() not in known]
+        entry["releases"] = extra + entry.get("releases", [])
+    except Exception as e:  # the GitHub data still stands
+        entry["siteError"] = f"project site: {e}"[:200]
 
 
 def firmware_entries():

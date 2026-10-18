@@ -85,7 +85,15 @@
         "assetPatterns": [
           "Workbench\\.html$",
           "\\.fwsc$"
-        ]
+        ],
+        "site": {
+          "page": "https://open.m-vave.com/fm1-workbench",
+          "releaseLink": "https://open\\.m-vave\\.com/releases/(V\\d+)/[0-9a-f]{64}/",
+          "sums": "SHA256SUMS-{version}",
+          "assetPatterns": [
+            "Workbench\\.html$"
+          ]
+        }
       },
       "traits": {
         "source": "open",

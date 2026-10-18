@@ -15,6 +15,21 @@
       "result": "issues",
       "checks": "boots and plays; presets and the 4 knobs work; MIDI out notes (ch 1-3, 10) and clock seen; generic sound check 1-2 silent by design (ch 1 notes edit the scale); stock sound check 8/8 after revert",
       "notes": "First revert via the AMB-1 installer's 'Back to the stock firmware' left a black screen in USB update mode (enumerated as generic USB-Midi 4D4A:4155); running it a second time restored stock V15."
+    },
+    {
+      "id": "fm1open",
+      "version": "V13",
+      "file": "FM1-Open-V13-Workbench.html",
+      "sha256": "e2c85f01c1569af6cec4d5de3eb311546c7f5b439aad70321e3484f0c78a4d39",
+      "date": "2026-10-18",
+      "steps": {
+        "install": true,
+        "run": true,
+        "revert": true
+      },
+      "result": "clean",
+      "checks": "force flash from stock V15 (FM-1_015) via the V13 workbench; groovebox runs: PLAY, presets, keys, 4 knobs (level, source, step, tempo); generic sound check 1-2 heard; no MIDI out seen; stock sound check passed after revert",
+      "notes": "Installing from stock needs the workbench's Force flash. Under Open the FM-1 enumerates as USB-Midi (3654:7756) and answers only the workbench's own handshake, not a MIDI identity request. Restore original V15 worked first time and also resets all four voice banks to the 128 factory voices."
     }
   ]
 }
