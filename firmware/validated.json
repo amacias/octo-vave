@@ -30,6 +30,21 @@
       "result": "clean",
       "checks": "force flash from stock V15 (FM-1_015) via the V13 workbench; groovebox runs: PLAY, presets, keys, 4 knobs (level, source, step, tempo); generic sound check 1-2 heard; no MIDI out seen; stock sound check passed after revert",
       "notes": "Installing from stock needs the workbench's Force flash. Under Open the FM-1 enumerates as USB-Midi (3654:7756) and answers only the workbench's own handshake, not a MIDI identity request. Restore original V15 worked first time and also resets all four voice banks to the 128 factory voices."
+    },
+    {
+      "id": "official",
+      "version": "V15",
+      "file": "FM-1.fwsc",
+      "sha256": "db1642b2b6fa5c2cccb11ffd13878068bb28601678d3644049f99dc40e7edb8a",
+      "date": "2026-10-18",
+      "steps": {
+        "install": true,
+        "run": true,
+        "revert": true
+      },
+      "result": "clean",
+      "checks": "installed twice as the revert target (AMB-1 installer's Back to the stock firmware; FM-1 Open workbench's Restore original V15); stock sound check 8/8: notes, program change, reverb, distortion, filter, SysEx voice, SysEx param, pitch bend",
+      "notes": "Stock is the revert target, so its revert step is coming back to it from community firmware. The library's FM-1.fwsc matches the stock V15 SHA256 that community installers check (db1642b2...)."
     }
   ]
 }
