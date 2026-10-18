@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "id": "midi-cc",
+  "name": "Generic MIDI capture",
+  "firmware": ["*"],
+  "status": "confirmed",
+  "description": "Works with any firmware: a list of CC values, each with its channel, plus optional raw SysEx messages and a program number. Capture it from Play & MIDI's CC discovery or write it by hand. Only standard MIDI is sent; what the firmware does with it is up to the firmware.",
+  "formats": {
+    "capture": {
+      "name": "MIDI CC capture",
+      "status": "confirmed",
+      "description": "Sent in order: Program Change, then each CC, then each SysEx message.",
+      "fields": {
+        "program": "integer 1-128, optional",
+        "cc": "array of {\"ch\": 1-16 (optional, default: the note channel), \"cc\": 0-127, \"value\": 0-127}",
+        "sysex": "array of hex strings, one complete message each, e.g. \"F0 7D 01 02 F7\""
+      },
+      "send": [
+        {"type": "program-change", "field": "program", "channel": "note"},
+        {"type": "cc-list", "field": "cc", "channel": "note"},
+        {"type": "raw-sysex", "field": "sysex"}
+      ],
+      "params": []
+    }
+  }
+}

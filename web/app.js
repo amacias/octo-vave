@@ -748,118 +748,579 @@ function sendAllFx(delay = 0) {
 }
 
 // ================================================================ library
+// Patches are firmware-aware (schema v2): each one records firmware {id, version?} and a
+// format from the registry in firmware/formats/*.json (GET /api/formats). Stock patches keep
+// voice/fx; other firmwares store params / cc / sysex, sent by the format's "send" steps.
+// v1 files (no schemaVersion) come back from the server as stock patches.
 
-let saveDlg;
+const OFFICIAL_FORMAT = "official/dx7-voice+fx";
+// Used until /api/formats answers (or if it fails), so stock patches always work.
+const FALLBACK_FORMATS = {
+  [OFFICIAL_FORMAT]: {
+    id: OFFICIAL_FORMAT, name: "DX7 voice + FX", file: "official", firmware: ["official"], status: "confirmed", sendable: true, params: [],
+    send: [{ type: "program-change", field: "program", channel: "note" }, { type: "dx7-param-sysex", field: "voice", editor: "voice" },
+      { type: "cc-map", field: "fx", channel: "fx", editor: "fx" }],
+  },
+};
+const FORMAT_STATUS = {
+  confirmed: "Tested on a real FM-1",
+  discovered: "Found by testing or in the docs, not fully verified",
+  unknown: "Not tested yet",
+};
+const LIB = { reg: null, filter: "device" };
+const PATCH_FIELDS = ["voice", "fx", "program", "params", "cc", "sysex", "legacyFirmware"];
+
+const libFormats = () => LIB.reg?.formats || FALLBACK_FORMATS;
+const libFormat = (id) => libFormats()[id] || null;
+const libCatalog = () => (S.fw?.catalog?.length ? S.fw.catalog : LIB.reg?.catalog) || [];
+const libFwName = (id) => libCatalog().find((f) => f.id === id)?.name || id || "unknown";
+// The firmware logged as on the device (Firmware tab), or null when nothing is logged.
+// S.fw and the registry both carry it; take the more recent log entry.
+const libDevice = () => [S.fw?.installed, LIB.reg?.installed].filter(Boolean)
+  .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")))[0] || null;
+const libDeviceId = () => libDevice()?.id || "official";
+function fwText(fw) {
+  const n = libFwName(fw?.id), v = fw?.version;
+  return v && !n.toLowerCase().includes(normVer(v)) ? `${n} ${v}` : n;
+}
+const formatsFor = (fwId) => Object.values(libFormats()).filter((f) => f.firmware.includes(fwId) || f.firmware.includes("*"));
+const libPrefs = () => (S.settings.library ||= { sort: "name", group: false });
+const patchUrl = (name) => "patches/" + encodeURIComponent(name);
+const safePatchName = (s) => String(s || "").replace(/[^A-Za-z0-9 _.()\-]/g, "").replace(/^[^A-Za-z0-9]+/, "").slice(0, 64).trim();
+
+/** Why sending this patch needs a confirmation (other firmware or version), or null. */
+function fwMismatch(fw) {
+  const dev = libDevice();
+  if ((fw?.id || "official") !== libDeviceId())
+    return `Saved for ${fwText(fw)}; the device is logged as ${dev ? fwText(dev) : "stock (nothing logged)"}.`;
+  if (fw?.version && dev?.version && normVer(fw.version) !== normVer(dev.version))
+    return `Saved on ${fwText(fw)}; the device has ${fwText(dev)}.`;
+  return null;
+}
+
+/** Why this patch can't be sent at all, or null. */
+function sendBlock(p) {
+  if (p.error) return `The patch file can't be read (${p.error}).`;
+  const fmt = libFormat(p.format);
+  if (!fmt) return `Unknown format "${p.format}". Add its definition to firmware/formats/ to send it.`;
+  if (!fmt.sendable) return fmt.notSendableReason || "This format can't be sent yet.";
+  return null;
+}
+
+async function loadFormats() {
+  try { LIB.reg = await api("formats"); } catch (e) { LIB.reg = null; toast("Patch formats: " + e.message, true); }
+}
+
+// ----- sending, driven by the format's "send" steps
+
+const chanOf = (c) => (c === "fx" ? fch() : c == null || c === "note" ? nch() : (+c - 1) & 15);
+
+function sysexBytes(msg) {
+  const b = Array.isArray(msg) ? msg.map(Number) : String(msg).trim().split(/[\s,]+/).map((x) => parseInt(x, 16));
+  if (b.length < 2 || b[0] !== 0xf0 || b[b.length - 1] !== 0xf7 || b.slice(1, -1).some((x) => !(x >= 0 && x < 128)))
+    throw new Error(`Not a SysEx message: ${String(msg).slice(0, 40)}`);
+  return b;
+}
+
+/** MIDI messages that set one format parameter at its address ([] when it has none). */
+function paramBytes(def, value) {
+  const a = def.address;
+  if (!a) return [];
+  const v = Math.max(def.min ?? 0, Math.min(def.max ?? 127, Math.round(+value || 0))) & 127;
+  if (a.cc != null) return [[0xb0 | chanOf(a.channel), a.cc & 127, v]];
+  if (Array.isArray(a.nrpn)) { const st = 0xb0 | chanOf(a.channel); return [[st, 99, a.nrpn[0] & 127], [st, 98, a.nrpn[1] & 127], [st, 6, v]]; }
+  if (a.dx7 != null) return [DX.paramMessage(a.dx7, v)];
+  if (typeof a.sysex === "string") return [sysexBytes(a.sysex.replace(/\{v\}/gi, v.toString(16).padStart(2, "0")))];
+  return [];
+}
+
+function addressText(a) {
+  if (!a) return "not sendable";
+  if (a.cc != null) return `CC ${a.cc} · ch ${a.channel ?? "note"}`;
+  if (Array.isArray(a.nrpn)) return `NRPN ${a.nrpn.join("/")} · ch ${a.channel ?? "note"}`;
+  if (a.dx7 != null) return `DX7 param ${a.dx7}`;
+  if (a.sysex) return a.sysex;
+  return "?";
+}
+
+/** Run a patch through its format's send steps. With sendNow false only the editors are loaded. */
+function playPatch(p, fmt, sendNow) {
+  const gap = Math.max(0, +S.settings.sysexGap || 0);
+  const t0 = performance.now() + 5;
+  const queue = [];   // [bytes, ms after t0]
+  const done = [];
+  let delay = 0, skipped = 0;
+  for (const step of fmt.send || []) {
+    const val = p[step.field];
+    if (val == null || val === "") continue;
+    switch (step.type) {
+      case "program-change": {
+        if (!sendNow) break;
+        const n = Math.max(1, Math.min(128, +val | 0));
+        queue.push([[0xc0 | chanOf(step.channel), n - 1], delay]);
+        const pc = $("#pcNum"); if (pc) pc.value = n;
+        done.push(`program ${n}`); delay += 200;
+        break;
+      }
+      case "dx7-param-sysex": {
+        if (!Array.isArray(val) || !val.length) break;
+        const v = DX.clampVoice(val);
+        if (step.editor === "voice") { S.voice = v; refreshVoiceUI(); if (sendNow) sendWholeVoice(delay); done.push("voice"); }
+        else if (sendNow) { v.forEach((x, i) => queue.push([DX.paramMessage(i, x), delay + i * gap])); done.push("DX7 voice"); }
+        if (sendNow) delay += Math.max(700, DX.VOICE_LEN * gap + 80);
+        break;
+      }
+      case "cc-map": {
+        if (typeof val !== "object") break;
+        if (step.editor === "fx") { S.fx = { ...defaultFx(), ...val }; refreshFx(); if (sendNow) sendAllFx(delay); done.push("FX"); }
+        else if (sendNow) {
+          Object.keys(val).sort((a, b) => a - b).forEach((cc, i) => queue.push([[0xb0 | chanOf(step.channel), +cc & 127, val[cc] & 127], delay + i * 2]));
+          done.push(`${Object.keys(val).length} CCs`);
+        }
+        if (sendNow) delay += Object.keys(val).length * 2 + 50;
+        break;
+      }
+      case "cc-list": {
+        if (!sendNow || !Array.isArray(val)) break;
+        val.forEach((e, i) => queue.push([[0xb0 | (e.ch ? (e.ch - 1) & 15 : chanOf(step.channel)), e.cc & 127, e.value & 127], delay + i * 2]));
+        done.push(`${val.length} CCs`); delay += val.length * 2 + 50;
+        break;
+      }
+      case "params": {
+        if (!sendNow || typeof val !== "object") break;
+        const defs = (fmt.params || []).filter((d) => (d.field || "params") === step.field);
+        let n = 0;
+        for (const d of defs) {
+          if (val[d.id] == null) continue;
+          const msgs = paramBytes(d, val[d.id]);
+          if (!msgs.length) { skipped++; continue; }
+          for (const m of msgs) queue.push([m, delay + n++ * Math.max(gap, 2)]);
+        }
+        skipped += Object.keys(val).filter((k) => !defs.some((d) => d.id === k)).length;
+        done.push(`${defs.filter((d) => val[d.id] != null).length} params`); delay += n * Math.max(gap, 2) + 50;
+        break;
+      }
+      case "raw-sysex": {
+        if (!sendNow || !Array.isArray(val)) break;
+        for (const m of val) { queue.push([sysexBytes(m), delay]); delay += Math.max(gap, 10); }
+        done.push(`${val.length} SysEx`);
+        break;
+      }
+    }
+  }
+  if (sendNow) {
+    for (const [b, d] of queue) S.out.send(b, t0 + d);
+    if (queue.length) logText("out", `Patch "${p.name}": ${queue.length} messages (${fmt.name})`);
+  }
+  return { done, skipped };
+}
+
+async function applyPatch(name, { sendNow = true, force = false } = {}) {
+  if (!LIB.reg) await loadFormats();
+  const p = await api(patchUrl(name));
+  const fmt = libFormat(p.format);
+  if (sendNow) {
+    const block = sendBlock(p);
+    if (block) throw new Error(block);
+    const mm = fwMismatch(p.firmware);
+    if (mm && !force) throw new Error(`${mm} Use Send in the Library to confirm.`);
+    if (!S.out) throw new Error("Not connected. Press Connect first.");
+  } else if (!fmt?.send?.some((s) => s.editor)) {
+    throw new Error(`"${name}" is a ${fmt?.name || p.format} patch; there's no editor for it here. Use Send.`);
+  }
+  const { done, skipped } = playPatch(p, fmt, sendNow);
+  if (fmt.send.some((s) => s.editor && p[s.field] != null)) saveSettings();
+  if (!done.length) return toast(`"${name}" has nothing to ${sendNow ? "send" : "load"}`, true);
+  toast(`${sendNow ? "Sent" : "Loaded"} "${name}": ${done.join(", ")}${skipped ? ` (${skipped} values without an address skipped)` : ""}`);
+}
+
+async function loadPatches() {
+  const [list] = await Promise.all([
+    api("patches").catch((e) => { toast("Library: " + e.message, true); return []; }),
+    loadFormats(),
+  ]);
+  S.patches = list;
+  renderLibrary(); renderFavorites();
+}
+
+async function toggleFavorite(name) {
+  try {
+    const p = await api(patchUrl(name));
+    p.favorite = !p.favorite;
+    await api(patchUrl(name), { method: "PUT", body: JSON.stringify(p) });
+  } catch (e) { toast(e.message, true); }
+  loadPatches();
+}
+
+// ----- save dialog
+
+let saveDlg, saveOpts = {};
 function buildSaveDialog() {
-  saveDlg = h("dialog", { class: "card", style: "min-width:360px" },
+  saveDlg = h("dialog", { class: "card lib-save" },
     h("form", { method: "dialog" },
       h("h3", { text: "Save to Library" }),
       h("label", { class: "stack" }, "Name", h("input", { id: "sdName", required: true, maxlength: 64, pattern: "[A-Za-z0-9][A-Za-z0-9 _.()\\-]*" })),
+      h("div", { id: "sdExists", class: "hint hidden" }),
       h("div", { class: "row" },
-        h("label", {}, h("input", { id: "sdVoice", type: "checkbox", checked: true }), " Voice"),
-        h("label", {}, h("input", { id: "sdFx", type: "checkbox", checked: true }), " FX"),
-        h("label", {}, h("input", { id: "sdPc", type: "checkbox" }), " Program #")),
+        h("label", { class: "stack grow" }, "Firmware", h("select", { id: "sdFw" })),
+        h("label", { class: "stack" }, "Version", h("input", { id: "sdFwVer", maxlength: 48, placeholder: "optional", size: 10 }))),
+      h("label", { class: "stack" }, "Format", h("select", { id: "sdFormat" })),
+      h("div", { id: "sdFormatInfo", class: "hint" }),
+      h("div", { id: "sdContent", class: "lib-save-content" }),
       h("label", { class: "stack" }, "Tags (comma separated)", h("input", { id: "sdTags" })),
       h("label", { class: "stack" }, "Notes", h("textarea", { id: "sdNotes", rows: 3 })),
       h("div", { class: "row" },
         h("button", { value: "cancel", formnovalidate: true, text: "Cancel" }),
         h("button", { value: "save", class: "primary", text: "Save" }))));
   document.body.append(saveDlg);
-  saveDlg.addEventListener("close", async () => {
-    if (saveDlg.returnValue !== "save") return;
-    const name = $("#sdName").value.trim();
-    const patch = {
-      favorite: false,
-      notes: $("#sdNotes").value,
-      tags: $("#sdTags").value.split(",").map((t) => t.trim()).filter(Boolean),
-      voice: $("#sdVoice").checked ? S.voice : null,
-      fx: $("#sdFx").checked ? S.fx : null,
-      program: $("#sdPc").checked ? +$("#pcNum").value : null,
-      firmware: S.fw?.installed?.id || "official",
-    };
-    const existing = S.patches.find((p) => p.name === name);
-    if (existing) patch.favorite = existing.favorite;
-    try { await api("patches/" + encodeURIComponent(name), { method: "PUT", body: JSON.stringify(patch) }); toast(`Saved "${name}"`); loadPatches(); }
-    catch (e) { toast(e.message, true); }
-  });
+  $("#sdFw").onchange = () => {
+    const dev = libDevice();
+    $("#sdFwVer").value = dev && dev.id === $("#sdFw").value ? dev.version || "" : "";
+    fillSaveFormats();
+  };
+  $("#sdFormat").onchange = renderSaveContent;
+  $("#sdName").oninput = updateSaveExists;
+  saveDlg.addEventListener("close", () => { if (saveDlg.returnValue === "save") savePatchFromDialog(); });
 }
-function openSave({ voice = true, fx = true, pc = false } = {}) {
-  $("#sdName").value = DX.getName(S.voice).replace(/[^A-Za-z0-9 _.()\-]/g, "").trim() || "My patch";
-  $("#sdVoice").checked = voice; $("#sdFx").checked = fx; $("#sdPc").checked = pc;
-  $("#sdTags").value = ""; $("#sdNotes").value = "";
+
+function fillSaveFormats(preferred) {
+  const fwId = $("#sdFw").value;
+  // The firmware's own formats first (sendable ones before the rest), then the generic ones.
+  const rank = (f) => (f.firmware.includes("*") ? 2 : 0) + (f.sendable ? 0 : 1);
+  const list = formatsFor(fwId).sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+  const pick = list.find((f) => f.id === preferred) || list[0];
+  $("#sdFormat").replaceChildren(...list.map((f) =>
+    h("option", { value: f.id, text: `${f.name}${f.status !== "confirmed" ? ` (${f.status})` : ""}`, selected: f === pick })));
+  renderSaveContent();
+}
+
+const ccCaptured = () => (typeof ccSeen !== "undefined" ? [...ccSeen.values()] : [])
+  .sort((a, b) => a.ch - b.ch || a.cc - b.cc).map(({ ch, cc, value }) => ({ ch, cc, value }));
+
+function renderSaveContent() {
+  const fmt = libFormat($("#sdFormat").value);
+  const box = $("#sdContent");
+  if (!fmt) { box.replaceChildren(h("p", { class: "muted", text: "No format for this firmware." })); $("#sdFormatInfo").textContent = ""; return; }
+  $("#sdFormatInfo").replaceChildren(
+    h("span", { class: "badge" + (fmt.status === "confirmed" ? " ok" : " warn"), title: FORMAT_STATUS[fmt.status] || "", text: fmt.status }), " ",
+    fmt.description || "", " ", h("code", { text: `firmware/formats/${fmt.file}.json` }));
+  const check = (id, label, on, disabled) =>
+    h("label", {}, h("input", { id, type: "checkbox", checked: on && !disabled, disabled }), " ", label);
+  const rows = [];
+  for (const s of fmt.send || []) {
+    if (s.type === "dx7-param-sysex" && s.editor === "voice") rows.push(check("sdVoice", `Voice "${DX.getName(S.voice)}" (156 DX7 params)`, saveOpts.voice));
+    else if (s.type === "cc-map" && s.editor === "fx") rows.push(check("sdFx", "FX snapshot (CC 0–23)", saveOpts.fx));
+    else if (s.type === "program-change") rows.push(check("sdPc", `Program # ${$("#pcNum")?.value || S.settings.program || 1}`, saveOpts.pc));
+    else if (s.type === "cc-list") {
+      const n = ccCaptured().length;
+      rows.push(check("sdCc", `CCs from CC discovery (${n} seen)`, true, !n));
+      if (!n) rows.push(h("span", { class: "hint", text: "Nothing captured yet: turn the device's knobs with the dashboard open, or add a cc list to the JSON by hand." }));
+    } else if (s.type === "raw-sysex") rows.push(h("label", { class: "stack" }, "SysEx messages (hex, one per line, optional)",
+      h("textarea", { id: "sdSysex", rows: 2, class: "mono", placeholder: "F0 7D 01 02 F7" })));
+    else if (s.type === "params") {
+      const n = (fmt.params || []).filter((d) => !d.field || d.field === s.field).length;
+      rows.push(h("span", { class: "hint", text: `Starts from the format's ${n} default values; change them under Details on the card.` }));
+    } else if (s.type === "none") rows.push(h("span", { class: "hint", text: `Not sendable yet: ${String(s.reason || "no transport known").replace(/\.$/, "")}. The patch is kept for reference.` }));
+  }
+  box.replaceChildren(...(rows.length ? rows : [h("span", { class: "muted", text: "This format has no content to capture." })]));
+}
+
+function updateSaveExists() {
+  const name = $("#sdName").value.trim();
+  const ex = S.patches.find((p) => p.name === name);
+  $("#sdExists").textContent = ex ? `"${name}" exists (${fwText(ex.firmware)}). Saving replaces its content and keeps its star and any extra fields.` : "";
+  $("#sdExists").classList.toggle("hidden", !ex);
+  return ex;
+}
+
+/**
+ * Open the Save dialog. Called with {voice, fx, pc} by the stock Voice/FX editors and Home:
+ * their content is a stock DX7 voice + FX, so it is saved for the official firmware. Pass
+ * {firmware} to save for another firmware (the Library's "Save current…" uses the device's).
+ */
+function openSave({ voice = true, fx = true, pc = false, firmware = "official", format } = {}) {
+  saveOpts = { voice, fx, pc };
+  const ids = new Set([...libCatalog().map((f) => f.id), ...Object.values(libFormats()).flatMap((f) => f.firmware)]);
+  ids.delete("*"); ids.add("official"); ids.add(firmware);
+  $("#sdFw").replaceChildren(...[...ids].sort((a, b) => (b === "official") - (a === "official") || libFwName(a).localeCompare(libFwName(b)))
+    .map((id) => h("option", { value: id, text: libFwName(id) + (id === libDevice()?.id ? " (on the device)" : ""), selected: id === firmware })));
+  const dev = libDevice();
+  $("#sdFwVer").value = dev && dev.id === firmware ? dev.version || "" : "";
+  fillSaveFormats(format || (firmware === "official" ? OFFICIAL_FORMAT : undefined));
+  const stock = $("#sdFormat").value === OFFICIAL_FORMAT;
+  $("#sdName").value = safePatchName(stock ? DX.getName(S.voice) : `${libFwName(firmware)} patch`) || "My patch";
+  const ex = updateSaveExists();
+  $("#sdTags").value = ex ? (ex.tags || []).join(", ") : "";
+  $("#sdNotes").value = ex ? ex.notes || "" : "";
   saveDlg.showModal();
 }
 
-async function loadPatches() {
-  try { S.patches = await api("patches"); } catch (e) { S.patches = []; toast("Library: " + e.message, true); }
-  renderLibrary(); renderFavorites();
+async function savePatchFromDialog() {
+  const name = $("#sdName").value.trim();
+  const fwId = $("#sdFw").value;
+  const ver = $("#sdFwVer").value.trim();
+  const fmt = libFormat($("#sdFormat").value);
+  if (!fmt) return toast("Pick a format first", true);
+  const content = {};
+  const on = (id) => $("#" + id)?.checked;
+  try {
+    if (on("sdVoice")) content.voice = [...S.voice];
+    if (on("sdFx")) content.fx = { ...S.fx };
+    if (on("sdPc")) content.program = Math.max(1, Math.min(128, +($("#pcNum")?.value || S.settings.program || 1)));
+    if (on("sdCc")) content.cc = ccCaptured();
+    const sx = $("#sdSysex")?.value.trim();
+    if (sx) content.sysex = sx.split(/\n+/).map((l) => l.trim()).filter(Boolean).map((l) => hex(sysexBytes(l)));
+    const pStep = fmt.send?.find((s) => s.type === "params");
+    if (pStep) content[pStep.field] = Object.fromEntries((fmt.params || [])
+      .filter((d) => (d.field || "params") === pStep.field).map((d) => [d.id, d.default ?? d.min ?? 0]));
+  } catch (e) { return toast(e.message, true); }
+  if (!Object.keys(content).length && fmt.sendable) return toast("Nothing to save: tick at least one part", true);
+  try {
+    let base = {};
+    if (S.patches.some((p) => p.name === name)) base = await api(patchUrl(name)).catch(() => ({}));
+    for (const k of PATCH_FIELDS) delete base[k];
+    const firmware = { ...(base.firmware?.id === fwId ? base.firmware : {}), id: fwId };
+    if (ver) firmware.version = ver; else delete firmware.version;
+    const patch = {
+      ...base, schemaVersion: 2, name, firmware, format: fmt.id, favorite: !!base.favorite,
+      notes: $("#sdNotes").value, tags: $("#sdTags").value.split(",").map((t) => t.trim()).filter(Boolean), ...content,
+    };
+    await api(patchUrl(name), { method: "PUT", body: JSON.stringify(patch) });
+    toast(`Saved "${name}" for ${fwText(firmware)}`);
+    loadPatches();
+  } catch (e) { toast(e.message, true); }
 }
 
-async function applyPatch(name, { sendNow = true } = {}) {
-  const p = await api("patches/" + encodeURIComponent(name));
-  let delay = 0;
-  if (p.program && sendNow) { sendPC(p.program); $("#pcNum").value = p.program; delay = 200; }
-  if (p.voice) { S.voice = DX.clampVoice(p.voice); refreshVoiceUI(); if (sendNow) sendWholeVoice(delay); delay += 700; }
-  if (p.fx) { S.fx = { ...defaultFx(), ...p.fx }; refreshFx(); if (sendNow) sendAllFx(delay); }
-  saveSettings();
-  if (!sendNow) toast(`Loaded "${name}" into the editors`);
-}
-
-async function toggleFavorite(name) {
-  const p = await api("patches/" + encodeURIComponent(name));
-  p.favorite = !p.favorite;
-  await api("patches/" + encodeURIComponent(name), { method: "PUT", body: JSON.stringify(p) });
-  loadPatches();
-}
+// ----- list
 
 function renderLibrary() {
-  const q = $("#libSearch").value.trim().toLowerCase();
-  const items = S.patches
-    .filter((p) => !q || [p.name, p.notes, ...(p.tags || [])].join(" ").toLowerCase().includes(q))
-    .sort((a, b) => b.favorite - a.favorite || a.name.localeCompare(b.name));
   const list = $("#libList");
+  if (!list) return;
+  const prefs = libPrefs();
+  const dev = libDevice();
+  const counts = {};
+  for (const p of S.patches) counts[p.firmware?.id] = (counts[p.firmware?.id] || 0) + 1;
+  if (LIB.filter === "device" && !dev) LIB.filter = "all";
+  if (!["device", "all"].includes(LIB.filter) && !counts[LIB.filter]) LIB.filter = dev ? "device" : "all";
+  const others = Object.keys(counts).filter((id) => id !== dev?.id).sort((a, b) => libFwName(a).localeCompare(libFwName(b)));
+  $("#libFw").replaceChildren(
+    dev && h("option", { value: "device", text: `On the device: ${fwText(dev)} (${counts[dev.id] || 0})`, selected: LIB.filter === "device" }),
+    h("option", { value: "all", text: `All firmwares (${S.patches.length})`, selected: LIB.filter === "all" }),
+    ...others.map((id) => h("option", { value: id, text: `${libFwName(id)} (${counts[id]})`, selected: LIB.filter === id })));
+  renderLibStatus(dev);
+
+  const fwFilter = LIB.filter === "device" ? dev.id : LIB.filter === "all" ? null : LIB.filter;
+  const q = $("#libSearch").value.trim().toLowerCase();
+  const byName = (a, b) => a.name.localeCompare(b.name);
+  const byFw = (a, b) => libFwName(a.firmware?.id).localeCompare(libFwName(b.firmware?.id))
+    || String(a.firmware?.version || "").localeCompare(String(b.firmware?.version || ""), undefined, { numeric: true });
+  const cmp = {
+    name: (a, b) => b.favorite - a.favorite || byName(a, b),
+    modified: (a, b) => String(b.modified || "").localeCompare(String(a.modified || "")) || byName(a, b),
+    firmware: (a, b) => byFw(a, b) || b.favorite - a.favorite || byName(a, b),
+  }[prefs.sort] || ((a, b) => b.favorite - a.favorite || byName(a, b));
+  const items = S.patches
+    .filter((p) => !fwFilter || p.firmware?.id === fwFilter)
+    .filter((p) => !q || [p.name, p.notes, ...(p.tags || []), fwText(p.firmware), p.format, libFormat(p.format)?.name]
+      .join(" ").toLowerCase().includes(q))
+    .sort(cmp);
+
   if (!items.length) {
-    list.replaceChildren(h("p", { class: "muted", text: S.patches.length ? "No matches." : "No patches yet. Edit a voice or the FX, then press Save current…" }));
+    const hidden = S.patches.length > 0 && !!fwFilter && !q;
+    list.replaceChildren(h("p", { class: "muted" },
+      !S.patches.length ? "No patches yet. Edit a voice or the FX, then press Save current…"
+        : hidden ? `No patches for ${libFwName(fwFilter)} yet. ` : "No matches.",
+      hidden && h("button", { class: "ghost", text: `Show all firmwares (${S.patches.length})`, onclick: () => { LIB.filter = "all"; renderLibrary(); } })));
     return;
   }
-  list.replaceChildren(...items.map((p) => {
-    const del = h("button", { class: "ghost", text: "Delete" });
-    del.onclick = () => confirmClick(del, "Confirm delete", async () => {
-      await api("patches/" + encodeURIComponent(p.name), { method: "DELETE" }); loadPatches();
-    });
-    return h("div", { class: "lib-item" },
-      h("div", { class: "title" },
-        h("button", { class: "star" + (p.favorite ? " on" : ""), title: "Favorite (shows on Home)", text: p.favorite ? "★" : "☆", onclick: () => toggleFavorite(p.name) }),
-        h("b", { text: p.name })),
-      h("div", { class: "badges" },
-        p.hasVoice && h("span", { class: "badge accent", text: "voice" }),
-        p.hasFx && h("span", { class: "badge", text: "fx" }),
-        p.program && h("span", { class: "badge", text: `PC ${p.program}` }),
-        (p.tags || []).map((t) => h("span", { class: "badge", text: "#" + t }))),
-      p.notes && h("div", { class: "muted", text: p.notes }),
-      h("div", { class: "muted", style: "font-size:12px", text: p.modified ? "modified " + p.modified.replace("T", " ") : "" }),
+  if (!prefs.group) { list.replaceChildren(h("div", { class: "lib-list" }, items.map(libCard))); return; }
+  const groups = new Map();
+  for (const p of items) {
+    const id = p.firmware?.id || "unknown";
+    if (!groups.has(id)) groups.set(id, []);
+    groups.get(id).push(p);
+  }
+  const order = [...groups.keys()].sort((a, b) => (b === dev?.id) - (a === dev?.id) || libFwName(a).localeCompare(libFwName(b)));
+  list.replaceChildren(...order.map((id) => h("section", { class: "lib-group" },
+    h("h2", { class: "lib-group-head" }, libFwName(id),
+      h("span", { class: "muted", text: ` ${groups.get(id).length}` }),
+      id === dev?.id && h("span", { class: "badge ok", text: "on the device" })),
+    h("div", { class: "lib-list" }, groups.get(id).map(libCard)))));
+}
+
+function renderLibStatus(dev) {
+  const box = $("#libStatus");
+  if (!box) return;
+  const reg = LIB.reg;
+  box.replaceChildren(
+    h("span", {}, "Device: ", h("b", { text: dev ? fwText(dev) : "not logged" }),
+      dev ? "" : h("span", { class: "muted", text: " (log it on the Firmware tab; stock is assumed)" })),
+    h("span", { class: "muted", title: reg ? reg.files.map((f) => `${f.id}.json: ${f.name} (${f.status})`).join("\n") : "" },
+      reg ? `Formats: ${Object.keys(reg.formats).length} from ${reg.files.length} files in firmware/formats/` : "Formats: built-in stock format only"),
+    reg?.errors?.length > 0 && h("details", { class: "lib-errors" },
+      h("summary", { class: "badge warn", text: `${reg.errors.length} format file problem${reg.errors.length > 1 ? "s" : ""}` }),
+      h("ul", {}, reg.errors.map((e) => h("li", { class: "mono", text: e })))));
+}
+
+function libCard(p) {
+  const fmt = libFormat(p.format);
+  const block = sendBlock(p);
+  const mm = fwMismatch(p.firmware);
+  const confirmBox = h("div", { class: "lib-confirm hidden", role: "alert" });
+  const details = h("div", { class: "lib-details hidden" });
+  const err = (e) => toast(e.message, true);
+
+  const sendBtn = h("button", { class: "primary", text: "Send", disabled: !!block, title: block || mm || `Send to the FM-1 (${fmt?.name})` });
+  sendBtn.onclick = () => {
+    if (!mm) return applyPatch(p.name).catch(err);
+    confirmBox.replaceChildren(
+      h("span", { text: `${mm} Send it anyway?` }),
       h("div", { class: "row" },
-        h("button", { class: "primary", text: "Send", onclick: () => applyPatch(p.name).catch((e) => toast(e.message, true)) }),
-        h("button", { text: "Load", title: "Load into editors without sending", onclick: () => applyPatch(p.name, { sendNow: false }).catch((e) => toast(e.message, true)) }),
-        h("button", { class: "ghost", text: "JSON", onclick: async () => download(`${p.name}.json`, JSON.stringify(await api("patches/" + encodeURIComponent(p.name)), null, 2), "application/json") }),
-        del));
-  }));
+        h("button", { class: "primary", text: "Send anyway", onclick: () => { confirmBox.classList.add("hidden"); applyPatch(p.name, { force: true }).catch(err); } }),
+        h("button", { class: "ghost", text: "Cancel", onclick: () => confirmBox.classList.add("hidden") })));
+    confirmBox.classList.remove("hidden");
+  };
+  const canLoad = !p.error && !!fmt?.send?.some((s) => s.editor);
+  const detBtn = h("button", { class: "ghost", text: "Details", "aria-expanded": "false" });
+  detBtn.onclick = async () => {
+    const open = details.classList.toggle("hidden") === false;
+    detBtn.setAttribute("aria-expanded", String(open));
+    if (open) {
+      try { details.replaceChildren(libDetails(p, await api(patchUrl(p.name)), fmt)); }
+      catch (e) { details.replaceChildren(h("p", { class: "muted", text: e.message })); }
+    }
+  };
+  const del = h("button", { class: "ghost", text: "Delete" });
+  del.onclick = () => confirmClick(del, "Confirm delete", async () => {
+    await api(patchUrl(p.name), { method: "DELETE" }).catch(err); loadPatches();
+  });
+
+  return h("div", { class: "lib-item" + (mm ? " other-fw" : ""), "data-fw": p.firmware?.id || "" },
+    h("div", { class: "title" },
+      h("button", { class: "star" + (p.favorite ? " on" : ""), title: "Favorite (shows on Home)", text: p.favorite ? "★" : "☆", onclick: () => toggleFavorite(p.name) }),
+      h("b", { text: p.name, title: p.name }),
+      p.schemaVersion < 2 && h("span", { class: "badge", text: "v1", title: "Older file: read as a stock patch, upgraded to schema v2 the next time it's saved" })),
+    h("div", { class: "lib-fw" },
+      h("span", { class: "fw-chip " + (mm ? "warn" : "ok"), title: mm || "Matches the firmware logged on the device" }, fwText(p.firmware)),
+      h("span", { class: "fmt-chip", title: `${p.format}${fmt?.description ? "\n" + fmt.description : ""}`, text: fmt ? fmt.name : `unknown format ${p.format}` }),
+      fmt && fmt.status !== "confirmed" && h("span", { class: "badge warn", text: fmt.status, title: FORMAT_STATUS[fmt.status] || "" })),
+    p.legacyFirmware && h("div", { class: "muted small", text: `Saved while ${libFwName(p.legacyFirmware)} was logged; the content is a stock voice/FX.` }),
+    h("div", { class: "badges" },
+      p.hasVoice && h("span", { class: "badge accent", text: "voice" }),
+      p.hasFx && h("span", { class: "badge", text: "fx" }),
+      p.program && h("span", { class: "badge", text: `PC ${p.program}` }),
+      p.params > 0 && h("span", { class: "badge accent", text: `${p.params} params` }),
+      p.cc > 0 && h("span", { class: "badge", text: `${p.cc} CC` }),
+      p.sysex > 0 && h("span", { class: "badge", text: `${p.sysex} SysEx` }),
+      (p.tags || []).map((t) => h("span", { class: "badge", text: "#" + t }))),
+    p.notes && h("div", { class: "muted", text: p.notes }),
+    h("div", { class: "muted small", text: p.modified ? "modified " + p.modified.replace("T", " ") : "" }),
+    block && h("div", { class: "lib-why", text: block }),
+    h("div", { class: "row wrap" },
+      sendBtn,
+      canLoad && h("button", { text: "Load", title: "Load into the editors without sending", onclick: () => applyPatch(p.name, { sendNow: false }).catch(err) }),
+      detBtn,
+      !p.error && h("button", { class: "ghost", text: "JSON", title: "Export (schema v2)", onclick: async () => download(`${p.name}.json`, JSON.stringify(await api(patchUrl(p.name)), null, 2), "application/json") }),
+      del),
+    confirmBox, details);
+}
+
+/** The Details panel: what's in the patch, labelled by its format. Params are editable. */
+function libDetails(p, full, fmt) {
+  const out = [h("div", { class: "muted small" }, "Format ", h("code", { text: full.format }),
+    fmt ? [" from ", h("code", { text: `firmware/formats/${fmt.file}.json` })] : " (not in the registry)")];
+  if (Array.isArray(full.voice) && full.voice.length) {
+    const v = DX.clampVoice(full.voice);
+    out.push(h("div", { text: `Voice "${DX.getName(v)}", algorithm ${v[134] + 1}, feedback ${v[135]}` }));
+  }
+  if (full.fx && typeof full.fx === "object") {
+    const on = FX_DEFS.filter((d) => (full.fx[d.sw] ?? 0) >= 64).map((d) => d.name);
+    out.push(h("div", { text: `FX on: ${on.join(", ") || "none"} (${Object.keys(full.fx).length} CCs stored)` }));
+  }
+  if (full.program) out.push(h("div", { text: `Program ${full.program}` }));
+  if (Array.isArray(full.cc) && full.cc.length) {
+    // Label CCs from any format known for this firmware, on today's note/FX channels.
+    const chNum = (c) => (c === "fx" ? S.settings.fxCh : c == null || c === "note" ? S.settings.noteCh : +c);
+    const known = {};
+    for (const f of formatsFor(full.firmware?.id)) for (const d of f.params || []) {
+      if (d.address?.cc != null) known[`${chNum(d.address.channel)}:${d.address.cc}`] = d.label;
+    }
+    const label = (e) => known[`${chNum(e.ch)}:${e.cc}`] || "";
+    out.push(h("table", { class: "table lib-table" },
+      h("thead", {}, h("tr", {}, h("th", { text: "Ch" }), h("th", { text: "CC" }), h("th", { text: "Value" }), h("th", { text: "Known as" }))),
+      h("tbody", {}, full.cc.map((e) => h("tr", {}, h("td", { text: e.ch ?? "note" }), h("td", { text: e.cc }), h("td", { text: e.value }), h("td", { text: label(e) }))))));
+  }
+  if (Array.isArray(full.sysex) && full.sysex.length) {
+    out.push(h("div", { class: "lib-sysex mono" }, full.sysex.map((m) => h("div", { text: String(m) }))));
+  }
+  if (full.params && typeof full.params === "object") out.push(paramsEditor(p, full, fmt));
+  return h("div", {}, out);
+}
+
+function paramsEditor(p, full, fmt) {
+  const defs = (fmt?.params || []).filter((d) => !d.field || d.field === "params");
+  const vals = { ...full.params };
+  const groups = new Map();
+  for (const d of defs) { const g = d.group || ""; if (!groups.has(g)) groups.set(g, []); groups.get(g).push(d); }
+  const input = (d) => {
+    const set = (x) => { vals[d.id] = x; save.disabled = false; };
+    if (Array.isArray(d.options)) return h("select", { onchange: (e) => set(+e.target.value) },
+      d.options.map((o, i) => h("option", { value: (d.min ?? 0) + i, text: o, selected: (d.min ?? 0) + i === +vals[d.id] })));
+    return h("input", { type: "number", min: d.min ?? 0, max: d.max ?? 127, value: vals[d.id] ?? "", class: "num",
+      onchange: (e) => set(Math.max(d.min ?? 0, Math.min(d.max ?? 127, Math.round(+e.target.value || 0)))) });
+  };
+  const save = h("button", { class: "primary", text: "Save values", disabled: true });
+  save.onclick = async () => {
+    try {
+      await api(patchUrl(p.name), { method: "PUT", body: JSON.stringify({ ...full, params: vals }) });
+      full.params = { ...vals }; save.disabled = true; toast(`Saved "${p.name}"`);
+    } catch (e) { toast(e.message, true); }
+  };
+  const extra = Object.keys(vals).filter((k) => !defs.some((d) => d.id === k));
+  return h("div", { class: "lib-params" },
+    [...groups].map(([g, ds]) => h("div", {},
+      g && h("h4", { text: fmt?.groups?.[g] || g }),
+      h("table", { class: "table lib-table" }, h("tbody", {}, ds.map((d) => h("tr", {},
+        h("td", { text: d.label || d.id, title: d.id }),
+        h("td", {}, input(d)),
+        h("td", { class: "muted small", text: `${d.min ?? 0}–${d.max ?? 127}` }),
+        h("td", { class: "muted small", text: addressText(d.address) }),
+        h("td", {}, d.status && d.status !== "confirmed" && h("span", { class: "badge warn", text: d.status, title: FORMAT_STATUS[d.status] || "" })))))))),
+    extra.length > 0 && h("p", { class: "hint", text: `Not in the format (kept, not sent): ${extra.map((k) => `${k} = ${vals[k]}`).join(", ")}` }),
+    !defs.length && h("p", { class: "hint", text: "The format defines no parameters yet." }),
+    defs.length > 0 && h("div", { class: "row" }, save));
 }
 
 function renderFavorites() {
+  const box = $("#favList");
+  if (!box) return;
   const favs = S.patches.filter((p) => p.favorite);
-  $("#favList").replaceChildren(...(favs.length
-    ? favs.map((p) => h("button", { class: "chip", text: p.name, onclick: () => applyPatch(p.name).catch((e) => toast(e.message, true)) }))
+  box.replaceChildren(...(favs.length
+    ? favs.map((p) => {
+      const why = sendBlock(p) || fwMismatch(p.firmware);
+      return h("button", { class: "chip" + (why ? " fw-other" : ""), text: p.name, title: why ? `${why} Open the Library to send it.` : fwText(p.firmware),
+        onclick: () => applyPatch(p.name).catch((e) => toast(e.message, true)) });
+    })
     : [h("span", { class: "muted", text: "Star patches in the Library to pin them here." })]));
 }
 
 async function importPatchFile(file) {
   try {
     const obj = JSON.parse(await file.text());
-    const name = String(obj.name || file.name.replace(/\.json$/i, "")).replace(/[^A-Za-z0-9 _.()\-]/g, "").slice(0, 64).trim() || "Imported";
-    if (obj.voice) obj.voice = DX.clampVoice(obj.voice);
-    await api("patches/" + encodeURIComponent(name), { method: "PUT", body: JSON.stringify(obj) });
-    toast(`Imported "${name}"`); loadPatches();
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) throw new Error("not a patch (expected a JSON object)");
+    let name = safePatchName(obj.name || file.name.replace(/\.json$/i, "")) || "Imported";
+    const taken = new Set(S.patches.map((p) => p.name));
+    if (taken.has(name)) {
+      const stem = name.slice(0, 58);
+      let i = 2;
+      while (taken.has(`${stem} (${i})`)) i++;
+      name = `${stem} (${i})`;
+    }
+    if (Array.isArray(obj.voice) && obj.voice.length) obj.voice = DX.clampVoice(obj.voice);
+    obj.name = name;
+    // The server upgrades v1 files to schema v2 and checks the format id.
+    const saved = await api(patchUrl(name), { method: "PUT", body: JSON.stringify(obj) });
+    toast(`Imported "${name}" (${fwText(saved.firmware)})`); loadPatches();
   } catch (e) { toast("Import failed: " + e.message, true); }
 }
 
@@ -1908,8 +2369,15 @@ function wire() {
 
   // library
   $("#libSearch").oninput = renderLibrary;
-  $("#libNew").onclick = () => openSave({ voice: true, fx: true });
+  $("#libFw").onchange = (e) => { LIB.filter = e.target.value; renderLibrary(); };
+  $("#libSort").value = libPrefs().sort;
+  $("#libSort").onchange = (e) => { libPrefs().sort = e.target.value; saveSettings(); renderLibrary(); };
+  $("#libGroup").checked = !!libPrefs().group;
+  $("#libGroup").onchange = (e) => { libPrefs().group = e.target.checked; saveSettings(); renderLibrary(); };
+  $("#libNew").onclick = () => openSave({ voice: true, fx: true, firmware: libDeviceId() });
   $("#libImport").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) importPatchFile(f); };
+  // Re-read on every visit: patch files and the format registry can change outside the app.
+  $('#tabs [data-tab="library"]')?.addEventListener("click", () => loadPatches());
 
   // firmware
   $("#fwRefresh").onclick = refreshFirmware;
