@@ -24,7 +24,7 @@ import webbrowser
 from concurrent.futures import ThreadPoolExecutor
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, unquote, urlencode, urlparse
+from urllib.parse import parse_qs, unquote, urlencode, urljoin, urlparse
 
 ROOT = Path(__file__).resolve().parent
 WEB = ROOT / "web"
@@ -60,13 +60,15 @@ def github_token():
                 _token = ""
     return _token
 
-# Downloads are only ever made from URLs found in the catalog or GitHub release
-# listings, and only from these hosts (GitHub redirects to its asset CDN).
+# Downloads are only ever made from URLs found in the catalog, GitHub release
+# listings or a catalogued install page, and only from these hosts (GitHub redirects to its asset CDN).
 ALLOWED_DL_HOSTS = {
     "github.com",
     "objects.githubusercontent.com",
     "release-assets.githubusercontent.com",
     "yms-file-store.oss-cn-hongkong.aliyuncs.com",
+    "baudgirl.com",
+    "beashoko.github.io",
 }
 NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 _.()\-]{0,63}$")
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9\-]{0,31}$")
@@ -636,6 +638,8 @@ def refresh_releases():
                                                            src.get("assetPatterns"))
             elif src.get("type") == "official":
                 cache["sources"][fw["id"]] = official_release(src)
+            elif src.get("type") == "web":
+                cache["sources"][fw["id"]] = web_release(src)
         write_json(RELEASE_CACHE, cache)
         return {"checked": disc["checked"], "notes": notes, "stats": disc["stats"],
                 "top": [p["id"] for p in ranked[:TOP_CARDS]]}
@@ -656,6 +660,46 @@ def official_release(src):
         "prerelease": False, "url": src.get("page"),
         "assets": src.get("assets", []), "sha256sums": None,
     })
+    return entry
+
+
+def web_release(src):
+    """Releases of a firmware published on its own site (not GitHub), read from its install page:
+    "manifest" names a JSON <script> listing every version with file and sha256 (FM-1+VA);
+    "versionPattern" only finds the current version (the firmware is built into the page)."""
+    entry = {"releases": [], "error": None}
+    try:
+        page = http_get(src["page"], limit=8 * 1024 * 1024).decode("utf-8", "replace")
+    except Exception as e:
+        entry["error"] = f"install page: {e}"
+        return entry
+    if src.get("manifest"):
+        m = re.search(r'<script[^>]*id="%s"[^>]*>(.*?)</script>' % re.escape(src["manifest"]), page, re.S)
+        try:
+            rows = json.loads(m.group(1)) if m else []
+        except json.JSONDecodeError:
+            rows = []
+        if not rows:
+            entry["error"] = "release list not found on the install page"
+        rows = [r for r in rows if not src.get("device") or r.get("device") == src["device"]]
+        rows.sort(key=lambda r: (r.get("date", ""), r.get("n", 0)), reverse=True)
+        for r in rows[:8]:
+            url = urljoin(src["page"], r.get("file", ""))
+            entry["releases"].append({
+                "version": str(r.get("n") or r.get("version")), "title": r.get("version", ""), "date": r.get("date", ""),
+                "prerelease": bool(r.get("beta")), "url": src["page"],
+                "assets": [{"name": os.path.basename(urlparse(url).path), "url": url,
+                            **({"sha256": r["sha256"].lower()} if re.fullmatch(r"[0-9a-fA-F]{64}", r.get("sha256", "")) else {})}],
+                "sha256sums": None,
+            })
+    elif src.get("versionPattern"):
+        m = re.search(src["versionPattern"], page)
+        if m:
+            entry["releases"].append({"version": m.group(1), "title": m.group(0), "date": "",
+                                      "prerelease": bool(PRERELEASE_RE.search(m.group(1))), "url": src["page"],
+                                      "assets": [], "sha256sums": None})
+        else:
+            entry["error"] = "version not found on the install page"
     return entry
 
 
@@ -715,7 +759,9 @@ def download_asset(fid, version, asset_name):
     verified = None  # None = no checksum published
     expected = {}
     side = rel.get("sha256files", {}).get(asset_name)
-    if side:
+    if asset.get("sha256"):  # published next to the file on the project's own install page
+        expected[asset_name] = asset["sha256"]
+    elif side:
         parts = http_get(side).decode("utf-8", "replace").split()
         if parts:
             expected[asset_name] = parts[0].lower()

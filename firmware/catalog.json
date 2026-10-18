@@ -1,8 +1,12 @@
 {
   "updated": "2026-10-18",
-  "ranking": "Live ranking of free, open-source FM-1 firmware, rebuilt on every update check from the cicloid/awesome-fm-1 list (Custom firmware → Open source) and a GitHub repository search, scored ln(1+stars) + ln(1+total .fwsc downloads). Top 10 get cards, #11–#30 the list. Only projects with a GitHub release carrying a .fwsc image count; closed-source (Groove OS, FM-1+VA, April OS) and not-a-synth entries are left out. Projects without a curated entry get a card from their GitHub metadata, marked \"not curated yet\". Offline fallback: firmware/directory.json.",
+  "ranking": "Live ranking of free, open-source FM-1 firmware, rebuilt on every update check from the cicloid/awesome-fm-1 list (Custom firmware → Open source) and a GitHub repository search, scored ln(1+stars) + ln(1+total .fwsc downloads). Top 10 get cards, #11–#30 the list. Only projects with a GitHub release carrying a .fwsc image count. Free closed-source firmware (FM-1+VA, April OS) has no stars or download counts to compare, so it gets its own curated, unranked section. Paid firmware (Groove OS) is left out. Projects without a curated entry get a card from their GitHub metadata, marked \"not curated yet\". Offline fallback: firmware/directory.json.",
   "discovery": {
-    "searches": ["fm-1 firmware archived:false", "fm1 firmware archived:false", "topic:fm-1 archived:false"],
+    "searches": [
+      "fm-1 firmware archived:false",
+      "fm1 firmware archived:false",
+      "topic:fm-1 archived:false"
+    ],
     "exclude": {}
   },
   "firmware": [
@@ -43,6 +47,12 @@
             "url": "https://yms-file-store.oss-cn-hongkong.aliyuncs.com/software/pc/M-UPGRADE.zip"
           }
         ]
+      },
+      "traits": {
+        "source": "closed",
+        "sourceNote": "M-VAVE's factory firmware; no source published.",
+        "revert": true,
+        "revertNote": "This is stock. M-UPGRADE (Windows) reinstalls it, and most community installers can too."
       }
     },
     {
@@ -76,6 +86,12 @@
           "Workbench\\.html$",
           "\\.fwsc$"
         ]
+      },
+      "traits": {
+        "source": "open",
+        "sourceNote": "App source GPLv3 (SDK linking exception); the sound engine is a binary SDK.",
+        "revert": true,
+        "revertNote": "The workbench's \"flash back to stock V15\" (刷回原厂 V15) reinstalls V15 and its 128 factory voices."
       }
     },
     {
@@ -109,6 +125,11 @@
         "assetPatterns": [
           "\\.fwsc$"
         ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": true,
+        "revertNote": "The installer's \"Return to official V15\" puts stock back (it asks for your unmodified FM-1.fwsc)."
       }
     },
     {
@@ -141,6 +162,11 @@
           "\\.fwsc$",
           "editor.*\\.html$"
         ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": true,
+        "revertNote": "The installer's \"Install the official V15\" puts stock back (it asks for your FM-1.fwsc)."
       }
     },
     {
@@ -174,6 +200,11 @@
         "assetPatterns": [
           "\\.fwsc$"
         ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": true,
+        "revertNote": "The installer's \"Back to the stock firmware\" puts stock back."
       }
     },
     {
@@ -207,6 +238,11 @@
           "\\.fwsc$",
           "fm1-recover-.*windows.*\\.zip$"
         ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": true,
+        "revertNote": "The installer's \"Return to official V15\" puts stock back (it asks for your unmodified FM-1.fwsc). Black screen: fm1-recover from the release."
       }
     },
     {
@@ -239,6 +275,11 @@
         "assetPatterns": [
           "^(?!.*1core).*\\.fwsc$"
         ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": true,
+        "revertNote": "The installer's \"Return to official V15\" puts stock back (it asks for your unmodified FM-1.fwsc)."
       }
     },
     {
@@ -270,6 +311,11 @@
         "assetPatterns": [
           "\\.fwsc$"
         ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": true,
+        "revertNote": "The installer's \"Back to the stock firmware\" puts stock back."
       }
     },
     {
@@ -304,6 +350,11 @@
           "\\.fwsc$",
           "Guide.*(?<!print)\\.pdf$"
         ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": true,
+        "revertNote": "The installer's \"Return to official V15\" puts stock back (it asks for your unmodified FM-1.fwsc)."
       }
     },
     {
@@ -336,6 +387,11 @@
         "assetPatterns": [
           "\\.fwsc$"
         ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": true,
+        "revertNote": "The installer's \"Back to the stock firmware\" puts stock back. Validation: the first try left a black screen, the second worked."
       }
     },
     {
@@ -368,6 +424,11 @@
         "assetPatterns": [
           "\\.fwsc$"
         ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": true,
+        "revertNote": "The installer's \"Back up and install the official V15\" puts stock back."
       }
     },
     {
@@ -401,7 +462,84 @@
         "assetPatterns": [
           "\\.fwsc$"
         ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": true,
+        "revertNote": "The installer's \"Return to official V15\" puts stock back (it asks for your unmodified FM-1.fwsc)."
+      }
+    },
+    {
+      "id": "fm1va",
+      "name": "FM-1+VA",
+      "author": "Baud Girl",
+      "kind": "community",
+      "tagline": "The first custom firmware: VA engine + 64-step sequencer",
+      "tags": [
+        "Virtual analog",
+        "8-bit engine",
+        "64 steps",
+        "4 knobs everywhere"
+      ],
+      "art": {
+        "hue": 320,
+        "image": "img/fw/fm1va.png",
+        "credit": "https://baudgirl.com/work/FM-1+VA"
+      },
+      "links": {
+        "install": "https://baudgirl.com/work/FM-1+VA/install",
+        "docs": "https://baudgirl.com/work/FM-1+VA/manual"
+      },
+      "summary": "The first third-party FM-1 firmware, by Madeline (Baud Girl). Keeps the stock FM engine and adds a virtual analog engine (BLEP oscillators, supersaw, several filters), an 8-bit engine with drums and arpeggios, a 64-step dot-matrix sequencer with ratchets and chance, pattern chaining and song mode, four assignable knobs on every screen, two-button navigation and colour themes. Free; closed source (the author has said the source will be released).",
+      "install": "Web installer on baudgirl.com (Chrome/Edge on a computer, Chrome on Android). Presets and patterns are kept. No return-to-stock in its installer: use M-UPGRADE with the library's FM-1.fwsc (needs FM-1+VA 94 or later; with 93 or earlier M-UPGRADE fails with \"Checksum error\"), or another project's \"Return to official V15\".",
+      "source": {
+        "type": "web",
+        "page": "https://baudgirl.com/work/FM-1+VA/install",
+        "manifest": "fi-releases",
+        "device": "fm1"
+      },
+      "traits": {
+        "source": "closed",
+        "sourceNote": "Free, closed source; the author has said the source will be released.",
+        "revert": false,
+        "revertNote": "No return-to-stock in its installer: M-UPGRADE with FM-1.fwsc (FM-1+VA 94 or later), or another installer's \"Return to official V15\"."
+      }
+    },
+    {
+      "id": "aprilos",
+      "name": "April OS",
+      "author": "beashoko",
+      "kind": "community",
+      "tagline": "SK-1-style sampler: record with your phone or laptop mic",
+      "tags": [
+        "32 samples",
+        "8-track seq",
+        "Loop editor",
+        "Mic recording"
+      ],
+      "art": {
+        "hue": 8,
+        "image": "img/fw/aprilos.png",
+        "credit": "https://github.com/beashoko/april-os/blob/HEAD/assets/readme/features.webp"
+      },
+      "links": {
+        "install": "https://beashoko.github.io/april-os/",
+        "docs": "https://github.com/beashoko/april-os#readme"
+      },
+      "summary": "Sampling firmware in the spirit of the Casio SK-1: no synth engines, only samples. 32 sample slots of three seconds, an eight-track sequencer, a sample and loop editor, and recording through a computer's or iPhone's microphone via the installer page. A Felucca fork; its repository holds the installer page, not the firmware source. Free.",
+      "install": "Web installer page (Chrome/Edge, USB); the firmware is built into the page, so there is no separate .fwsc to download. No return-to-stock button found: use M-UPGRADE with the library's FM-1.fwsc, or another project's \"Return to official V15\".",
+      "source": {
+        "type": "web",
+        "page": "https://beashoko.github.io/april-os/",
+        "versionPattern": "firmwareName:'AprilOS([A-Za-z]*[0-9][0-9.]*)\\.fwsc'"
+      },
+      "traits": {
+        "source": "closed",
+        "sourceNote": "Free; a Felucca fork whose repository holds only the installer page, not the firmware source.",
+        "revert": false,
+        "revertNote": "No return-to-stock button in its installer: M-UPGRADE with FM-1.fwsc, or another installer's \"Return to official V15\"."
       }
     }
-  ]
+  ],
+  "policy": "Free firmware only: paid packages are never listed."
 }

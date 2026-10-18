@@ -1449,19 +1449,25 @@ function renderFirmware() {
   const byId = new Map(fw.catalog.map((f) => [f.id, f]));
   const official = fw.catalog.filter((f) => f.kind !== "community");
   const top = (fw.ranked || []).slice(0, 10).filter((p) => byId.has(p.id));
+  // Free closed-source firmware has no stars or download counts to rank by: curated, shown unranked.
+  const closed = fw.catalog.filter((f) => f.kind === "community" && f.traits?.source === "closed");
 
-  // Every downloaded file without a card on screen (official or live top 10) is listed under "Other files".
-  const carded = new Set([...official.map((f) => f.id), ...top.map((p) => p.id)]);
+  // Every downloaded file without a card on screen is listed under "Other files".
+  const carded = new Set([...official, ...closed].map((f) => f.id).concat(top.map((p) => p.id)));
   const orphans = Object.entries(fw.library || {}).filter(([id]) => !carded.has(id));
 
-  $("#fwCards").replaceChildren(
+  $("#fwCards").replaceChildren(...[
+    h("div", { class: "fw-legend-row" }, traitLegend()),
     h("h2", { class: "fw-section" }, "Official"),
     h("div", { class: "fw-cards" }, official.map((f) => fwCard(f, fw, null))),
     h("h2", { class: "fw-section" }, "Community · top 10 free & open source ",
       h("span", { class: "info", title: fw.ranking || "", text: "ⓘ" })),
     h("div", { class: "fw-cards" }, top.map((p) => fwCard(byId.get(p.id), fw, p.rank))),
+    closed.length > 0 && h("h2", { class: "fw-section" }, "Community · free, closed source ",
+      h("span", { class: "info", title: "Free firmware without public source. Not ranked: there are no GitHub stars or download counts to compare. Paid firmware is never listed.", text: "ⓘ" })),
+    closed.length > 0 && h("div", { class: "fw-cards" }, closed.map((f) => fwCard(f, fw, null))),
     validatedSection(fw, orphans),
-    fwDirectory(fw));
+    fwDirectory(fw)].filter(Boolean));
   buildChecks();
 }
 
@@ -1516,6 +1522,51 @@ const OCTO = '<svg viewBox="0 0 32 32" class="octo" aria-hidden="true">'
   + '<path style="fill:var(--octo,#F07A2B)" d="M16 3C10 3 6 7.3 6 13c0 3.2 1.4 5.6 3.4 7.1L7 24.5c-.6 1.1-1.9 1.5-3 1-.6-.3-1.3.1-1.2.8.2 1.6 2 2.6 3.7 2.1 1.6-.5 2.6-1.8 3.4-3.2l1.6-2.8.5 4.2c.1 1.2-.6 2.3-1.7 2.7-.6.2-.6 1.1.1 1.2 2 .4 3.8-1 4-3l.4-4.3h2.4l.4 4.3c.2 2 2 3.4 4 3 .7-.1.7-1 .1-1.2-1.1-.4-1.8-1.5-1.7-2.7l.5-4.2 1.6 2.8c.8 1.4 1.8 2.7 3.4 3.2 1.7.5 3.5-.5 3.7-2.1.1-.7-.6-1.1-1.2-.8-1.1.5-2.4.1-3-1l-2.4-4.4C24.6 18.6 26 16.2 26 13c0-5.7-4-10-10-10z"/>'
   + '<circle cx="12.4" cy="13" r="2" fill="#fff"/><circle cx="19.6" cy="13" r="2" fill="#fff"/>'
   + '<circle cx="12.8" cy="13.4" r="1" fill="#2b1a10"/><circle cx="20" cy="13.4" r="1" fill="#2b1a10"/></svg>';
+
+// Card traits: source (egg cracked open / closed), checksum published (green check),
+// one-click revert to stock in the project's installer (blue first aid). Grey = no / unknown.
+const TRAIT_SVG = {
+  open: '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="shell" d="M5 13.2l2.3 2 2.3-2.4 2.4 2.4 2.4-2.4 2.3 2.4 2.3-2C19 18.4 16 22 12 22s-7-3.6-7-8.8z"/>'
+    + '<circle class="yolk" cx="12" cy="14.6" r="2.3"/>'
+    + '<path class="shell" transform="rotate(-16 12 9) translate(0 -2)" d="M5.4 10.2C6.2 5.4 8.8 2 12 2s5.8 3.4 6.6 8.2l-2.2-1.6-2.3 2.3-2.1-2.3-2.2 2.3-2.2-2.3z"/></svg>',
+  closed: '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="shell" d="M12 2C8.2 2 5 8 5 13.4 5 18.4 8 22 12 22s7-3.6 7-8.6C19 8 15.8 2 12 2z"/></svg>',
+  sum: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="bg" cx="12" cy="12" r="10"/><path class="fg" d="M7.2 12.4l3.2 3.2 6.4-6.8" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  aid: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="bg" x="2.5" y="2.5" width="19" height="19" rx="4.5"/><path class="fg-fill" d="M10 6.5h4v3.5h3.5v4H14v3.5h-4V14H6.5v-4H10z"/></svg>',
+};
+
+function trait(kind, cls, title) {
+  const s = h("span", { class: `trait ${kind} ${cls}`, title });
+  s.innerHTML = TRAIT_SVG[kind === "egg" ? cls : kind];
+  return s;
+}
+
+/** The three trait icons for a card. latest/primary: its newest release and main file (may be absent). */
+function fwTraits(f, latest, primary) {
+  const t = f.traits || {};
+  // uncurated cards come from GitHub repos that had to carry a license to rank
+  const open = t.source ? t.source === "open" : f.source?.type === "github";
+  const sum = !latest ? null : !!(latest.sha256sums || latest.sha256files?.[primary?.name] || primary?.sha256);
+  const rev = typeof t.revert === "boolean" ? t.revert : null;
+  const note = (s) => (s ? "\n" + s : "");
+  return h("span", { class: "fw-traits" },
+    trait("egg", open ? "open" : "closed", (open ? "Open source" : "Closed source") + note(t.sourceNote)),
+    trait("sum", sum ? "on" : "off",
+      sum === true ? `Checksum published: downloads of ${shortVer(latest.version)} are checked against the project's SHA256`
+        : sum === false ? (latest.assets?.length ? `No checksum published for ${shortVer(latest.version)}: downloads can't be verified`
+          : "No checksum: there is no separate firmware file to check")
+          : "Checksum unknown until Check for updates"),
+    trait("aid", rev ? "on" : "off",
+      rev === true ? "Revert to stock from its own installer" + note(t.revertNote)
+        : rev === false ? "No one-click revert to stock in its installer" + note(t.revertNote)
+          : "Revert to stock: not checked yet (card not curated)"));
+}
+
+function traitLegend() {
+  return h("span", { class: "trait-legend muted" },
+    trait("egg", "open", "Open source"), "open", trait("egg", "closed", "Closed source"), "closed source ·",
+    trait("sum", "on", "Checksum published"), "checksum ·", trait("aid", "on", "Revert to stock in the installer"), "revert in installer ·",
+    h("span", { class: "trait-off-note", text: "grey = no or unknown" }));
+}
 
 function octo(title, cls = "") {
   const s = h("span", { class: "octo-wrap " + cls, title });
@@ -1745,7 +1796,9 @@ function fwCard(f, fw, rank) {
       h("div", { class: "fw-headtext" },
         h("div", { class: "fw-title" }, rank && h("span", { class: "rank", text: `#${rank}` }), h("b", { text: f.name }), valBadge,
           h("span", { class: "grow" }), iconLink(L.docs, "doc", "Manual / docs"), iconLink(L.repo, "code", "Source code")),
-        h("div", { class: "by" }, f.author, f.curated === false && h("span", { class: "fw-uncur", title: "Built from GitHub metadata: entered the top 10 but has no curated catalog entry (screen, tagline) yet", text: "not curated yet" })),
+        h("div", { class: "by" }, h("span", { class: "by-name", text: f.author }),
+          f.curated === false && h("span", { class: "fw-uncur", title: "Built from GitHub metadata: entered the top 10 but has no curated catalog entry (screen, tagline) yet", text: "not curated yet" }),
+          fwTraits(f, latest, primary)),
         h("div", { class: "fw-tag", text: f.tagline || "" }))),
     h("div", { class: "fw-body" },
       h("div", { class: "fw-chips" }, (f.tags || []).slice(0, 3).map((t) => h("span", { text: t }))),

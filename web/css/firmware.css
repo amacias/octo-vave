@@ -32,3 +32,23 @@
 .val-legend .octo-wrap:first-child { margin-left: 0; }
 .dir-main .octo-wrap { margin-left: 5px; vertical-align: -3px; }
 .dir-main .octo { width: 15px; height: 15px; }
+
+/* card traits: egg open/closed source, green checksum, blue first-aid revert; grey = no or unknown */
+.fw-headtext .by { display: flex; align-items: center; gap: 6px; }
+.fw-headtext .by .by-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.fw-traits { display: inline-flex; gap: 3px; margin-left: auto; flex: none; }
+.trait { display: inline-flex; cursor: help; }
+.trait svg { width: 17px; height: 17px; display: block; }
+.trait .shell { fill: #F1E6CC; stroke: #A8916A; stroke-width: 1; stroke-linejoin: round; }
+.trait .yolk { fill: #F2B705; }
+.trait.sum .bg { fill: #2FB36A; }
+.trait.sum .fg { stroke: #fff; }
+.trait.aid .bg { fill: #2F7DE1; }
+.trait.aid .fg-fill { fill: #fff; }
+.trait.off .bg { fill: #8A9099; }
+.trait.off { opacity: .4; }
+.fw-legend-row { display: flex; justify-content: flex-end; margin: 4px 0 -12px; }
+.trait-legend { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; font-size: 12px; }
+.trait-legend .trait svg { width: 15px; height: 15px; }
+.trait-legend .trait + * { margin-right: 2px; }
+.trait-off-note { margin-left: 2px; }
