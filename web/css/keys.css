@@ -1,1 +1,109 @@
 /* keys.css: owned by the keys feature. Feature-specific styles go here, not in style.css. */
+
+/* ---------------------------------------------------------------- FM-1 key bed (Home, web/fm1keys.js)
+   Modelled on the FM-1's straight-on product shot: black body, recessed key bed, 16 wide
+   pills below 11 narrower ones, light pipes in each key. Always dark (it's the device),
+   with teal accents for the black/teal unit. */
+
+.keyboard.fm1 {
+  --fm1-body: #0b0d0e;
+  --fm1-edge: #1f2527;
+  --fm1-bed: #111416;
+  --fm1-key: #1a1f21;
+  --fm1-key-hi: #232a2c;
+  --fm1-teal: #26c6b5;
+  --fm1-teal-hi: #6ff3e4;
+  --fm1-teal-dim: rgba(38, 198, 181, .55);
+  --fm1-pipe: #3a4a4b;
+  display: block; height: auto; touch-action: pan-x;
+  overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin; scrollbar-color: #2b3437 transparent; padding-bottom: 2px;
+}
+
+.fm1-body {
+  min-width: 500px; max-width: 860px; margin: 0 auto;
+  padding: 12px 14px 14px;
+  background: linear-gradient(180deg, #121517 0%, var(--fm1-body) 40%);
+  border: 1px solid var(--fm1-edge); border-radius: 18px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 2px 10px rgba(0, 0, 0, .25);
+}
+
+/* strip above the keys: OCT- / OCT+ and the range readout */
+.fm1-strip { display: flex; align-items: center; gap: 12px; margin: 0 2px 10px; }
+.fm1-oct {
+  display: flex; gap: 5px; padding: 4px; border-radius: 9px;
+  background: #07090a; box-shadow: inset 0 1px 2px rgba(0, 0, 0, .8), 0 0 0 1px #1a2022;
+}
+.fm1-octbtn {
+  font: 600 10.5px/1 system-ui, "Segoe UI", sans-serif; letter-spacing: .04em;
+  color: var(--fm1-teal); background: linear-gradient(180deg, #20272a, #171c1e);
+  border: 1px solid #2a3336; border-radius: 6px; padding: 6px 11px; min-width: 50px;
+  cursor: pointer; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+}
+.fm1-octbtn:hover:not(:disabled) { border-color: var(--fm1-teal-dim); }
+.fm1-octbtn:active:not(:disabled) { transform: translateY(1px); color: var(--fm1-teal-hi); box-shadow: 0 0 8px rgba(38, 198, 181, .35); }
+.fm1-octbtn:focus-visible { outline: 2px solid var(--fm1-teal); outline-offset: 2px; }
+.fm1-octbtn:disabled { color: #3d4a4c; cursor: default; }
+.fm1-read {
+  display: flex; gap: 14px; font: 11px/1 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color: #6f7f80; letter-spacing: .05em;
+}
+.fm1-read b { color: var(--fm1-teal); font-weight: 600; }
+
+/* recessed key bed: 32 half-columns, rows = top pills / dot line / bottom pills */
+.fm1-bed {
+  display: grid; grid-template-columns: repeat(32, minmax(0, 1fr));
+  grid-template-rows: auto 7px auto; align-items: center;
+  padding: 10px 8px 10px; border-radius: 14px; background: var(--fm1-bed);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, .75), inset 0 -1px 0 rgba(255, 255, 255, .04), 0 0 0 1px #050607;
+  user-select: none; -webkit-user-select: none;
+}
+
+.fk {
+  position: relative; justify-self: center; width: 84%;
+  border-radius: 999px; cursor: pointer; touch-action: none;
+  background: linear-gradient(180deg, var(--fm1-key-hi) 0%, var(--fm1-key) 55%, #15191b 100%);
+  box-shadow: 0 0 0 1px rgba(38, 198, 181, .14), 0 2px 2px rgba(0, 0, 0, .6), inset 0 1px 0 rgba(255, 255, 255, .07);
+  transition: background .08s, box-shadow .08s, transform .05s;
+  -webkit-tap-highlight-color: transparent;
+}
+.fk.white { grid-row: 3; aspect-ratio: 1 / 1.95; }
+.fk.top   { grid-row: 1; width: 74%; aspect-ratio: 1 / 2.05; }
+.fk:hover { box-shadow: 0 0 0 1px rgba(38, 198, 181, .38), 0 2px 2px rgba(0, 0, 0, .6), inset 0 1px 0 rgba(255, 255, 255, .07); }
+
+/* light pipe in each key */
+.fk .led {
+  position: absolute; left: 50%; width: 11%; min-width: 3px; transform: translateX(-50%);
+  top: 20%; bottom: 20%; border-radius: 3px; background: var(--fm1-pipe);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .5);
+  transition: background .08s, box-shadow .08s;
+}
+.fk.lab .led { top: 17%; bottom: 47%; }
+.fk .lbl {
+  position: absolute; left: 0; right: 0; bottom: 22%; text-align: center; pointer-events: none;
+  font: 600 clamp(7px, .95vw, 9.5px)/1 system-ui, "Segoe UI", sans-serif; letter-spacing: .02em;
+  color: var(--fm1-teal); white-space: nowrap;
+}
+
+.fm1-dot {
+  grid-row: 2; justify-self: center; width: 4px; height: 4px; border-radius: 50%;
+  background: #34403f;
+}
+
+/* pressed / lit (pointer, computer keys, incoming MIDI). Beats .keyboard .on in style.css. */
+.keyboard.fm1 .fk.on {
+  background: linear-gradient(180deg, #17393a 0%, #12302f 60%, #0f2726 100%) !important;
+  box-shadow: 0 0 0 1px var(--fm1-teal), 0 0 14px rgba(38, 198, 181, .45), inset 0 1px 3px rgba(0, 0, 0, .5);
+  transform: translateY(1px) scale(.985);
+}
+.keyboard.fm1 .fk.on .led { background: var(--fm1-teal-hi); box-shadow: 0 0 6px var(--fm1-teal), 0 0 2px #fff; }
+.keyboard.fm1 .fk.on .lbl { color: var(--fm1-teal-hi); }
+
+@media (max-width: 560px) {
+  .fm1-body { padding: 10px 10px 12px; border-radius: 14px; }
+  .fm1-bed { padding: 8px 6px; border-radius: 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fk, .fk .led { transition: none; }
+  .keyboard.fm1 .fk.on { transform: none; }
+}

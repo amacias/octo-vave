@@ -1,4 +1,5 @@
 import * as DX from "./dx7.js";
+import { mountFm1Keys, fm1LowNote } from "./fm1keys.js";
 
 // ================================================================ helpers
 
@@ -351,11 +352,24 @@ function buildKeyboard(container, octaves) {
     container.append(key);
   }
 }
-function buildKeyboards() {
-  buildKeyboard($("#kbHome"), 2);
-  buildKeyboard($("#kbPlay"), 3);
-  $("#octLabel").textContent = S.settings.octave;
+const OCT_MIN = 0, OCT_MAX = 8;
+function shiftOctave(d) {
+  const o = Math.max(OCT_MIN, Math.min(OCT_MAX, S.settings.octave + d));
+  if (o === S.settings.octave) return;
+  S.settings.octave = o;
+  buildKeyboards(); saveSettings();
 }
+function buildKeyboards() {
+  const home = $("#kbHome"), play = $("#kbPlay"), o = S.settings.octave;
+  if (home) mountFm1Keys(home, {
+    low: fm1LowNote(o), octave: o, canDown: o > OCT_MIN, canUp: o < OCT_MAX,
+    held: S.held, noteOn, noteOff, onOctave: shiftOctave,
+  });
+  if (play) buildKeyboard(play, 3);
+  const lbl = $("#octLabel");
+  if (lbl) lbl.textContent = o;
+}
+// Lights a note on every on-screen keyboard (classic and FM-1 key bed); both carry data-note.
 function light(n, on) { $$(`.keyboard [data-note="${n}"]`).forEach((k) => k.classList.toggle("on", on)); }
 
 const typing = (e) => /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) && e.target.type !== "range" && e.target.type !== "checkbox";
@@ -364,8 +378,7 @@ document.addEventListener("keydown", (e) => {
   if (typing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
   if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
     if (e.target.type === "range") return;
-    S.settings.octave = Math.max(0, Math.min(8, S.settings.octave + (e.key === "ArrowRight" ? 1 : -1)));
-    buildKeyboards(); saveSettings(); e.preventDefault(); return;
+    shiftOctave(e.key === "ArrowRight" ? 1 : -1); e.preventDefault(); return;
   }
   const off = KEYMAP[e.key.toLowerCase()];
   if (off === undefined || e.repeat || qwertyDown.has(e.key.toLowerCase())) return;
