@@ -1,9 +1,17 @@
 # Firmware validation
 
-A firmware gets the **orange octopus** on its card when it has been validated on a real FM-1:
-it was **installed**, it **ran**, and the device was **reverted to stock V15**. Validation is
-done hands-on (for example in a Claude Code session with the FM-1 on USB), never by the
-dashboard itself. The dashboard only reads `firmware/validated.json`.
+A firmware gets an **octopus** on its card once it has been tested on a real FM-1: **installed**,
+**run**, and the device **reverted to stock V15**. The colour is the outcome:
+
+| Octopus | `result` | Meaning |
+|---|---|---|
+| 🟠 orange | `clean` | All three steps worked as expected. |
+| 🟣 purple | `issues` | All three steps done, but something needed a workaround (described in `notes`). |
+| 🔴 red | `failed` | The firmware failed a step; `steps` shows which ones worked. |
+| grey | | A newer stable release appeared after the test; it stays grey until retested. |
+
+Validation is done hands-on (for example in a Claude Code session with the FM-1 on USB), never
+by the dashboard itself. The dashboard only reads `firmware/validated.json`.
 
 ## Procedure
 
@@ -27,7 +35,12 @@ and checks. Ask for each action as one clearly marked prompt, separate from stat
 
    ```
    python tools/fm1_validate.py add <id> <version> --checks "generic 1-2, stock 1+6 after revert" --notes "..."
+   python tools/fm1_validate.py add <id> <version> --result issues --notes "what needed a workaround"
+   python tools/fm1_validate.py add <id> <version> --result failed --steps install --notes "what failed"
    ```
+
+   The person who did the test decides the outcome; the session proposes the record and
+   writes it only after they confirm.
 
    `firmware/validated.json` is published with the project: keep device serials, USB instance
    IDs, local paths and email addresses out of `--checks`/`--notes` (the tool refuses them).
@@ -45,6 +58,7 @@ and checks. Ask for each action as one clearly marked prompt, separate from stat
   "sha256": "…",
   "date": "2026-10-18",
   "steps": { "install": true, "run": true, "revert": true },
+  "result": "clean",
   "checks": "generic 1-2, stock 1+6 after revert",
   "notes": ""
 }

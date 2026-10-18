@@ -1408,6 +1408,11 @@ async function refreshFirmware() {
 }
 
 function fwName(id) { return S.fw?.catalog.find((f) => f.id === id)?.name || id; }
+/** "AMB-1 v1.3"; skips the version when the name already ends with it ("Stock V15"). */
+function fwNameVer(id, version) {
+  const name = fwName(id), v = String(version || "").trim();
+  return !v || name.toLowerCase().endsWith(v.toLowerCase()) ? name : `${name} ${v}`;
+}
 
 /** Header status: when the ranking was checked, and whether it is partial or the offline snapshot. */
 function fwStatus(fw) {
@@ -1428,8 +1433,8 @@ function renderFirmware() {
   if (!fw) return;
   const inst = fw.installed;
   fwStatus(fw);
-  $("#fwBadge").textContent = inst ? `firmware: ${fwName(inst.id)} ${inst.version}` : "firmware: not logged";
-  $("#homeFw").textContent = inst ? `${fwName(inst.id)} ${inst.version}` : "not logged (see Firmware tab)";
+  $("#fwBadge").textContent = inst ? `firmware: ${fwNameVer(inst.id, inst.version)}` : "firmware: not logged";
+  $("#homeFw").textContent = inst ? `${fwNameVer(inst.id, inst.version)}` : "not logged (see Firmware tab)";
   updateStockWarn();
 
   const sel = $("#fwInstalledSel");
@@ -1476,7 +1481,7 @@ function fwDirectory(fw) {
         h("span", { class: "dir-rank", text: `#${p.rank}` }),
         h("span", { class: "dir-main" },
           h("a", { href: p.url, target: "_blank", rel: "noopener", text: p.name }),
-          val && octo(valTitle(val), val.current ? "" : "older"),
+          val && octoFor(val.v, valTitle(val), val.current),
           p.desc && h("span", { class: "dir-desc", text: " · " + p.desc })),
         h("span", { class: "dir-stats", text: `★ ${fmtNum(p.stars)}  ⬇ ${fmtNum(p.downloads)}` }));
     })));
@@ -1502,11 +1507,12 @@ function icon(k) {
 
 // ---------------------------------------------------------------- validation
 // firmware/validated.json is written by hands-on validation sessions (see
-// VALIDATION.md): a firmware counts as validated only when it was installed,
-// run, and reverted to stock on a real FM-1. The orange octopus marks it.
+// VALIDATION.md). The octopus colour is the outcome: orange = validated cleanly
+// (installed, ran, reverted to stock), purple = validated with issues, red = failed.
+// Grey = a newer stable release hasn't been tested yet. Partial records show nothing.
 
 const OCTO = '<svg viewBox="0 0 32 32" class="octo" aria-hidden="true">'
-  + '<path fill="#F07A2B" d="M16 3C10 3 6 7.3 6 13c0 3.2 1.4 5.6 3.4 7.1L7 24.5c-.6 1.1-1.9 1.5-3 1-.6-.3-1.3.1-1.2.8.2 1.6 2 2.6 3.7 2.1 1.6-.5 2.6-1.8 3.4-3.2l1.6-2.8.5 4.2c.1 1.2-.6 2.3-1.7 2.7-.6.2-.6 1.1.1 1.2 2 .4 3.8-1 4-3l.4-4.3h2.4l.4 4.3c.2 2 2 3.4 4 3 .7-.1.7-1 .1-1.2-1.1-.4-1.8-1.5-1.7-2.7l.5-4.2 1.6 2.8c.8 1.4 1.8 2.7 3.4 3.2 1.7.5 3.5-.5 3.7-2.1.1-.7-.6-1.1-1.2-.8-1.1.5-2.4.1-3-1l-2.4-4.4C24.6 18.6 26 16.2 26 13c0-5.7-4-10-10-10z"/>'
+  + '<path style="fill:var(--octo,#F07A2B)" d="M16 3C10 3 6 7.3 6 13c0 3.2 1.4 5.6 3.4 7.1L7 24.5c-.6 1.1-1.9 1.5-3 1-.6-.3-1.3.1-1.2.8.2 1.6 2 2.6 3.7 2.1 1.6-.5 2.6-1.8 3.4-3.2l1.6-2.8.5 4.2c.1 1.2-.6 2.3-1.7 2.7-.6.2-.6 1.1.1 1.2 2 .4 3.8-1 4-3l.4-4.3h2.4l.4 4.3c.2 2 2 3.4 4 3 .7-.1.7-1 .1-1.2-1.1-.4-1.8-1.5-1.7-2.7l.5-4.2 1.6 2.8c.8 1.4 1.8 2.7 3.4 3.2 1.7.5 3.5-.5 3.7-2.1.1-.7-.6-1.1-1.2-.8-1.1.5-2.4.1-3-1l-2.4-4.4C24.6 18.6 26 16.2 26 13c0-5.7-4-10-10-10z"/>'
   + '<circle cx="12.4" cy="13" r="2" fill="#fff"/><circle cx="19.6" cy="13" r="2" fill="#fff"/>'
   + '<circle cx="12.8" cy="13.4" r="1" fill="#2b1a10"/><circle cx="20" cy="13.4" r="1" fill="#2b1a10"/></svg>';
 
@@ -1516,9 +1522,17 @@ function octo(title, cls = "") {
   return s;
 }
 
-const isValidated = (v) => v?.steps?.install && v?.steps?.run && v?.steps?.revert;
+const allSteps = (v) => !!(v?.steps?.install && v?.steps?.run && v?.steps?.revert);
+/** clean | issues | failed, or null for a partial record (not shown). */
+function outcome(v) {
+  if (["clean", "issues", "failed"].includes(v?.result)) return v.result;
+  return allSteps(v) ? "clean" : null;
+}
+const isValidated = (v) => outcome(v) !== null;
+const OUTCOME_LABEL = { clean: "Validated", issues: "Validated with issues", failed: "Failed validation" };
+const octoFor = (v, title, current = true) => octo(title, `${outcome(v)}${current ? "" : " older"}`);
 
-/** Fully validated records for a firmware id, newest first. */
+/** Records with an outcome for a firmware id, newest first. */
 function validationsFor(fw, id) {
   return (fw.validated || []).filter((v) => v.id === id && isValidated(v))
     .sort((a, b) => String(b.date).localeCompare(String(a.date)));
@@ -1556,11 +1570,16 @@ function validationState(fw, f) {
 }
 
 function valTitle(st) {
-  return validationTip(st.v) + (st.current ? "" : `\nNewer release ${shortVer(st.newer.version)} isn't validated yet.`);
+  return validationTip(st.v) + (st.current ? "" : `\nNewer release ${shortVer(st.newer.version)} hasn't been tested yet.`);
+}
+
+function stepsText(v) {
+  const m = (k, label) => `${label} ${v.steps?.[k] ? "✓" : "✗"}`;
+  return [m("install", "installed"), m("run", "ran"), m("revert", "reverted")].join(" · ");
 }
 
 function validationTip(v) {
-  return `Validated ${v.version} on ${v.date}: installed, ran${v.checks ? ` (${v.checks})` : ""}, reverted to stock.`
+  return `${OUTCOME_LABEL[outcome(v)]}: ${v.version} on ${v.date}. ${stepsText(v)}${v.checks ? `\nChecks: ${v.checks}` : ""}`
     + (v.notes ? `\n${v.notes}` : "");
 }
 
@@ -1585,19 +1604,25 @@ function validatedSection(fw, orphans) {
       action = h("button", { class: "ghost", text: "Download" });
       action.onclick = () => downloadAsset(f, rel, asset, action);
     } else action = h("span", { class: "muted", text: "not in library" });
-    return h("div", { class: "val-row", title: validationTip(v) },
-      octo(validationTip(v)),
+    const o = outcome(v);
+    return h("div", { class: "val-row " + o, title: validationTip(v) },
+      octoFor(v, validationTip(v)),
       h("b", { text: fwName(v.id) }),
       h("span", { class: "mono", text: shortVer(v.version) }),
       h("span", { class: "muted", text: v.date }),
-      h("span", { class: "val-steps", text: "installed ✓ · ran ✓ · reverted ✓" }),
-      h("span", { class: "grow" }),
+      o !== "clean" && h("span", { class: "val-label " + o, text: o === "issues" ? "with issues" : "failed" }),
+      h("span", { class: "val-steps " + o, text: stepsText(v) }),
+      h("span", { class: "val-note", text: v.notes || "" }),
       action);
   });
+  const n = (o) => recs.filter((v) => outcome(v) === o).length;
   return h("section", { class: "card val" },
     h("div", { class: "section-head" },
       h("h3", {}, octo("Validated"), " Validated firmware in Library"),
-      h("span", { class: "muted", text: `${recs.length} validated` })),
+      h("span", { class: "muted", text: [`${n("clean")} validated`, n("issues") && `${n("issues")} with issues`, n("failed") && `${n("failed")} failed`].filter(Boolean).join(" · ") })),
+    h("div", { class: "val-legend muted" },
+      octo("", "clean"), "validated", octo("", "issues"), "with issues", octo("", "failed"), "failed",
+      octo("", "clean older"), "newer release not tested yet"),
     rows.length ? rows : h("p", { class: "muted", text: "Nothing validated yet. Validation happens in hands-on Claude Code sessions: flash, run, revert to stock (see VALIDATION.md)." }),
     orphans.length > 0 && h("details", {},
       h("summary", { class: "muted", text: `Other files in library, not in the catalog (${orphans.reduce((n, [, l]) => n + l.length, 0)})` }),
@@ -1668,7 +1693,7 @@ function fwCard(f, fw, rank) {
 
   const art = fwArt(f);
   const val = validationState(fw, f);
-  const valBadge = val && octo(valTitle(val), val.current ? "" : "older");
+  const valBadge = val && octoFor(val.v, valTitle(val), val.current);
   const flags = [
     isCurrent && h("span", { class: "flag on", text: "ON DEVICE" }),
     updateAvail && h("span", { class: "flag up", text: "UPDATE" }),
@@ -1760,7 +1785,7 @@ function updateStockWarn() {
   const tab = $("#tabs .active")?.dataset.tab;
   const show = inst && inst.id !== "official" && tab === "home";
   $("#stockWarn").classList.toggle("hidden", !show);
-  if (inst) $("#stockWarnName").textContent = `${fwName(inst.id)} ${inst.version}`;
+  if (inst) $("#stockWarnName").textContent = `${fwNameVer(inst.id, inst.version)}`;
 }
 
 // ================================================================ sound check
@@ -2097,7 +2122,7 @@ function checkProfile() {
   const inst = S.fw?.installed;
   const mode = checkMode();
   const fwKey = inst ? `${inst.id}@${inst.version}` : "unlogged";
-  const fwLabel = inst ? `${fwName(inst.id)} ${inst.version}` : "firmware not logged";
+  const fwLabel = inst ? `${fwNameVer(inst.id, inst.version)}` : "firmware not logged";
   const all = S.settings.soundcheck || (S.settings.soundcheck = {});
   // Migrate the first, flat format ({stepId: result}) to a profile.
   if (Object.values(all).some((v) => v && "result" in v)) {

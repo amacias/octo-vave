@@ -1,4 +1,20 @@
 {
   "about": "Firmware validated on a real FM-1: installed, run, and reverted to stock V15. Written by Claude Code sessions following VALIDATION.md (or by tools/fm1_validate.py); the dashboard only reads this file.",
-  "validations": []
+  "validations": [
+    {
+      "id": "amb1",
+      "version": "v1.3",
+      "file": "amb-1.3.fwsc",
+      "sha256": "59dbc6b688e3a64bb0da912c1e40890da7bc214b2a3269704627369b776707cb",
+      "date": "2026-10-18",
+      "steps": {
+        "install": true,
+        "run": true,
+        "revert": true
+      },
+      "result": "issues",
+      "checks": "boots and plays; presets and the 4 knobs work; MIDI out notes (ch 1-3, 10) and clock seen; generic sound check 1-2 silent by design (ch 1 notes edit the scale); stock sound check 8/8 after revert",
+      "notes": "First revert via the AMB-1 installer's 'Back to the stock firmware' left a black screen in USB update mode (enumerated as generic USB-Midi 4D4A:4155); running it a second time restored stock V15."
+    }
+  ]
 }

@@ -33,14 +33,16 @@ code change; see `firmware/formats/_example.json`. `official.json` describes the
 FX patch, and `midi-cc.json` captures CCs, SysEx and a program number for any firmware.
 `GET /api/formats` serves the registry.
 
-## Validated firmware (orange octopus)
+## Validated firmware (octopus)
 
-A firmware card gets the orange octopus once that firmware has been **installed, run and reverted
-to stock V15 on a real FM-1**. If the project then publishes a newer stable release, the octopus
-stays but turns grey until that release is revalidated. That validation happens hands-on, not in the app: follow
-[VALIDATION.md](VALIDATION.md) and record the result with `python tools/fm1_validate.py add …`,
-which writes `firmware/validated.json` and pins the tested file's SHA256. The bottom of the
-Firmware tab lists every validated firmware under **Validated firmware in Library**.
+A firmware card gets an octopus once that firmware has been **installed, run and reverted to
+stock V15 on a real FM-1**. Its colour is the outcome: **orange** = validated cleanly, **purple** =
+validated with issues (a workaround was needed; see the tooltip), **red** = failed. If the project
+then publishes a newer stable release, the octopus stays but turns grey until that release is
+retested. Testing happens hands-on, not in the app: follow [VALIDATION.md](VALIDATION.md) and
+record the result with `python tools/fm1_validate.py add … [--result clean|issues|failed]`, which
+writes `firmware/validated.json` and pins the tested file's SHA256. The bottom of the Firmware tab
+lists every tested firmware under **Validated firmware in Library**.
 
 ## Firmware: what this does and doesn't do
 

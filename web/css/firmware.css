@@ -16,5 +16,19 @@
 
 /* greyed octopus: validated, but a newer stable release is out */
 .octo-wrap.older { opacity: .5; filter: grayscale(1); }
+/* outcome colours: orange = validated, purple = with issues, red = failed */
+.octo-wrap.clean { --octo: #F07A2B; }
+.octo-wrap.issues { --octo: #9B5DE5; }
+.octo-wrap.failed { --octo: #E03C31; }
+.val-label { font-size: 11px; padding: 1px 7px; border-radius: 999px; border: 1px solid; }
+.val-label.issues { color: #9B5DE5; }
+.val-label.failed { color: #E03C31; }
+.val-steps.issues { color: #9B5DE5; }
+.val-steps.failed { color: #E03C31; }
+.val-note { flex: 1; min-width: 0; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.val-legend { display: flex; align-items: center; gap: 4px 6px; flex-wrap: wrap; font-size: 12px; margin: 2px 0 6px; }
+.val-legend .octo { width: 15px; height: 15px; }
+.val-legend .octo-wrap + .octo-wrap, .val-legend .octo-wrap { margin-left: 8px; }
+.val-legend .octo-wrap:first-child { margin-left: 0; }
 .dir-main .octo-wrap { margin-left: 5px; vertical-align: -3px; }
 .dir-main .octo { width: 15px; height: 15px; }
