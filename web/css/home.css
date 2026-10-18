@@ -1,1 +1,72 @@
 /* home.css: owned by the home feature. Feature-specific styles go here, not in style.css. */
+/* FM-1 Home: perform bar + FX pull-down, favorites/notes, keyboard, voice editor, about. */
+
+.home-panel .lbl { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+
+/* Perform panel */
+.home-panel .panel-top { display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; margin-bottom: 10px; }
+.home-panel .panel-top h3 { margin: 0; }
+.dev-status { display: flex; align-items: center; gap: 6px; font-size: 13px; flex-wrap: wrap; }
+.dev-status .dot { margin-right: 2px; }
+.dev-status .sep { color: var(--muted); margin: 0 2px; }
+
+.perform-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; }
+.perform-bar .grp { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.perform-bar input[type="number"] { width: 64px; }
+
+.fx-toggle .caret, .sec-toggle .caret { display: inline-block; transition: transform .15s; }
+.fx-toggle .fx-count { color: var(--muted); font-size: 12.5px; }
+.fx-toggle.open { border-color: var(--accent); box-shadow: inset 0 -2px var(--accent); }
+.fx-toggle.open .caret { transform: rotate(180deg); }
+
+/* FX drawer: opens in place under the perform bar */
+.fx-panel { margin-top: 12px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-2); }
+.fx-panel-head { display: flex; align-items: center; gap: 8px 16px; flex-wrap: wrap; margin-bottom: 10px; }
+.fx-panel-head .row { margin: 0 0 0 auto; }
+.fx-ch { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+/* At most three units per row (3x2), dropping to two or one column when narrow. */
+.fx-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, max(220px, calc((100% - 20px) / 3))), 1fr)); gap: 10px; }
+.fx-grid .fx-card { padding: 12px; }
+.fx-grid .fx-head b { font-size: 14.5px; }
+
+/* Quick FX strip (hidden while the full FX drawer is open) */
+.quick-strip { display: flex; align-items: center; gap: 8px 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.home-panel.fx-open .quick-strip { display: none; }
+.fx-quick { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; flex: 1; min-width: 0; }
+.fx-quick .q { display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 5px 6px 5px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); font-size: 13px; }
+.fx-quick .switch { width: 34px; height: 20px; flex: none; }
+.fx-quick .switch::after { width: 14px; height: 14px; }
+.fx-quick .switch.on::after { left: 17px; }
+
+/* Favorites + notes side by side */
+.home-duo { grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); }
+
+/* Collapsible sections (voice editor, about) */
+.sec-bar { display: flex; align-items: center; gap: 8px 14px; flex-wrap: wrap; }
+.sec-toggle { background: none; border: 0; padding: 4px 6px 4px 0; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.sec-toggle:hover { color: var(--ink); }
+.sec-toggle .caret { margin-right: 8px; }
+.sec-toggle[aria-expanded="false"] .caret { transform: rotate(-90deg); }
+.sec-sum { font-size: 13px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.sec-actions { margin: 0 0 0 auto; }
+.sec-body { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.sec-body h4.sub { margin: 14px 0 6px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.sec-body .op-grid { margin-top: 14px; grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr)); }
+.sec-body .op-card, .sec-body .explore-grid .card { background: var(--panel-2); }
+.sec-body .explore-grid { grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); }
+.sec-body .explore-grid .card { margin-bottom: 0; overflow-x: auto; }
+
+@media (max-width: 640px) {
+  .perform-bar { gap: 10px 14px; }
+  .fx-panel { padding: 10px; }
+  .fx-panel-head .row { margin-left: 0; }
+  .sec-actions { margin-left: 0; }
+  .sec-sum { flex-basis: 100%; order: 3; }
+}
+
+/* Nav (owned by the home feature): one scrollable row on phones instead of a squeezed column. */
+@media (max-width: 640px) {
+  #tabs { order: 3; flex: 1 1 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  #tabs button { white-space: nowrap; flex: none; }
+  .topbar .conn { margin-left: auto; }
+}

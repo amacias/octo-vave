@@ -92,8 +92,8 @@ function defaultFx() {
 }
 
 const WIDGETS = {
-  status: "Device", perform: "Perform", favorites: "Favorites", quickfx: "Quick FX",
-  keys: "Keyboard", notes: "Notes", activity: "Recent MIDI in",
+  status: "Device status", perform: "Perform + FX", quickfx: "Quick FX", favorites: "Favorites",
+  notes: "Notes", keys: "Keyboard", voice: "Voice editor", explore: "About the FM-1",
 };
 
 const DEFAULTS = {
@@ -182,9 +182,7 @@ function updateConn() {
   $("#connDot").className = "dot " + (on ? "on" : "off");
   $("#connText").textContent = on ? S.out.name : S.midi ? "No output selected" : "Not connected";
   $("#connectBtn").textContent = S.midi ? "Rescan" : "Connect";
-  $("#homeOut").textContent = S.out?.name || "–";
-  $("#homeIn").textContent = S.inp?.name || "–";
-  $("#homeCh").textContent = `notes ${S.settings.noteCh} · FX ${S.settings.fxCh}`;
+  renderHomeStatus();
 }
 
 let warnedNoOut = false;
@@ -388,12 +386,6 @@ function logMidi(dir, bytes) {
   const short = bytes.length > 12 ? hex(bytes.slice(0, 12)) + " …" : hex(bytes);
   const raw = bytes.length > 256 ? hex(bytes.slice(0, 256)) + ` … (${bytes.length} bytes)` : hex(bytes);
   monAdd({ t, dir, kind: msgKind(bytes), text, short, raw });
-  const mini = dir === "in" && $("#miniLog");
-  if (mini) {
-    mini.append(logRow(dir, text, "", t));
-    while (mini.childElementCount > 40) mini.firstChild.remove();
-    mini.scrollTop = mini.scrollHeight;
-  }
 }
 function logText(dir, text) {
   if (dir === "out" && !$("#monOut").checked) return;
@@ -637,6 +629,12 @@ function updateCarriers() {
     e.tag.className = "tag" + (isCar ? " car" : "");
     e.enable.checked = on;
   }
+  updateVoiceSummary();
+}
+
+/** One-line summary in the Voice editor bar, so it says something when collapsed. */
+function updateVoiceSummary() {
+  $("#voiceSummary").textContent = `${DX.getName(S.voice).trim() || "(no name)"} · algorithm ${S.voice[134] + 1}`;
 }
 
 function refreshVoiceUI() {
@@ -723,6 +721,16 @@ function refreshFx() {
       if (c.out) c.out.textContent = S.fx[cc];
     }
   }
+  const n = FX_DEFS.filter((d) => S.fx[d.sw] > 0).length;
+  $("#fxOnCount").textContent = n ? ` · ${n} on` : "";
+}
+
+/** The "FX ▾" pull-down on FM-1 Home. */
+function toggleFxPanel(open = $("#fxPanel").classList.contains("hidden")) {
+  $("#fxPanel").classList.toggle("hidden", !open);
+  $("#fxToggle").setAttribute("aria-expanded", open);
+  $("#fxToggle").classList.toggle("open", open);
+  $(".home-panel").classList.toggle("fx-open", open);
 }
 
 function setFx(cc, v, { live = true } = {}) {
@@ -1168,7 +1176,7 @@ async function markInstalled(id, version, note = "") {
 function updateStockWarn() {
   const inst = S.fw?.installed;
   const tab = $("#tabs .active")?.dataset.tab;
-  const show = inst && inst.id !== "official" && (tab === "voice" || tab === "fx");
+  const show = inst && inst.id !== "official" && tab === "home";
   $("#stockWarn").classList.toggle("hidden", !show);
   if (inst) $("#stockWarnName").textContent = `${fwName(inst.id)} ${inst.version}`;
 }
@@ -1636,9 +1644,9 @@ function buildExplore() {
       ul(
         "Measured on this unit (2026-10-18): keys send notes on ch 1 at a fixed velocity of 90 (note-off velocity 100). Knobs and preset changes send nothing over USB MIDI, so the dashboard can't follow presets you pick on the device.",
         "Play & MIDI → CC discovery: re-check what the FM-1 transmits after a firmware change. Felucca and Melodee add MIDI learn and per-track channels.",
-        "Start the clock on Home. The arp and sequencer follow external BPM (F8), and Start always restarts at step 0.",
+        "Start the clock under Perform above. The arp and sequencer follow external BPM (F8), and Start always restarts at step 0.",
         "Program Change 1–128 selects voices 001–128 (since V13).",
-        "Import any DX7 .syx bank in the Voice tab. Thousands of free banks exist, and the FM-1 takes the same parameter layout.",
+        "Import any DX7 .syx bank in the Voice editor above. Thousands of free banks exist, and the FM-1 takes the same parameter layout.",
         "Long-press an OPx button to mute that operator (V15).",
         "Glide (Glob page 2, 0–1 s) only works on mono voices.",
         "Gotcha: CC 1 on the FX channel (default ch 2) is Filter Type, not mod wheel. Play on ch 1.",
@@ -1681,6 +1689,30 @@ function applyTheme() {
 
 function applyWidgets() {
   for (const w of $$(".widget")) w.classList.toggle("hidden", S.settings.widgets[w.dataset.widget] === false);
+  // Hide a container once every widget in it is switched off.
+  for (const box of $$(".home-panel, .home-duo")) box.classList.toggle("hidden", !$(".widget:not(.hidden)", box));
+}
+
+function renderHomeStatus() {
+  const on = !!S.out;
+  $("#homeDot").className = "dot " + (on ? "on" : "off");
+  $("#homeConn").textContent = on ? "Connected" : S.midi ? "No output selected" : "Not connected";
+  $("#homeConn").title = on ? S.out.name : "";
+}
+
+/** Collapsible Home sections: a .sec-toggle shows/hides its aria-controls target, remembered per browser. */
+function wireCollapsibles() {
+  for (const btn of $$(".sec-toggle")) {
+    const body = $("#" + btn.getAttribute("aria-controls"));
+    const key = "fm1.open." + body.id;
+    const set = (open) => { body.classList.toggle("hidden", !open); btn.setAttribute("aria-expanded", open); };
+    try { const v = localStorage.getItem(key); if (v != null) set(v === "1"); } catch {}
+    btn.onclick = () => {
+      const open = body.classList.contains("hidden");
+      set(open);
+      try { localStorage.setItem(key, open ? "1" : "0"); } catch {}
+    };
+  }
 }
 
 function buildCustomize() {
@@ -1702,6 +1734,8 @@ function chOptions(sel, value) {
 }
 
 function switchTab(name) {
+  // Old saved tabs (voice, fx, explore) now live on FM-1 Home.
+  if (!document.getElementById("tab-" + name)) name = "home";
   $$("#tabs button").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
   $$(".tab").forEach((t) => t.classList.toggle("active", t.id === "tab-" + name));
   updateStockWarn();
@@ -1718,12 +1752,6 @@ function wire() {
   $("#releaseBtn").onclick = releaseMidi;
   chOptions($("#noteCh"), S.settings.noteCh);
   $("#noteCh").onchange = (e) => { S.settings.noteCh = +e.target.value; updateConn(); saveSettings(); };
-  // The FX channel selector is FM-1-specific and no longer lives on Play & MIDI; wire it wherever it is.
-  const fxSel = $("#fxCh");
-  if (fxSel) {
-    chOptions(fxSel, S.settings.fxCh);
-    fxSel.onchange = (e) => { S.settings.fxCh = +e.target.value; updateConn(); saveSettings(); };
-  }
   $("#sysexGap").value = S.settings.sysexGap;
   $("#sysexGap").onchange = (e) => { S.settings.sysexGap = Math.max(0, Math.min(50, +e.target.value || 0)); saveSettings(); };
 
@@ -1781,6 +1809,7 @@ function wire() {
   $("#algNum").onchange = (e) => setParam(134, Math.max(1, Math.min(32, +e.target.value || 1)) - 1);
   $("#voiceName").oninput = (e) => {
     DX.setName(S.voice, e.target.value);
+    updateVoiceSummary();
     if (S.settings.liveSend) for (let p = DX.NAME_OFFSET; p < DX.NAME_OFFSET + 10; p++) queueParam(p);
     saveSettings();
   };
@@ -1806,7 +1835,11 @@ function wire() {
     $("#bankPick").classList.remove("hidden");
   };
 
-  // fx
+  // fx (pull-down on FM-1 Home)
+  chOptions($("#fxCh"), S.settings.fxCh);
+  $("#fxCh").onchange = (e) => { S.settings.fxCh = +e.target.value; updateConn(); saveSettings(); };
+  $("#fxToggle").onclick = () => toggleFxPanel();
+  $("#fxPanel").addEventListener("keydown", (e) => { if (e.key === "Escape") { toggleFxPanel(false); $("#fxToggle").focus(); } });
   $("#fxSendAll").onclick = () => sendAllFx();
   $("#fxSave").onclick = () => openSave({ voice: false, fx: true });
 
@@ -1825,7 +1858,11 @@ function wire() {
   };
 
   // home
-  $("#customizeBtn").onclick = () => $("#customizePanel").classList.toggle("hidden");
+  $("#customizeBtn").onclick = () => {
+    const open = !$("#customizePanel").classList.toggle("hidden");
+    $("#customizeBtn").setAttribute("aria-expanded", open);
+  };
+  wireCollapsibles();
   $("#userNotes").value = S.settings.notes || "";
   $("#userNotes").oninput = (e) => { S.settings.notes = e.target.value; saveSettings(); };
 }
