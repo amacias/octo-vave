@@ -1196,6 +1196,10 @@ function libCard(p) {
     await api(patchUrl(p.name), { method: "DELETE" }).catch(err); loadPatches();
   });
 
+  // Inline edit of name and hashtags (✎ on the row, Enter saves, Esc cancels).
+  const editBtn = !p.error && h("button", { class: "lib-edit", title: "Edit name and tags", text: "✎", "aria-label": `Edit ${p.name}` });
+  if (editBtn) editBtn.onclick = () => startPatchEdit(row, p);
+
   // Second line only when there's something worth reading.
   const sub = [
     block && h("span", { class: "lib-why", text: block }),
@@ -1203,11 +1207,12 @@ function libCard(p) {
     p.notes && h("span", { text: p.notes }),
   ].filter(Boolean);
 
-  return h("div", { class: "lib-row" + (mm ? " other-fw" : ""), "data-fw": p.firmware?.id || "" },
+  const row = h("div", { class: "lib-row" + (mm ? " other-fw" : ""), "data-fw": p.firmware?.id || "" },
     h("button", { class: "star" + (p.favorite ? " on" : ""), title: "Favorite (shows on Home)", text: p.favorite ? "★" : "☆", onclick: () => toggleFavorite(p.name) }),
     h("div", { class: "lib-name" },
       h("b", { text: p.name, title: p.name }),
-      p.schemaVersion < 2 && h("span", { class: "badge", text: "v1", title: "Older file: read as a stock patch, upgraded to schema v2 the next time it's saved" })),
+      p.schemaVersion < 2 && h("span", { class: "badge", text: "v1", title: "Older file: read as a stock patch, upgraded to schema v2 the next time it's saved" }),
+      editBtn),
     h("span", { class: "fw-chip " + (mm ? "warn" : "ok"), title: mm || "Matches the firmware logged on the device" }, fwText(p.firmware)),
     h("div", { class: "lib-info" },
       h("span", { class: "fmt-chip", title: `${p.format}${fmt?.description ? "\n" + fmt.description : ""}`, text: fmt ? fmt.name : `unknown format ${p.format}` }),
@@ -1228,6 +1233,45 @@ function libCard(p) {
       del),
     sub.length > 0 && h("div", { class: "lib-sub", title: sub.map((s) => s.textContent).join("\n") }, sub),
     confirmBox, details);
+  return row;
+}
+
+/** "#bells live, ambient" → ["bells", "live", "ambient"] */
+const parseTags = (s) => [...new Set(String(s).split(/[\s,]+/).map((t) => t.replace(/^#+/, "").trim().slice(0, 64)).filter(Boolean))];
+
+/** Swap a row's name and contents cells for inputs; the actions become ✓ / ✕. */
+function startPatchEdit(row, p) {
+  const nameCell = row.querySelector(".lib-name"), infoCell = row.querySelector(".lib-info"), actions = row.querySelector(".lib-actions");
+  const keep = [nameCell, infoCell, actions].map((el) => [...el.childNodes]);
+  const nameIn = h("input", { class: "lib-edit-name", value: p.name, maxlength: 64, "aria-label": "Patch name" });
+  const tagsIn = h("input", { class: "lib-edit-tags", value: (p.tags || []).map((t) => "#" + t).join(" "),
+    placeholder: "#tag #another", "aria-label": "Tags, separated by spaces or commas" });
+  const restore = () => { [nameCell, infoCell, actions].forEach((el, i) => el.replaceChildren(...keep[i])); row.classList.remove("editing"); };
+  const save = async () => {
+    const to = nameIn.value.trim();
+    if (!/^[A-Za-z0-9][A-Za-z0-9 _.()\-]{0,63}$/.test(to)) {
+      toast("Names: letters, digits, space _ . - ( ), starting with a letter or digit", true); nameIn.focus(); return;
+    }
+    const tags = parseTags(tagsIn.value);
+    try {
+      if (JSON.stringify(tags) !== JSON.stringify(p.tags || [])) {
+        const full = await api(patchUrl(p.name));
+        await api(patchUrl(p.name), { method: "PUT", body: JSON.stringify({ ...full, tags }) });
+      }
+      if (to !== p.name) await api(patchUrl(p.name) + "/rename", { method: "POST", body: JSON.stringify({ to }) });
+      toast(to !== p.name ? `Renamed to "${to}"` : "Tags saved");
+      loadPatches();
+    } catch (e) { toast(e.message, true); }
+  };
+  const onKey = (e) => { if (e.key === "Enter") save(); else if (e.key === "Escape") restore(); };
+  nameIn.onkeydown = tagsIn.onkeydown = onKey;
+  row.classList.add("editing");
+  nameCell.replaceChildren(nameIn);
+  infoCell.replaceChildren(tagsIn);
+  actions.replaceChildren(
+    h("button", { class: "primary", text: "Save", onclick: save }),
+    h("button", { class: "ghost", text: "Cancel", onclick: restore }));
+  nameIn.focus(); nameIn.select();
 }
 
 /** Compact list: a header row plus one row per patch. */

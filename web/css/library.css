@@ -35,6 +35,15 @@
 .lib-info .badge { flex: none; }
 .lib-date { color: var(--muted); font: 12px var(--mono); }
 .lib-head-actions { text-align: right; }
+/* ✎ shows on row hover/focus (always on touch screens) */
+.lib-edit { flex: none; background: none; border: 0; padding: 0 4px; color: var(--muted); font-size: 13px; opacity: 0; }
+.lib-row:hover .lib-edit, .lib-edit:focus-visible { opacity: 1; }
+@media (hover: none) { .lib-edit { opacity: 1; } }
+.lib-edit:hover { color: var(--accent); }
+.lib-row.editing { background: var(--panel-2); }
+.lib-row.editing .lib-info { mask-image: none; overflow: visible; }
+.lib-edit-name, .lib-edit-tags { width: 100%; padding: 3px 8px; font-size: 13px; }
+.lib-edit-name { font-weight: 600; }
 .lib-actions { display: flex; gap: 4px; justify-content: flex-end; }
 .lib-actions button { padding: 3px 9px; font-size: 12.5px; }
 .lib-sub { grid-column: 2 / -1; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: -2px; }

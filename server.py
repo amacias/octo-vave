@@ -1200,7 +1200,33 @@ def patches_api(h, method, parts):
         if method == "DELETE":
             path.unlink(missing_ok=True)
             return h._send_json({"deleted": name})
+    if len(parts) == 3 and parts[2] == "rename" and method == "POST":
+        return rename_patch(h, parts[1], str(h._json_body().get("to", "")).strip())
     return h._error("not found", 404)
+
+
+def rename_patch(h, src, dst):
+    """Rename a patch file, keeping its content as is (star, notes, schema); only name and
+    modified change. Refuses to overwrite another patch."""
+    for n in (src, dst):
+        if not NAME_RE.match(n):
+            raise ValueError("patch names: letters, digits, space _ . - ( ) up to 64 chars")
+    sp, dp = PATCHES / f"{src}.json", PATCHES / f"{dst}.json"
+    if not sp.exists():
+        return h._error("not found", 404)
+    # A case-only rename points at the same file on Windows/macOS; that's allowed.
+    if dp.exists() and src.casefold() != dst.casefold():
+        raise ValueError(f'a patch named "{dst}" already exists')
+    raw = read_json(sp, None)
+    if not isinstance(raw, dict):
+        return h._error("patch file isn't valid JSON", 500)
+    raw["name"] = dst
+    raw["modified"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+    tmp = PATCHES / f"{dst}.json.renaming"
+    write_json(tmp, raw)
+    sp.unlink()
+    tmp.replace(dp)
+    return h._send_json({"renamed": src, "to": dst})
 
 
 def main():
