@@ -35,3 +35,6 @@ $RECYCLE.BIN/
 *.swp
 .vscode/
 .idea/
+
+# Claude Code local files (agent worktrees, local settings)
+.claude/
