@@ -26,7 +26,7 @@
 .val-steps.issues { color: #9B5DE5; }
 .val-steps.failed { color: #E03C31; }
 .val-note { flex: 1; min-width: 0; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.val-legend { display: flex; align-items: center; gap: 4px 6px; flex-wrap: wrap; font-size: 12px; margin: 2px 0 6px; }
+.val-legend { display: inline-flex; align-items: center; gap: 4px 6px; flex-wrap: wrap; font-size: 12px; }
 .val-legend .octo { width: 15px; height: 15px; }
 .val-legend .octo-wrap + .octo-wrap, .val-legend .octo-wrap { margin-left: 8px; }
 .val-legend .octo-wrap:first-child { margin-left: 0; }
@@ -47,8 +47,8 @@
 .trait.aid .fg-fill { fill: #fff; }
 .trait.off .bg { fill: #8A9099; }
 .trait.off { opacity: .4; }
-.fw-legend-row { display: flex; justify-content: flex-end; margin: 4px 0 -12px; }
+.fw-legend-row { display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin: 4px 0 -12px; }
+.legend-sep { width: 1px; height: 14px; background: var(--line); }
 .trait-legend { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; font-size: 12px; }
 .trait-legend .trait svg { width: 15px; height: 15px; }
-.trait-legend .trait + * { margin-right: 2px; }
-.trait-off-note { margin-left: 2px; }
+.trait-legend .trait:not(:first-child), .trait-off-note { margin-left: 8px; }

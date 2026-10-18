@@ -1457,7 +1457,7 @@ function renderFirmware() {
   const orphans = Object.entries(fw.library || {}).filter(([id]) => !carded.has(id));
 
   $("#fwCards").replaceChildren(...[
-    h("div", { class: "fw-legend-row" }, traitLegend()),
+    h("div", { class: "fw-legend-row" }, octoLegend(), h("span", { class: "legend-sep" }), traitLegend()),
     h("h2", { class: "fw-section" }, "Official"),
     h("div", { class: "fw-cards" }, official.map((f) => fwCard(f, fw, null))),
     h("h2", { class: "fw-section" }, "Community · top 10 free & open source ",
@@ -1561,11 +1561,17 @@ function fwTraits(f, latest, primary) {
           : "Revert to stock: not checked yet (card not curated)"));
 }
 
+function octoLegend() {
+  return h("span", { class: "val-legend muted" },
+    octo("Validated", "clean"), "validated", octo("Validated with issues", "issues"), "with issues", octo("Failed validation", "failed"), "failed",
+    octo("Newer release not tested yet", "clean older"), "newer release not tested yet");
+}
+
 function traitLegend() {
   return h("span", { class: "trait-legend muted" },
-    trait("egg", "open", "Open source"), "open", trait("egg", "closed", "Closed source"), "closed source ·",
-    trait("sum", "on", "Checksum published"), "checksum ·", trait("aid", "on", "Revert to stock in the installer"), "revert in installer ·",
-    h("span", { class: "trait-off-note", text: "grey = no or unknown" }));
+    trait("egg", "open", "Open source"), "open", trait("egg", "closed", "Closed source"), "closed source",
+    trait("sum", "on", "Checksum published"), "checksum", trait("aid", "on", "Revert to stock in the installer"), "revert in installer",
+    h("span", { class: "trait-off-note", text: "(grey = no or unknown)" }));
 }
 
 function octo(title, cls = "") {
@@ -1672,9 +1678,6 @@ function validatedSection(fw, orphans) {
     h("div", { class: "section-head" },
       h("h3", {}, octo("Validated"), " Validated firmware in Library"),
       h("span", { class: "muted", text: [`${n("clean")} validated`, n("issues") && `${n("issues")} with issues`, n("failed") && `${n("failed")} failed`].filter(Boolean).join(" · ") })),
-    h("div", { class: "val-legend muted" },
-      octo("", "clean"), "validated", octo("", "issues"), "with issues", octo("", "failed"), "failed",
-      octo("", "clean older"), "newer release not tested yet"),
     rows.length ? rows : h("p", { class: "muted", text: "Nothing validated yet. Validation happens in hands-on Claude Code sessions: flash, run, revert to stock (see VALIDATION.md)." }),
     orphans.length > 0 && h("details", {},
       h("summary", { class: "muted", text: `Other files in library, not in the top 10 (${orphans.reduce((n, [, l]) => n + l.length, 0)})` }),
