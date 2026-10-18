@@ -405,39 +405,10 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._send_json(obj)
 
         if head == "patches":
-            PATCHES.mkdir(parents=True, exist_ok=True)
-            if len(parts) == 1 and method == "GET":
-                items = []
-                for p in sorted(PATCHES.glob("*.json")):
-                    d = read_json(p, {})
-                    items.append({
-                        "name": p.stem, "favorite": bool(d.get("favorite")),
-                        "notes": d.get("notes", ""), "modified": d.get("modified", ""),
-                        "hasVoice": bool(d.get("voice")), "hasFx": bool(d.get("fx")),
-                        "program": d.get("program"), "tags": d.get("tags", []),
-                    })
-                return self._send_json(items)
-            if len(parts) == 2:
-                name = parts[1]
-                if not NAME_RE.match(name):
-                    raise ValueError("patch names: letters, digits, space _ . - ( ) up to 64 chars")
-                path = PATCHES / f"{name}.json"
-                if method == "GET":
-                    if not path.exists():
-                        return self._error("not found", 404)
-                    return self._send_json(read_json(path, {}))
-                if method == "PUT":
-                    obj = self._json_body()
-                    if not isinstance(obj, dict):
-                        raise ValueError("patch must be an object")
-                    obj["name"] = name
-                    obj["modified"] = time.strftime("%Y-%m-%dT%H:%M:%S")
-                    obj.setdefault("created", obj["modified"])
-                    write_json(path, obj)
-                    return self._send_json(obj)
-                if method == "DELETE":
-                    path.unlink(missing_ok=True)
-                    return self._send_json({"deleted": name})
+            return patches_api(self, method, parts)
+
+        if head == "formats" and method == "GET" and len(parts) == 1:
+            return self._send_json(formats_response())
 
         if head == "firmware":
             sub = parts[1] if len(parts) > 1 else ""
@@ -480,6 +451,286 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._send_json({"path": Path(reveal(fid)).relative_to(ROOT).as_posix()})
 
         return self._error("not found", 404)
+
+
+# ---------------------------------------------------------------- patches & formats
+#
+# Patch schema v2 (data/patches/<name>.json):
+#   schemaVersion  2
+#   firmware       {"id": catalog id, "version": optional}: the firmware the patch is for
+#   format         "<file id>/<key>": a format defined in firmware/formats/<file id>.json
+#   content        stock: voice (156 DX7 values), fx ({"<cc>": value}), program (1-128)
+#                  other firmwares: params ({id: value}), cc ([{ch?, cc, value}]), sysex (["F0 .. F7"])
+#   name, notes, tags, favorite, created, modified. Any other field is stored as it is.
+# v1 files (no schemaVersion) are read as firmware {"id": "official"} in the stock format and
+# are only rewritten, as v2, when they are saved.
+
+FORMATS_DIR = ROOT / "firmware" / "formats"
+PATCH_SCHEMA = 2
+OFFICIAL_FORMAT = "official/dx7-voice+fx"
+FORMAT_KEY_RE = re.compile(r"^[a-z0-9][a-z0-9.+\-]{0,47}$")
+FORMAT_ID_RE = re.compile(r"^[a-z0-9][a-z0-9\-]{0,31}/[a-z0-9][a-z0-9.+\-]{0,47}$")
+TRANSPORTS = {"program-change", "dx7-param-sysex", "cc-map", "cc-list", "params", "raw-sysex", "none"}
+STATUSES = {"confirmed", "discovered", "unknown"}
+_formats_cache = {"sig": None, "reg": None}
+
+
+def load_formats():
+    """Read the format registry, firmware/formats/*.json (files starting with _ are skipped).
+    Broken files or formats are reported in "errors" instead of failing the whole registry."""
+    paths = sorted(p for p in FORMATS_DIR.glob("*.json") if not p.name.startswith("_"))
+    sig = tuple((p.name, p.stat().st_mtime_ns, p.stat().st_size) for p in paths)
+    if _formats_cache["sig"] == sig:
+        return _formats_cache["reg"]
+    reg = {"files": [], "formats": {}, "errors": []}
+    for p in paths:
+        fid = p.stem
+        try:
+            if p.stat().st_size > MAX_BODY:
+                raise ValueError("file too large")
+            d = json.loads(p.read_text(encoding="utf-8"))
+            if not isinstance(d, dict):
+                raise ValueError("not a JSON object")
+            if not ID_RE.match(fid) or d.get("id", fid) != fid:
+                raise ValueError(f'"id" must equal the file name ({fid})')
+            fws = d.get("firmware", [fid])
+            fws = [fws] if isinstance(fws, str) else fws
+            if not isinstance(fws, list) or not fws or not all(
+                    isinstance(x, str) and (x == "*" or ID_RE.match(x)) for x in fws):
+                raise ValueError('"firmware" must list catalog ids, or "*" for any firmware')
+            fmts = d.get("formats")
+            if not isinstance(fmts, dict) or not fmts:
+                raise ValueError('no "formats"')
+        except (OSError, ValueError, json.JSONDecodeError) as e:
+            reg["errors"].append(f"{p.name}: {e}")
+            continue
+        ids = []
+        for key, f in fmts.items():
+            try:
+                if not isinstance(key, str) or not FORMAT_KEY_RE.match(key) or not isinstance(f, dict):
+                    raise ValueError("format keys: a-z 0-9 . + - (up to 48), each an object")
+                send = f.get("send", [])
+                if not isinstance(send, list) or not all(isinstance(s, dict) for s in send):
+                    raise ValueError('"send" must be a list of steps')
+                params = f.get("params", [])
+                if not isinstance(params, list) or not all(
+                        isinstance(x, dict) and isinstance(x.get("id"), str) for x in params):
+                    raise ValueError('"params" must be a list of objects with an "id"')
+                if len({x["id"] for x in params}) != len(params):
+                    raise ValueError("duplicate parameter ids")
+            except ValueError as e:
+                reg["errors"].append(f"{p.name}: {key}: {e}")
+                continue
+            problems = [f'transport "{s.get("type")}" isn\'t supported by this dashboard'
+                        for s in send if s.get("type") not in TRANSPORTS]
+            blocked = next((s.get("reason") or "No way to send this format is known yet."
+                            for s in send if s.get("type") == "none"), None)
+            status = f.get("status", d.get("status", "unknown"))
+            full = f"{fid}/{key}"
+            reg["formats"][full] = {
+                **f, "id": full, "file": fid, "firmware": fws,
+                "status": status if status in STATUSES else "unknown",
+                "sendable": bool(send) and not problems and not blocked,
+                "notSendableReason": "; ".join(problems) or blocked or (None if send else "No send steps defined."),
+            }
+            ids.append(full)
+        status = d.get("status", "unknown")
+        reg["files"].append({
+            "id": fid, "name": str(d.get("name", fid)), "firmware": fws,
+            "status": status if status in STATUSES else "unknown",
+            "description": str(d.get("description", "")), "formats": ids,
+        })
+    _formats_cache.update(sig=sig, reg=reg)
+    return reg
+
+
+def formats_response():
+    """GET /api/formats: the registry plus what the Library needs to label it (catalog names
+    and the logged device firmware), so the Library doesn't depend on the Firmware tab."""
+    state = read_json(FW_STATE, {})
+    return {
+        **load_formats(),
+        "catalog": [{"id": f.get("id"), "name": f.get("name"), "kind": f.get("kind")}
+                    for f in catalog().get("firmware", [])],
+        "installed": state.get("installed"),
+    }
+
+
+def normalize_patch(d):
+    """Schema v2 view of a stored patch, without changing the file.
+    Returns (view, stored schema version)."""
+    stored = d.get("schemaVersion")
+    out = dict(d)
+    if stored is None:  # v1: stock DX7 voice + FX; "firmware" was a loose string
+        legacy = d.get("firmware")
+        out["firmware"] = {"id": "official"}
+        if isinstance(legacy, str) and legacy and legacy != "official":
+            out["legacyFirmware"] = legacy[:32]
+        out["format"] = OFFICIAL_FORMAT
+        out["schemaVersion"] = PATCH_SCHEMA
+        return out, 1
+    fw = d.get("firmware")
+    if not isinstance(fw, dict) or not isinstance(fw.get("id"), str):
+        out["firmware"] = {"id": fw if isinstance(fw, str) and ID_RE.match(fw) else "unknown"}
+    if not isinstance(d.get("format"), str):
+        out["format"] = "unknown/unknown"
+    return out, stored
+
+
+def _intv(v, lo, hi, what):
+    if isinstance(v, bool) or not isinstance(v, int) or not lo <= v <= hi:
+        raise ValueError(f"{what} must be an integer {lo}-{hi}")
+    return v
+
+
+def parse_sysex(msg):
+    """One SysEx message as hex text ("F0 43 .. F7") or a byte list -> normalized hex text."""
+    if isinstance(msg, str):
+        tokens = msg.replace(",", " ").split()
+        try:
+            data = [int(t, 16) for t in tokens]
+        except ValueError:
+            raise ValueError(f"sysex: not hex: {msg[:40]}") from None
+    elif isinstance(msg, list):
+        data = [_intv(b, 0, 255, "sysex byte") for b in msg]
+    else:
+        raise ValueError("sysex: each message is a hex string or a byte list")
+    if len(data) < 2 or data[0] != 0xF0 or data[-1] != 0xF7 or any(b > 0x7F for b in data[1:-1]):
+        raise ValueError("sysex: each message must start with F0, end with F7 and hold 7-bit data")
+    if len(data) > 65536:
+        raise ValueError("sysex: message too long")
+    return " ".join(f"{b:02X}" for b in data)
+
+
+def validate_patch(obj):
+    """Check a patch for PUT and return it as schema v2. Known fields are type-checked;
+    unknown fields are kept untouched."""
+    if not isinstance(obj, dict):
+        raise ValueError("patch must be an object")
+    sv = obj.get("schemaVersion")
+    if sv is None:
+        obj, _ = normalize_patch(obj)
+    elif sv != PATCH_SCHEMA:
+        raise ValueError(f"schemaVersion {sv} isn't supported (this dashboard writes {PATCH_SCHEMA})")
+    obj = dict(obj)
+
+    fw = obj.get("firmware")
+    if not isinstance(fw, dict) or not isinstance(fw.get("id"), str) or not ID_RE.match(fw["id"]):
+        raise ValueError('firmware must be {"id": "<catalog id>", "version": "..."}')
+    fw = dict(fw)
+    if fw.get("version") in (None, ""):
+        fw.pop("version", None)
+    elif not isinstance(fw["version"], str) or len(fw["version"]) > 48:
+        raise ValueError("firmware.version: text up to 48 characters")
+    obj["firmware"] = fw
+
+    fmt_id = obj.get("format")
+    if not isinstance(fmt_id, str) or not FORMAT_ID_RE.match(fmt_id):
+        raise ValueError('format must be a format id such as "official/dx7-voice+fx"')
+    fmt = load_formats()["formats"].get(fmt_id)
+    if not fmt:
+        raise ValueError(f'unknown format "{fmt_id}": add it to firmware/formats/ first')
+    if "*" not in fmt["firmware"] and fw["id"] not in fmt["firmware"]:
+        raise ValueError(f'format "{fmt_id}" is for {", ".join(fmt["firmware"])}, not {fw["id"]}')
+
+    if obj.get("voice") is not None:
+        v = obj["voice"]
+        if not isinstance(v, list) or len(v) != 156:
+            raise ValueError("voice must be a list of 156 DX7 values")
+        for x in v:
+            _intv(x, 0, 127, "voice values")
+    if obj.get("fx") is not None:
+        fx = obj["fx"]
+        if not isinstance(fx, dict) or len(fx) > 128:
+            raise ValueError('fx must be an object {"<cc>": value}')
+        for k, x in fx.items():
+            if not str(k).isdigit() or int(k) > 127:
+                raise ValueError("fx keys are CC numbers 0-127")
+            _intv(x, 0, 127, "fx values")
+    if obj.get("program") is not None:
+        _intv(obj["program"], 1, 128, "program")
+    if obj.get("params") is not None:
+        ps = obj["params"]
+        if not isinstance(ps, dict) or len(ps) > 4096:
+            raise ValueError("params must be an object {id: value} (up to 4096)")
+        for k, x in ps.items():
+            if len(k) > 64 or not (x is None or isinstance(x, (int, float, bool)) or (isinstance(x, str) and len(x) <= 256)):
+                raise ValueError(f"params.{k[:64]}: a number, true/false or short text")
+    if obj.get("cc") is not None:
+        cl = obj["cc"]
+        if not isinstance(cl, list) or len(cl) > 4096:
+            raise ValueError("cc must be a list of {ch, cc, value} (up to 4096)")
+        for e in cl:
+            if not isinstance(e, dict):
+                raise ValueError("cc entries are objects {ch, cc, value}")
+            _intv(e.get("cc"), 0, 127, "cc.cc")
+            _intv(e.get("value"), 0, 127, "cc.value")
+            if e.get("ch") is not None:
+                _intv(e["ch"], 1, 16, "cc.ch")
+    if obj.get("sysex") is not None:
+        sx = obj["sysex"]
+        if not isinstance(sx, list) or len(sx) > 512:
+            raise ValueError("sysex must be a list of messages (up to 512)")
+        obj["sysex"] = [parse_sysex(m) for m in sx]
+    tags = obj.get("tags", [])
+    if not isinstance(tags, list) or len(tags) > 64 or not all(isinstance(t, str) and len(t) <= 64 for t in tags):
+        raise ValueError("tags: a list of up to 64 short texts")
+    if not isinstance(obj.get("notes", ""), str) or len(obj.get("notes", "")) > 20000:
+        raise ValueError("notes: text up to 20000 characters")
+    obj["favorite"] = bool(obj.get("favorite"))
+    obj["schemaVersion"] = PATCH_SCHEMA
+    return obj
+
+
+def patch_summary(name, raw):
+    """One row of GET /api/patches."""
+    error = None
+    if not isinstance(raw, dict):
+        error, raw = "unreadable JSON", {}
+    d, stored = normalize_patch(raw)
+    tags = d.get("tags") if isinstance(d.get("tags"), list) else []
+    return {
+        "name": name, "favorite": bool(d.get("favorite")),
+        "notes": d.get("notes", "") if isinstance(d.get("notes"), str) else "",
+        "modified": d.get("modified", ""), "tags": [str(t) for t in tags],
+        "program": d.get("program"),
+        "hasVoice": bool(d.get("voice")), "hasFx": bool(d.get("fx")),
+        "params": len(d["params"]) if isinstance(d.get("params"), dict) else 0,
+        "cc": len(d["cc"]) if isinstance(d.get("cc"), list) else 0,
+        "sysex": len(d["sysex"]) if isinstance(d.get("sysex"), list) else 0,
+        "firmware": d["firmware"], "format": d["format"], "schemaVersion": stored,
+        "legacyFirmware": d.get("legacyFirmware"), "error": error,
+    }
+
+
+def patches_api(h, method, parts):
+    PATCHES.mkdir(parents=True, exist_ok=True)
+    if len(parts) == 1 and method == "GET":
+        return h._send_json([patch_summary(p.stem, read_json(p, None))
+                             for p in sorted(PATCHES.glob("*.json")) if NAME_RE.match(p.stem)])
+    if len(parts) == 2:
+        name = parts[1]
+        if not NAME_RE.match(name):
+            raise ValueError("patch names: letters, digits, space _ . - ( ) up to 64 chars")
+        path = PATCHES / f"{name}.json"
+        if method == "GET":
+            if not path.exists():
+                return h._error("not found", 404)
+            raw = read_json(path, None)
+            if not isinstance(raw, dict):
+                return h._error("patch file isn't valid JSON", 500)
+            return h._send_json(normalize_patch(raw)[0])
+        if method == "PUT":
+            obj = validate_patch(h._json_body())
+            obj["name"] = name
+            obj["modified"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+            obj.setdefault("created", obj["modified"])
+            write_json(path, obj)
+            return h._send_json(obj)
+        if method == "DELETE":
+            path.unlink(missing_ok=True)
+            return h._send_json({"deleted": name})
+    return h._error("not found", 404)
 
 
 def main():

@@ -199,13 +199,23 @@
       <div class="section-head">
         <h1>Library</h1>
         <div class="row">
-          <input id="libSearch" placeholder="Search…">
           <button id="libNew" class="primary">Save current…</button>
           <label class="file-btn">Import JSON<input id="libImport" type="file" accept=".json" hidden></label>
         </div>
       </div>
-      <p class="hint">A patch can hold a voice (156 DX7 params), an FX snapshot, a program number and notes. Files live in <code>data/patches/</code>, so they're easy to back up or keep in git.</p>
-      <div id="libList" class="lib-list"></div>
+      <div class="lib-toolbar">
+        <input id="libSearch" type="search" placeholder="Search…" aria-label="Search patches">
+        <label>Firmware <select id="libFw"></select></label>
+        <label>Sort <select id="libSort">
+          <option value="name">Name</option>
+          <option value="firmware">Firmware</option>
+          <option value="modified">Recently modified</option>
+        </select></label>
+        <label><input id="libGroup" type="checkbox"> Group by firmware</label>
+      </div>
+      <div id="libStatus" class="lib-status"></div>
+      <p class="hint">Each patch is saved for one firmware, in one of that firmware's formats: a stock patch holds a voice (156 DX7 params), an FX snapshot and a program number; other firmwares store parameters, CCs or SysEx as described in <code>firmware/formats/</code>. Sending a patch made for another firmware than the one logged on the device asks first. Files live in <code>data/patches/</code>, so they're easy to back up or keep in git.</p>
+      <div id="libList"></div>
     </section>
 
     <!-- FIRMWARE ----------------------------------------------------- -->

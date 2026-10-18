@@ -1,0 +1,36 @@
+{
+  "$comment": "Template for a new firmware's patch format. Files starting with _ are ignored. Copy to <firmwareId>.json (the id from firmware/catalog.json), set id to the same name, and list only what was actually tested. Format ids become <file id>/<format key>, e.g. felucca/patch.",
+  "schema": 1,
+  "id": "example",
+  "name": "Example firmware",
+  "firmware": ["example"],
+  "status": "unknown",
+  "description": "What this firmware's patches are and where the information comes from (docs link, own tests).",
+  "formats": {
+    "patch": {
+      "name": "Patch parameters",
+      "status": "discovered",
+      "versions": ["v1.0.0"],
+      "description": "Values stored under params, sent one by one at each parameter's address.",
+      "$send": "Transport steps, in order. Types: program-change {field, channel}, dx7-param-sysex {field}, cc-map {field, channel}, cc-list {field, channel}, params {field}, raw-sysex {field}, none {reason}. channel: note, fx or 1-16.",
+      "send": [
+        {"type": "program-change", "field": "program", "channel": "note"},
+        {"type": "params", "field": "params"}
+      ],
+      "groups": {"osc": "Oscillator", "env": "Envelope"},
+      "$params": "status per parameter: confirmed (tested on a device), discovered (seen in CC discovery or docs, not verified), unknown. address: {cc, channel} | {nrpn: [msb, lsb], channel} | {dx7: n} | {sysex: \"F0 .. {v} .. F7\"}; omit address when it can't be sent.",
+      "params": [
+        {"id": "cutoff", "label": "Cutoff", "group": "osc", "min": 0, "max": 127, "default": 64, "address": {"cc": 74, "channel": "note"}, "status": "confirmed"},
+        {"id": "wave", "label": "Wave", "group": "osc", "min": 0, "max": 3, "default": 0, "options": ["Sine", "Saw", "Square", "Noise"], "address": {"nrpn": [1, 2], "channel": "note"}, "status": "discovered"},
+        {"id": "attack", "label": "Attack", "group": "env", "min": 0, "max": 127, "default": 0, "address": {"sysex": "F0 7D 01 10 {v} F7"}, "status": "unknown"}
+      ]
+    },
+    "bank": {
+      "name": "Bank dump",
+      "status": "unknown",
+      "description": "Kept in the Library for reference; no known way to send it yet.",
+      "send": [{"type": "none", "reason": "No bank transfer is known for this firmware yet."}],
+      "params": []
+    }
+  }
+}
