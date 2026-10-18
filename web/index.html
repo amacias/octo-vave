@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FM-1 Dashboard</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23e8743b'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='14' font-weight='700' text-anchor='middle' fill='white'%3EFM%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/home.css">
+  <link rel="stylesheet" href="css/keys.css">
+  <link rel="stylesheet" href="css/play.css">
+  <link rel="stylesheet" href="css/library.css">
+  <link rel="stylesheet" href="css/firmware.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="logo">FM</span><div><strong>FM-1 Dashboard</strong><small id="fwBadge">firmware: unknown</small></div></div>
+    <nav id="tabs" role="tablist">
+      <button data-tab="home" class="active">Home</button>
+      <button data-tab="play">Play &amp; MIDI</button>
+      <button data-tab="check">Sound check</button>
+      <button data-tab="voice">Voice</button>
+      <button data-tab="fx">FX</button>
+      <button data-tab="library">Library</button>
+      <button data-tab="firmware">Firmware</button>
+      <button data-tab="explore">Explore</button>
+    </nav>
+    <div class="conn">
+      <span id="connDot" class="dot off"></span>
+      <span id="connText">Not connected</span>
+      <button id="connectBtn" class="primary">Connect</button>
+    </div>
+  </header>
+
+  <div id="stockWarn" class="banner hidden">
+    The device is logged as running <b id="stockWarnName"></b>. Voice and FX controls target the stock M-VAVE firmware and may do nothing (or something else) here.
+  </div>
+
+  <main>
+    <!-- HOME -------------------------------------------------------- -->
+    <section id="tab-home" class="tab active">
+      <div class="section-head">
+        <h1>Home</h1>
+        <button id="customizeBtn" class="ghost">Customize</button>
+      </div>
+      <div id="customizePanel" class="card hidden">
+        <h3>Show on Home</h3>
+        <div id="widgetToggles" class="toggles"></div>
+      </div>
+      <div class="grid home-grid">
+        <div class="card widget" data-widget="status">
+          <h3>Device</h3>
+          <dl class="kv">
+            <dt>MIDI out</dt><dd id="homeOut">–</dd>
+            <dt>MIDI in</dt><dd id="homeIn">–</dd>
+            <dt>Firmware</dt><dd id="homeFw">–</dd>
+            <dt>Channels</dt><dd id="homeCh">–</dd>
+          </dl>
+        </div>
+        <div class="card widget" data-widget="perform">
+          <h3>Perform</h3>
+          <div class="row">
+            <button id="pcDown" title="Previous program">◀</button>
+            <label class="stack">Voice <input id="pcNum" type="number" min="1" max="128" value="1"></label>
+            <button id="pcUp" title="Next program">▶</button>
+            <button id="pcSend">Send</button>
+          </div>
+          <div class="row">
+            <label class="stack">BPM <input id="bpm" type="number" min="30" max="300" value="120"></label>
+            <button id="clockStart">▶ Start clock</button>
+            <button id="clockStop">■ Stop</button>
+            <button id="panicBtn" class="danger">Panic</button>
+          </div>
+          <p class="hint">Voice is what the dashboard last sent: the FM-1 doesn't report presets picked on the device. Clock sends F8 at 24 ppqn plus Start/Stop, and the arp and sequencer follow it.</p>
+        </div>
+        <div class="card widget wide" data-widget="favorites">
+          <h3>Favorite patches</h3>
+          <div id="favList" class="chips"><span class="muted">Star patches in the Library to pin them here.</span></div>
+        </div>
+        <div class="card widget wide" data-widget="quickfx">
+          <h3>Quick FX</h3>
+          <div id="quickFx" class="fx-quick"></div>
+        </div>
+        <div class="card widget wide" data-widget="keys">
+          <h3>Keyboard <small class="muted">Z–M / Q–U rows, octave with ← →</small></h3>
+          <div class="row"><span>Octave <b id="octLabel">4</b></span> <label>Velocity <input id="velocity" type="range" min="1" max="127" value="100"></label></div>
+          <div id="kbHome" class="keyboard"></div>
+        </div>
+        <div class="card widget" data-widget="notes">
+          <h3>Notes</h3>
+          <textarea id="userNotes" rows="7" placeholder="Your scratchpad. Saved automatically."></textarea>
+        </div>
+        <div class="card widget" data-widget="activity">
+          <h3>Recent MIDI in</h3>
+          <div id="miniLog" class="log mini"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLAY & MIDI -------------------------------------------------- -->
+    <section id="tab-play" class="tab">
+      <h1>Play &amp; MIDI</h1>
+      <div class="grid two">
+        <div class="card">
+          <h3>Ports &amp; channels</h3>
+          <label class="stack">Output <select id="outSel"></select></label>
+          <label class="stack">Input <select id="inSel"></select></label>
+          <div class="row">
+            <label class="stack">Note channel <select id="noteCh"></select></label>
+            <label class="stack">FX channel <select id="fxCh"></select></label>
+          </div>
+          <label class="stack">SysEx spacing (ms) <input id="sysexGap" type="number" min="0" max="50" value="4"></label>
+          <p class="hint">Defaults match the FM-1: notes on any channel (the dashboard sends on ch 1), FX CCs on ch 2. CC 1 on the FX channel is <i>Filter Type</i>, not the mod wheel.</p>
+          <div class="row"><button id="releaseBtn">Release MIDI port</button><span class="hint">Close the port before running M-UPGRADE.</span></div>
+        </div>
+        <div class="card">
+          <h3>Controllers</h3>
+          <label class="stack">Mod wheel (CC 1) <input id="modWheel" type="range" min="0" max="127" value="0"></label>
+          <label class="stack">Pitch bend <input id="pitchBend" type="range" min="-8192" max="8191" value="0"></label>
+          <label class="stack">Aftertouch <input id="aftertouch" type="range" min="0" max="127" value="0"></label>
+          <div class="row"><label><input id="sustain" type="checkbox"> Sustain (CC 64)</label></div>
+          <h3>Send raw</h3>
+          <div class="row"><input id="rawHex" class="mono grow" placeholder="e.g. 90 3C 64   or   F0 43 10 01 06 05 F7"><button id="rawSend">Send</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Keyboard</h3>
+        <div id="kbPlay" class="keyboard big"></div>
+      </div>
+      <div class="grid two">
+        <div class="card">
+          <div class="section-head"><h3>MIDI monitor</h3><div class="row"><label><input id="monOut" type="checkbox" checked> show sent</label><label><input id="monClock" type="checkbox"> show clock</label><button id="monClear" class="ghost">Clear</button></div></div>
+          <div id="monitor" class="log"></div>
+        </div>
+        <div class="card">
+          <div class="section-head"><h3>CC discovery</h3><button id="ccClear" class="ghost">Clear</button></div>
+          <p class="hint">Every controller received shows up here with its last value. On stock V15 the FM-1's knobs and preset changes send nothing over USB (only keys send notes), so this is mainly for community firmware or other controllers.</p>
+          <table class="table" id="ccTable"><thead><tr><th>Ch</th><th>CC</th><th>Value</th><th>Count</th><th>Known as</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SOUND CHECK -------------------------------------------------- -->
+    <section id="tab-check" class="tab">
+      <div class="section-head">
+        <h1>Sound check</h1>
+        <div class="row"><span id="checkSummary" class="muted"></span><button id="checkReset" class="ghost">Clear answers</button></div>
+      </div>
+      <div class="card safety">
+        Turn the FM-1's volume up and listen. Run one step at a time: each one plays a <b>BEFORE</b> and an <b>AFTER</b>,
+        and the caption shows which is playing. Then answer whether you heard the difference described. Each step puts
+        the synth back afterwards. Nothing is saved on the device.
+      </div>
+      <div id="checkHead" class="card"></div>
+      <div id="checkList" class="check-list"></div>
+    </section>
+
+    <!-- VOICE -------------------------------------------------------- -->
+    <section id="tab-voice" class="tab">
+      <div class="section-head">
+        <h1>Voice editor <small class="muted">DX7-compatible SysEx</small></h1>
+        <div class="row">
+          <label><input id="liveSend" type="checkbox" checked> Live send</label>
+          <button id="sendVoice" class="primary">Send whole voice</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="row wrap">
+          <label class="stack">Name <input id="voiceName" maxlength="10" class="mono"></label>
+          <label class="stack">Algorithm <input id="algNum" type="number" min="1" max="32"></label>
+          <span id="carriers" class="muted"></span>
+          <button id="initVoiceBtn">Init voice</button>
+          <button id="randVoiceBtn">Randomize</button>
+          <label class="file-btn">Import .syx<input id="syxFile" type="file" accept=".syx,.SYX" hidden></label>
+          <button id="exportSyx">Export .syx</button>
+          <button id="saveVoicePatch">Save to Library…</button>
+        </div>
+        <div id="bankPick" class="hidden">
+          <h3>Bank <small id="bankName" class="muted"></small></h3>
+          <div id="bankVoices" class="chips"></div>
+        </div>
+        <p class="hint">The FM-1 doesn't send its current voice back, so the editor starts from INIT or an imported voice. Live send writes each change as you move it. Edits change the active voice; save on the device to keep them there.</p>
+      </div>
+      <div class="card"><h3>Global</h3><div id="globalParams" class="param-grid"></div></div>
+      <div id="opGrid" class="op-grid"></div>
+    </section>
+
+    <!-- FX ----------------------------------------------------------- -->
+    <section id="tab-fx" class="tab">
+      <div class="section-head">
+        <h1>Effects <small class="muted">CC 0–23 on the FX channel</small></h1>
+        <div class="row"><button id="fxSendAll" class="primary">Send all</button><button id="fxSave">Save to Library…</button></div>
+      </div>
+      <div id="fxGrid" class="grid three"></div>
+    </section>
+
+    <!-- LIBRARY ------------------------------------------------------ -->
+    <section id="tab-library" class="tab">
+      <div class="section-head">
+        <h1>Library</h1>
+        <div class="row">
+          <input id="libSearch" placeholder="Search…">
+          <button id="libNew" class="primary">Save current…</button>
+          <label class="file-btn">Import JSON<input id="libImport" type="file" accept=".json" hidden></label>
+        </div>
+      </div>
+      <p class="hint">A patch can hold a voice (156 DX7 params), an FX snapshot, a program number and notes. Files live in <code>data/patches/</code>, so they're easy to back up or keep in git.</p>
+      <div id="libList" class="lib-list"></div>
+    </section>
+
+    <!-- FIRMWARE ----------------------------------------------------- -->
+    <section id="tab-firmware" class="tab">
+      <div class="section-head">
+        <h1>Firmware</h1>
+        <div class="row"><span id="fwChecked" class="muted"></span><button id="fwRefresh" class="primary">Check for updates</button><button id="fwReveal">Open library folder</button></div>
+      </div>
+      <div class="fw-top">
+        <div class="card safety fw-safe">
+          <div class="safe-item"><span class="safe-ic"><svg viewBox="0 0 24 24" class="ic"><path d="M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0zM12 17v5"/></svg></span><span>Keep USB + power connected while flashing</span></div>
+          <div class="safe-item"><span class="safe-ic"><svg viewBox="0 0 24 24" class="ic"><path d="M12 4l8 9H4zM4 18h16"/></svg></span><span>Release the MIDI port before M-UPGRADE</span></div>
+          <div class="safe-item"><span class="safe-ic"><svg viewBox="0 0 24 24" class="ic"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M5.6 5.6l3.6 3.6M18.4 5.6l-3.6 3.6M5.6 18.4l3.6-3.6M18.4 18.4l-3.6-3.6"/></svg></span><span>Hold <b>OCT−</b> at power-on for USB rescue</span></div>
+          <div class="safe-item"><span class="safe-ic"><svg viewBox="0 0 24 24" class="ic"><path d="M9 14L4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"/></svg></span><span>Stock V15 + M-UPGRADE = way back</span></div>
+        </div>
+        <div class="card">
+          <h3>On the device</h3>
+          <div class="row wrap">
+            <select id="fwInstalledSel"></select>
+            <input id="fwInstalledVer" placeholder="version, e.g. V15">
+            <input id="fwInstalledNote" class="grow" placeholder="note (optional)">
+            <button id="fwMarkInstalled">Log</button>
+          </div>
+          <details><summary class="muted">History</summary><table class="table" id="fwHistory"><tbody></tbody></table></details>
+        </div>
+      </div>
+      <div id="fwCards"></div>
+    </section>
+
+    <!-- EXPLORE ------------------------------------------------------ -->
+    <section id="tab-explore" class="tab">
+      <h1>Explore the FM-1</h1>
+      <div id="exploreBody"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

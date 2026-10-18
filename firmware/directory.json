@@ -1,0 +1,207 @@
+{
+ "source": "https://github.com/cicloid/awesome-fm-1",
+ "updated": "2026-10-18",
+ "projects": [
+  {
+   "name": "Hortator",
+   "url": "https://github.com/DeadActive/hortator",
+   "desc": "Eight-track drum machine by DEADACTIVE with 808, 909 and Plaits drum models, samples, Mutable Instruments…",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 19,
+   "downloads": 466,
+   "score": 9.142
+  },
+  {
+   "name": "FiMba-1",
+   "url": "https://github.com/jadamsowers/fm1-fimba",
+   "desc": "Physically modelled kalimba with mbira patterns, granular cloud and tape",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 20,
+   "downloads": 443,
+   "score": 9.14
+  },
+  {
+   "name": "MAKU",
+   "url": "https://github.com/okumurari2/maku",
+   "desc": "Always-on ambience machine: it starts a new random in-key world on every boot and draws later ones from…",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 24,
+   "downloads": 342,
+   "score": 9.057
+  },
+  {
+   "name": "ORBIT",
+   "url": "https://github.com/dspaudio/orbit",
+   "desc": "SLOOP-based groovebox with OP-1-inspired screens, sample tools and an event tape for moving what the four…",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 23,
+   "downloads": 355,
+   "score": 9.053
+  },
+  {
+   "name": "Fart Machine One",
+   "url": "https://github.com/adamcharleswilsonmusic-code/Fart-Machine-One",
+   "desc": "Novelty firmware with eleven sampled farts, reverb, delay and a sixteen-step sequencer",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 18,
+   "downloads": 361,
+   "score": 8.836
+  },
+  {
+   "name": "Polly",
+   "url": "https://github.com/charlesvestal/fm1-polly",
+   "desc": "QY70-style pocket arranger by Charles Vestal: a style plays a band of eight instruments steered by the…",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 18,
+   "downloads": 313,
+   "score": 8.694
+  },
+  {
+   "name": "FuMi-1",
+   "url": "https://github.com/cartesive/fumi-1",
+   "desc": "Shigin accompaniment instrument inspired by Suikohsha's ST-50, with koto, sho, shakuhachi and taiko voices…",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 15,
+   "downloads": 343,
+   "score": 8.613
+  },
+  {
+   "name": "CTL-1",
+   "url": "https://github.com/charlesvestal/fm1-ctl",
+   "desc": "Turns the FM-1 into a MIDI controller, with General MIDI sounds of its own",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 14,
+   "downloads": 324,
+   "score": 8.492
+  },
+  {
+   "name": "DUELL",
+   "url": "https://github.com/oscillr/DUELL",
+   "desc": "Bitimbral synthesizer by OSCILL/R: two complete parts, three ways to play them together and a morph…",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 15,
+   "downloads": 261,
+   "score": 8.341
+  },
+  {
+   "name": "fm1-chord",
+   "url": "https://github.com/math0ne/fm1-chord",
+   "desc": "Chord machine with chord sequencer, drum loops, looper and ear trainer",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 11,
+   "downloads": 340,
+   "score": 8.317
+  },
+  {
+   "name": "WaveLoop FM-1",
+   "url": "https://github.com/ELI7VH/Felucca",
+   "desc": "Felucca played from an Arturia MiniLab 3: track faders, follow-the-track knobs, DJ filter and momentary…",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 8,
+   "downloads": 416,
+   "score": 8.23
+  },
+  {
+   "name": "sloopDX",
+   "url": "https://github.com/zvenson/dxsloop",
+   "desc": "SLOOP fork that replaces its engines with a single six-operator DX7 engine ported from Dexed, every voice…",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 26,
+   "downloads": 130,
+   "score": 8.171
+  },
+  {
+   "name": "FM-106",
+   "url": "https://github.com/PatttF/fm-106",
+   "desc": "Port of the KR-106 Juno-106 emulation to the FM-1: six voices, 128 factory presets, a BBD-style stereo…",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 11,
+   "downloads": 279,
+   "score": 8.12
+  },
+  {
+   "name": "Bubba Machine",
+   "url": "https://github.com/Erbubar23/bubba-machine",
+   "desc": "Six-track groovebox written from scratch in C99: drums, pad sampler, bass, FM, wavetable and polyphonic…",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 9,
+   "downloads": 325,
+   "score": 8.089
+  },
+  {
+   "name": "ETCH",
+   "url": "https://github.com/SikkenWorks/ETCH",
+   "desc": "Synth firmware by Joppe Sikken (SikkenWorks) with arpeggiator riffs, a poly mode, a modulation matrix and…",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 9,
+   "downloads": 311,
+   "score": 8.046
+  },
+  {
+   "name": "Felucca Salt",
+   "url": "https://github.com/ChanceTheMaker/Felucca",
+   "desc": "Felucca fork by Chance Roth that ships with a browser Studio: switch between playing in the browser and…",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 8,
+   "downloads": 324,
+   "score": 7.981
+  },
+  {
+   "name": "FM1 Quest",
+   "url": "https://github.com/hericdk/fm1-quest",
+   "desc": "SLOOP reskinned as a pixel-art RPG: tracks are heroes, steps are attacks, recording a loop is a boss fight",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 13,
+   "downloads": 196,
+   "score": 7.922
+  },
+  {
+   "name": "Felucca 8 Patterns",
+   "url": "https://github.com/echoe/Felucca_seq_per_track",
+   "desc": "Felucca branch written with a free LLM: eight swappable sequences per track, sequence chaining, generative…",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 5,
+   "downloads": 275,
+   "score": 7.412
+  },
+  {
+   "name": "CoralFlower",
+   "url": "https://github.com/FicusFicusov/CoralFlower",
+   "desc": "Chord instrument inspired by the Telepathic Instruments Orchid: every note becomes a chord with a bass…",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 5,
+   "downloads": 210,
+   "score": 7.144
+  },
+  {
+   "name": "MYCELIUM",
+   "url": "https://github.com/megagott/mycelium-fm1",
+   "desc": "Forest, Psytrance, Goa and Hitech groovebox firmware with original drum assets and four factory songs",
+   "group": "open",
+   "license": "GPL-3.0",
+   "stars": 4,
+   "downloads": 212,
+   "score": 6.971
+  }
+ ],
+ "note": "The 20 most popular FM-1 firmware projects after the top 10, by GitHub stars × .fwsc downloads."
+}

@@ -1,0 +1,403 @@
+{
+  "updated": "2026-10-18",
+  "ranking": "Community entries: the top 10 free, open-source FM-1 firmwares on 2026-10-18 by GitHub stars × total .fwsc downloads. Live order follows the same score after each update check. Sources: GitHub search and cicloid/awesome-fm-1. Excluded: Groove OS (paid, closed), FM-1+VA (closed source), projects without an installable release (JIANT, Lunar Modulator, TRIBE).",
+  "firmware": [
+    {
+      "id": "official",
+      "name": "Stock V15",
+      "author": "M-VAVE",
+      "kind": "stock",
+      "tagline": "Factory 6-op FM synth: rollback target",
+      "tags": [
+        "6-op FM",
+        "Arp + seq",
+        "Multi-FX",
+        "Dashboard editors"
+      ],
+      "art": {
+        "hue": 22,
+        "image": "img/fw/official.jpg",
+        "credit": "https://www.m-vave.com/product?id=fm-1"
+      },
+      "links": {
+        "install": "https://www.m-vave.com/download.html",
+        "docs": "https://yms-file-store.oss-cn-hongkong.aliyuncs.com/software/releaseNote/firmware/FM-1.txt"
+      },
+      "summary": "The firmware the FM-1 ships with: Dexed/msfa-derived 6-operator FM, 32 algorithms, 12 voices, arpeggiator, step sequencer and multi-FX. The only firmware the dashboard's Voice and FX editors target. Community firmwares expect you to be on V15 first.",
+      "install": "Flash with M-UPGRADE (Windows, in this library after download): extract the zip, run it, load FM-1.fwsc. Most community installers also offer \"Return to official V15\".",
+      "source": {
+        "type": "official",
+        "page": "https://www.m-vave.com/download.html",
+        "releaseNotes": "https://yms-file-store.oss-cn-hongkong.aliyuncs.com/software/releaseNote/firmware/FM-1.txt",
+        "assets": [
+          {
+            "name": "FM-1.fwsc",
+            "url": "https://yms-file-store.oss-cn-hongkong.aliyuncs.com/software/firmware/FM-1.fwsc"
+          },
+          {
+            "name": "M-UPGRADE.zip",
+            "url": "https://yms-file-store.oss-cn-hongkong.aliyuncs.com/software/pc/M-UPGRADE.zip"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fm1open",
+      "name": "FM-1 Open",
+      "author": "M-VAVE",
+      "kind": "official",
+      "tagline": "Official open firmware + browser workbench",
+      "tags": [
+        "8 tracks",
+        "Sampler",
+        "303 + 808",
+        "SDK"
+      ],
+      "art": {
+        "hue": 200,
+        "image": "img/fw/fm1open.png",
+        "credit": "https://open.m-vave.com/fm1-workbench"
+      },
+      "links": {
+        "install": "https://open.m-vave.com/fm1-workbench",
+        "repo": "https://github.com/m-vave/fm1_open",
+        "docs": "https://forum.m-vave.com"
+      },
+      "summary": "M-VAVE's official open firmware (October 2026): 6-op FM, 303-style bass, 808-style drums, chiptune, pluck and a sampler on independent tracks. App source is GPLv3 with an SDK linking exception; the sound engine ships as a binary SDK. Free.",
+      "install": "Flash and edit from the browser workbench (Chrome/Edge over USB). The release also carries an offline copy of the workbench (HTML) and the development kit.",
+      "source": {
+        "type": "github",
+        "repo": "m-vave/fm1_open",
+        "assetPatterns": [
+          "Workbench\\.html$",
+          "\\.fwsc$"
+        ]
+      }
+    },
+    {
+      "id": "felucca",
+      "name": "Felucca",
+      "author": "hugelton",
+      "kind": "community",
+      "tagline": "Multi-engine synth the others build on",
+      "tags": [
+        "13 engines",
+        "4 tracks",
+        "Mod matrix",
+        "Web editor"
+      ],
+      "art": {
+        "hue": 205,
+        "image": "img/fw/felucca.png",
+        "credit": "https://github.com/hugelton/Felucca/blob/HEAD/docs/felucca-1.0.png"
+      },
+      "links": {
+        "install": "https://hugelton.github.io/Felucca/",
+        "try": "https://hugelton.github.io/Felucca/webapp/try/",
+        "repo": "https://github.com/hugelton/Felucca",
+        "docs": "https://github.com/hugelton/Felucca/wiki"
+      },
+      "summary": "Multi-engine synth by Leo Kuroshita (Hügelton Instruments): FM, VA, phase distortion, chiptune, sampler, granular, physical modelling, organ and drums; four tracks, 64-step sequencer with conditional steps and Euclid, song mode, MIDI learn, USB audio. The platform most other firmwares are forked from. GPL-3.0.",
+      "install": "Web installer (Chrome/Edge, USB) or tools/fm1_install.py. The installer can return to official V15.",
+      "source": {
+        "type": "github",
+        "repo": "hugelton/Felucca",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      }
+    },
+    {
+      "id": "sloop",
+      "name": "SLOOP",
+      "author": "3dSam (isod89)",
+      "kind": "community",
+      "tagline": "Live 4-track groovebox",
+      "tags": [
+        "3 synths + drums",
+        "37 kits",
+        "Punch-in FX",
+        "Song mode"
+      ],
+      "art": {
+        "hue": 330,
+        "image": "img/fw/sloop.png",
+        "credit": "https://github.com/isod89/sloop-fm1/blob/HEAD/assets/screens/sloop-2.6-screens.png"
+      },
+      "links": {
+        "install": "https://isod89.github.io/sloop-fm1/webapp/installer/",
+        "repo": "https://github.com/isod89/sloop-fm1"
+      },
+      "summary": "Live groovebox: three synth layers plus a drum machine, 37 drum kits, punch-in effects, layer system, song mode and a standalone HTML editor. Based on Felucca. GPL-3.0.",
+      "install": "Web installer (Chrome/Edge, USB). USB rescue: hold OCT− while switching on.",
+      "source": {
+        "type": "github",
+        "repo": "isod89/sloop-fm1",
+        "assetPatterns": [
+          "\\.fwsc$",
+          "editor.*\\.html$"
+        ]
+      }
+    },
+    {
+      "id": "x0x",
+      "name": "X0X",
+      "author": "Charles Vestal",
+      "kind": "community",
+      "tagline": "ReBirth-style 909/808/303 box",
+      "tags": [
+        "909 + 808",
+        "2× TB-303",
+        "Acid gen",
+        "Breakbeats"
+      ],
+      "art": {
+        "hue": 12,
+        "image": "img/fw/x0x.png",
+        "credit": "https://github.com/charlesvestal/fm1-x0x/blob/HEAD/docs/img/screen-home.png"
+      },
+      "links": {
+        "install": "https://charlesvestal.github.io/fm1-x0x/install/",
+        "try": "https://charlesvestal.github.io/fm1-x0x/emu/",
+        "repo": "https://github.com/charlesvestal/fm1-x0x",
+        "docs": "https://charlesvestal.github.io/fm1-x0x/manual/"
+      },
+      "summary": "TR-909, TR-808, two TB-303s with TB-3PO acid generators and a breakbeat slicer, each with its own sequencer. Felucca fork. GPL-3.0.",
+      "install": "Web installer (Chrome/Edge, USB).",
+      "source": {
+        "type": "github",
+        "repo": "charlesvestal/fm1-x0x",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      }
+    },
+    {
+      "id": "melodee",
+      "name": "Melodee",
+      "author": "keremimo",
+      "kind": "community",
+      "tagline": "Synth + sequencer with boot protection",
+      "tags": [
+        "10 engines",
+        "8 patterns/track",
+        "USB audio in",
+        "Safe updates"
+      ],
+      "art": {
+        "hue": 150,
+        "image": "img/fw/melodee.png",
+        "credit": "https://github.com/keremimo/melodee/blob/HEAD/docs/media/melodee-screens.svg"
+      },
+      "links": {
+        "install": "https://keremimo.github.io/melodee/",
+        "repo": "https://github.com/keremimo/melodee",
+        "docs": "https://keremimo.github.io/melodee/webapp/manual/"
+      },
+      "summary": "Felucca derivative that went its own way: ten engines (incl. SID), eight patterns per track, STUDIO workspaces, four-channel USB audio input, TR-808 kit. Interrupted writes return to USB update mode. Ships a standalone fm1-recover tool. GPL-3.0.",
+      "install": "Web installer (Chrome/Edge, USB). Black screen: use fm1-recover (Windows zip in this library) or M-UPGRADE.",
+      "source": {
+        "type": "github",
+        "repo": "keremimo/melodee",
+        "assetPatterns": [
+          "\\.fwsc$",
+          "fm1-recover-.*windows.*\\.zip$"
+        ]
+      }
+    },
+    {
+      "id": "choralroot",
+      "name": "ChoralRoot",
+      "author": "Quixotic7",
+      "kind": "community",
+      "tagline": "Orchid-style chord instrument",
+      "tags": [
+        "Chords",
+        "Voicings",
+        "Bass",
+        "Looper"
+      ],
+      "art": {
+        "hue": 270,
+        "image": "img/fw/choralroot.png",
+        "credit": "https://github.com/Quixotic7/ChoralRootFM1/blob/HEAD/docs/manual/layer-key.png"
+      },
+      "links": {
+        "install": "https://quixotic7.github.io/ChoralRootFM1/webapp/installer/",
+        "try": "https://quixotic7.github.io/ChoralRootFM1/emu/",
+        "repo": "https://github.com/Quixotic7/ChoralRootFM1"
+      },
+      "summary": "One hand plays roots, the other shapes chords, with voicings, key modes, bass and a looper. Built on Felucca. GPL-3.0. A single-core build is also published.",
+      "install": "Web installer (Chrome/Edge, USB).",
+      "source": {
+        "type": "github",
+        "repo": "Quixotic7/ChoralRootFM1",
+        "assetPatterns": [
+          "^(?!.*1core).*\\.fwsc$"
+        ]
+      }
+    },
+    {
+      "id": "fomni",
+      "name": "FoMni",
+      "author": "Charles Vestal",
+      "kind": "community",
+      "tagline": "Omnichord-style chord harp",
+      "tags": [
+        "Strum",
+        "Rhythms",
+        "Auto bass"
+      ],
+      "art": {
+        "hue": 45,
+        "image": "img/fw/fomni.png",
+        "credit": "https://github.com/charlesvestal/fm1-fomni/blob/HEAD/docs/img/screen-strum.png"
+      },
+      "links": {
+        "install": "https://charlesvestal.github.io/fm1-fomni/install/",
+        "try": "https://charlesvestal.github.io/fm1-fomni/emu/",
+        "repo": "https://github.com/charlesvestal/fm1-fomni"
+      },
+      "summary": "Strum the white keys, pick chords on the black ones, with rhythm patterns and auto bass. GPL-3.0.",
+      "install": "Web installer (Chrome/Edge, USB).",
+      "source": {
+        "type": "github",
+        "repo": "charlesvestal/fm1-fomni",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      }
+    },
+    {
+      "id": "ghoulbox",
+      "name": "GHOULBOX",
+      "author": "Jason Persinger",
+      "kind": "community",
+      "tagline": "Dungeon synth and dark ambient",
+      "tags": [
+        "59 sounds",
+        "Hurdy-gurdy",
+        "Cathedral reverb",
+        "USB rescue"
+      ],
+      "art": {
+        "hue": 280,
+        "image": "img/fw/ghoulbox.png",
+        "credit": "https://github.com/jasonpersinger/ghoulbox-fm1-dungeon-synth/blob/HEAD/docs/ghoulbox-1.0.png"
+      },
+      "links": {
+        "install": "https://ghoulbox.messy.quest/webapp/installer/",
+        "try": "https://ghoulbox.messy.quest/",
+        "repo": "https://github.com/jasonpersinger/ghoulbox-fm1-dungeon-synth",
+        "docs": "https://github.com/jasonpersinger/ghoulbox-fm1-dungeon-synth/tree/main/docs/guide"
+      },
+      "summary": "Cathedral reverb, worn-tape effect, hurdy-gurdy engine with drones, dark ambient presets and an old-RPG screen. 53-page PDF guide. USB rescue if it fails to start twice. Felucca fork. GPL-3.0.",
+      "install": "Web installer (Chrome/Edge, USB data cable, no other music app open).",
+      "source": {
+        "type": "github",
+        "repo": "jasonpersinger/ghoulbox-fm1-dungeon-synth",
+        "assetPatterns": [
+          "\\.fwsc$",
+          "Guide.*(?<!print)\\.pdf$"
+        ]
+      }
+    },
+    {
+      "id": "amb1",
+      "name": "AMB-1",
+      "author": "Charles Vestal",
+      "kind": "community",
+      "tagline": "Self-playing generative ambient",
+      "tags": [
+        "Generative",
+        "Tape loops",
+        "Euclidean perc"
+      ],
+      "art": {
+        "hue": 175,
+        "image": "img/fw/amb1.png",
+        "credit": "https://github.com/charlesvestal/fm1-amb/blob/HEAD/docs/img/screen-garden.png"
+      },
+      "links": {
+        "install": "https://charlesvestal.github.io/fm1-amb/install/",
+        "try": "https://charlesvestal.github.io/fm1-amb/emu/",
+        "repo": "https://github.com/charlesvestal/fm1-amb",
+        "docs": "https://charlesvestal.github.io/fm1-amb/manual/"
+      },
+      "summary": "Generative ambient machine inspired by Music for Airports that plays itself from power-on: tape loops of unequal length, gliding bass, Euclidean percussion. GPL-3.0.",
+      "install": "Web installer (Chrome/Edge, USB).",
+      "source": {
+        "type": "github",
+        "repo": "charlesvestal/fm1-amb",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      }
+    },
+    {
+      "id": "jangada",
+      "name": "Jangada",
+      "author": "zednaked",
+      "kind": "community",
+      "tagline": "Superwave analog + mod matrix",
+      "tags": [
+        "Superwave",
+        "Mod matrix",
+        "Drones",
+        "Ratchets"
+      ],
+      "art": {
+        "hue": 95,
+        "image": "img/fw/jangada.png",
+        "credit": "https://github.com/zednaked/jangada/blob/HEAD/docs/screens.png"
+      },
+      "links": {
+        "install": "https://zednaked.github.io/jangada/",
+        "repo": "https://github.com/zednaked/jangada",
+        "docs": "https://zednaked.github.io/jangada/webapp/editor/"
+      },
+      "summary": "Felucca fork adding superwave analog, a modulation matrix, latched drones, ratchets and synthesized drum kits, with a web editor and studio. GPL-3.0.",
+      "install": "Web installer on the project site (Chrome/Edge, USB).",
+      "source": {
+        "type": "github",
+        "repo": "zednaked/jangada",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      }
+    },
+    {
+      "id": "skiff",
+      "name": "Skiff",
+      "author": "illuminus5",
+      "kind": "community",
+      "tagline": "6-track groovebox with p-locks",
+      "tags": [
+        "14 engines",
+        "64 steps",
+        "P-locks",
+        "Web editor"
+      ],
+      "art": {
+        "hue": 225,
+        "image": "img/fw/skiff.png",
+        "credit": "https://github.com/illuminus5/skiff/blob/HEAD/docs/skiff.png"
+      },
+      "links": {
+        "install": "https://illuminus5.github.io/skiff/webapp/installer/",
+        "try": "https://illuminus5.github.io/skiff/try/",
+        "repo": "https://github.com/illuminus5/skiff",
+        "docs": "https://illuminus5.github.io/skiff/learn/"
+      },
+      "summary": "Six tracks, fourteen synth and drum engines, 143 factory sounds, a 64-step sequencer with chords, ratchets, trig conditions and parameter locks, patterns, songs and a browser editor. Built on Felucca. GPL-3.0.",
+      "install": "Web installer (Chrome/Edge, USB).",
+      "source": {
+        "type": "github",
+        "repo": "illuminus5/skiff",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      }
+    }
+  ]
+}

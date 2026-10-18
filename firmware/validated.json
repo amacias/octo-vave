@@ -1,0 +1,4 @@
+{
+  "about": "Firmware validated on a real FM-1: installed, run, and reverted to stock V15. Written by Claude Code sessions following VALIDATION.md (or by tools/fm1_validate.py); the dashboard only reads this file.",
+  "validations": []
+}

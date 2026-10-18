@@ -1,0 +1,37 @@
+# User data: settings, patches, sound-check results, firmware log, release cache.
+# The server recreates data/ and data/patches/ on start.
+data/*
+!data/.gitkeep
+
+# Downloaded third-party firmware (not ours to redistribute, and large).
+firmware/library/*
+!firmware/library/.gitkeep
+*.fwsc
+# firmware/catalog.json, directory.json and validated.json stay tracked.
+
+# Atomic-write temp files (server.py write_json) and other temp files
+*.tmp
+*.bak
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local secrets / per-machine config
+.env
+.env.*
+.claude/settings.local.json
+
+# OS / editor junk
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+._*
+*~
+*.swp
+.vscode/
+.idea/
