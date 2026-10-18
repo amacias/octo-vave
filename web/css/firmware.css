@@ -47,7 +47,7 @@
 .trait.aid .fg-fill { fill: #fff; }
 .trait.off .bg { fill: #8A9099; }
 .trait.off { opacity: .4; }
-.fw-legend-row { display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin: 4px 0 -12px; }
+.fw-legend-row { display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin: 4px 0 -6px; }
 .legend-sep { width: 1px; height: 14px; background: var(--line); }
 .trait-legend { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; font-size: 12px; }
 .trait-legend .trait svg { width: 15px; height: 15px; }
