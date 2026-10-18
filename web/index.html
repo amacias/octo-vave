@@ -99,28 +99,48 @@
 
     <!-- PLAY & MIDI -------------------------------------------------- -->
     <section id="tab-play" class="tab">
-      <h1>Play &amp; MIDI</h1>
+      <h1>Play &amp; MIDI <small class="muted">generic MIDI I/O, any device</small></h1>
       <div class="grid two">
         <div class="card">
-          <h3>Ports &amp; channels</h3>
+          <h3>Ports &amp; channel</h3>
           <label class="stack">Output <select id="outSel"></select></label>
           <label class="stack">Input <select id="inSel"></select></label>
           <div class="row">
             <label class="stack">Note channel <select id="noteCh"></select></label>
-            <label class="stack">FX channel <select id="fxCh"></select></label>
+            <label class="stack">SysEx spacing (ms) <input id="sysexGap" type="number" min="0" max="50" value="4"></label>
           </div>
-          <label class="stack">SysEx spacing (ms) <input id="sysexGap" type="number" min="0" max="50" value="4"></label>
-          <p class="hint">Defaults match the FM-1: notes on any channel (the dashboard sends on ch 1), FX CCs on ch 2. CC 1 on the FX channel is <i>Filter Type</i>, not the mod wheel.</p>
-          <div class="row"><button id="releaseBtn">Release MIDI port</button><span class="hint">Close the port before running M-UPGRADE.</span></div>
+          <p class="hint">The keyboard and controllers use the note channel. SysEx spacing is the pause between messages when the dashboard sends a burst of SysEx; raise it if the device drops data.</p>
+          <div class="row"><button id="releaseBtn">Release MIDI port</button><span class="hint">Windows MIDI ports are exclusive: release them before another app (an editor or updater) opens the device.</span></div>
         </div>
         <div class="card">
           <h3>Controllers</h3>
-          <label class="stack">Mod wheel (CC 1) <input id="modWheel" type="range" min="0" max="127" value="0"></label>
+          <label class="stack">Modulation (CC 1) <input id="modWheel" type="range" min="0" max="127" value="0"></label>
           <label class="stack">Pitch bend <input id="pitchBend" type="range" min="-8192" max="8191" value="0"></label>
-          <label class="stack">Aftertouch <input id="aftertouch" type="range" min="0" max="127" value="0"></label>
+          <label class="stack">Channel aftertouch <input id="aftertouch" type="range" min="0" max="127" value="0"></label>
           <div class="row"><label><input id="sustain" type="checkbox"> Sustain (CC 64)</label></div>
+        </div>
+      </div>
+      <div class="grid two">
+        <div class="card">
+          <h3>Send a message</h3>
+          <div class="row wrap play-msg">
+            <label class="stack">Channel <select id="msgCh"></select></label>
+            <label class="stack">Program (1–128) <input id="msgPc" type="number" min="1" max="128" value="1"></label>
+            <label class="stack">Bank MSB <input id="msgBankMsb" type="number" min="0" max="127" placeholder="–"></label>
+            <label class="stack">Bank LSB <input id="msgBankLsb" type="number" min="0" max="127" placeholder="–"></label>
+            <button id="msgPcSend">Send PC</button>
+          </div>
+          <div class="row wrap play-msg">
+            <label class="stack">CC (0–127) <input id="msgCc" type="number" min="0" max="127" value="7"></label>
+            <label class="stack grow">Value <span class="row play-val"><input id="msgCcVal" type="range" min="0" max="127" value="100"><output id="msgCcValOut" class="mono">100</output></span></label>
+            <button id="msgCcSend">Send CC</button>
+          </div>
+          <p class="hint"><b id="msgCcName">Volume</b>. Moving the value slider sends live. Bank Select (CC 0 / 32) goes out before the program only when filled in.</p>
+        </div>
+        <div class="card">
           <h3>Send raw</h3>
-          <div class="row"><input id="rawHex" class="mono grow" placeholder="e.g. 90 3C 64   or   F0 43 10 01 06 05 F7"><button id="rawSend">Send</button></div>
+          <div class="row"><input id="rawHex" class="mono grow" placeholder="e.g. 90 3C 64   or   F0 7E 7F 06 01 F7"><button id="rawSend">Send</button></div>
+          <div class="row"><button id="idReq" class="ghost">Identity request</button><span class="hint">Asks the connected instrument who it is (Universal SysEx). Replies, if any, show in the monitor.</span></div>
         </div>
       </div>
       <div class="card">
@@ -129,13 +149,25 @@
       </div>
       <div class="grid two">
         <div class="card">
-          <div class="section-head"><h3>MIDI monitor</h3><div class="row"><label><input id="monOut" type="checkbox" checked> show sent</label><label><input id="monClock" type="checkbox"> show clock</label><button id="monClear" class="ghost">Clear</button></div></div>
+          <div class="section-head"><h3>MIDI monitor</h3>
+            <div class="row">
+              <select id="monFilter" title="Show only this message type">
+                <option value="all">All</option><option value="note">Notes</option><option value="cc">CC</option>
+                <option value="pc">Program</option><option value="touch">Bend &amp; aftertouch</option>
+                <option value="sysex">SysEx</option><option value="system">System / clock</option>
+              </select>
+              <label><input id="monOut" type="checkbox" checked> show sent</label>
+              <label><input id="monClock" type="checkbox"> show clock</label>
+              <button id="monExport" class="ghost">Export</button>
+              <button id="monClear" class="ghost">Clear</button>
+            </div>
+          </div>
           <div id="monitor" class="log"></div>
         </div>
         <div class="card">
           <div class="section-head"><h3>CC discovery</h3><button id="ccClear" class="ghost">Clear</button></div>
-          <p class="hint">Every controller received shows up here with its last value. On stock V15 the FM-1's knobs and preset changes send nothing over USB (only keys send notes), so this is mainly for community firmware or other controllers.</p>
-          <table class="table" id="ccTable"><thead><tr><th>Ch</th><th>CC</th><th>Value</th><th>Count</th><th>Known as</th></tr></thead><tbody></tbody></table>
+          <p class="hint">Every controller received shows up here with its last value and range. Move a knob or fader on the device to see what it sends. Click a row to load it into <i>Send a message</i>.</p>
+          <table class="table" id="ccTable"><thead><tr><th>Ch</th><th>CC</th><th>Standard name</th><th>Value</th><th>Range</th><th>Count</th></tr></thead><tbody></tbody></table>
         </div>
       </div>
     </section>

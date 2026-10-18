@@ -240,6 +240,95 @@ function stopClock(sendStop = true) {
   $("#clockStart")?.classList.remove("primary");
 }
 
+// ----- standard MIDI names (MIDI 1.0 / General MIDI), used by the Play & MIDI monitor and CC discovery
+const CC_NAMES = {
+  0: "Bank Select", 1: "Modulation", 2: "Breath", 4: "Foot", 5: "Portamento Time", 6: "Data Entry",
+  7: "Volume", 8: "Balance", 10: "Pan", 11: "Expression", 12: "Effect Control 1", 13: "Effect Control 2",
+  16: "General Purpose 1", 17: "General Purpose 2", 18: "General Purpose 3", 19: "General Purpose 4",
+  64: "Sustain", 65: "Portamento", 66: "Sostenuto", 67: "Soft Pedal", 68: "Legato", 69: "Hold 2",
+  70: "Sound Variation", 71: "Resonance", 72: "Release", 73: "Attack", 74: "Cutoff / Brightness",
+  75: "Decay", 76: "Vibrato Rate", 77: "Vibrato Depth", 78: "Vibrato Delay", 79: "Sound Controller 10",
+  80: "General Purpose 5", 81: "General Purpose 6", 82: "General Purpose 7", 83: "General Purpose 8",
+  84: "Portamento Control", 88: "High Res Velocity", 91: "Reverb", 92: "Tremolo", 93: "Chorus",
+  94: "Detune", 95: "Phaser", 96: "Data Increment", 97: "Data Decrement", 98: "NRPN LSB", 99: "NRPN MSB",
+  100: "RPN LSB", 101: "RPN MSB", 120: "All Sound Off", 121: "Reset All Controllers", 122: "Local Control",
+  123: "All Notes Off", 124: "Omni Off", 125: "Omni On", 126: "Mono On", 127: "Poly On",
+};
+/** Standard name of a controller number ("" for undefined ones). 32–63 are the LSBs of 0–31. */
+function ccName(cc) {
+  if (CC_NAMES[cc]) return CC_NAMES[cc];
+  if (cc >= 32 && cc < 64) return CC_NAMES[cc - 32] ? `${CC_NAMES[cc - 32]} LSB` : `LSB of CC ${cc - 32}`;
+  return "";
+}
+// SysEx manufacturer IDs (MIDI Association list; 1-byte and 00 xx xx extended IDs)
+const SYSEX_MFR = {
+  "01": "Sequential", "04": "Moog", "06": "Lexicon", "07": "Kurzweil", "0F": "Ensoniq", "10": "Oberheim",
+  "11": "Apple", "18": "E-mu", "1C": "Eventide", "40": "Kawai", "41": "Roland", "42": "Korg", "43": "Yamaha",
+  "44": "Casio", "47": "Akai", "52": "Zoom", "7D": "Non-commercial", "7E": "Universal Non-Real Time",
+  "7F": "Universal Real Time",
+  "00 00 0E": "Alesis", "00 20 1F": "TC Electronic", "00 20 29": "Focusrite/Novation", "00 20 32": "Behringer",
+  "00 20 33": "Access", "00 20 3C": "Elektron", "00 20 6B": "Arturia", "00 21 09": "Native Instruments",
+};
+function sysexMfr(d, i = 1) {
+  const id = d[i] === 0 ? hex(d.slice(i, i + 3)) : hex([d[i] ?? 0]);
+  return { id, name: SYSEX_MFR[id] || "unknown maker", len: d[i] === 0 ? 3 : 1 };
+}
+function describeSysex(d) {
+  const end = d[d.length - 1] === 0xf7 ? d.length - 1 : d.length;
+  const sub = (a, b) => d[3] === a && d[4] === b;
+  if (d[1] === 0x7e) {
+    if (sub(0x06, 0x01)) return `SysEx Identity request (device ${d[2] === 0x7f ? "all" : d[2]})`;
+    if (sub(0x06, 0x02) && end > 5) {
+      const who = sysexMfr(d, 5), o = 5 + who.len;
+      if (o + 8 <= end)
+        return `SysEx Identity reply: ${who.name} (${who.id}), family ${hex(d.slice(o, o + 2))}, model ${hex(d.slice(o + 2, o + 4))}, version ${hex(d.slice(o + 4, o + 8))}`;
+      return `SysEx Identity reply: ${who.name} (${who.id})`;
+    }
+    if (sub(0x09, 0x01)) return "SysEx GM System On";
+    if (sub(0x09, 0x02)) return "SysEx GM System Off";
+    return `SysEx Universal Non-RT ${hex([d[3] ?? 0, d[4] ?? 0])} (${d.length} bytes)`;
+  }
+  if (d[1] === 0x7f) {
+    if (sub(0x04, 0x01)) return `SysEx Master Volume ${d[6] ?? 0}`;
+    return `SysEx Universal RT ${hex([d[3] ?? 0, d[4] ?? 0])} (${d.length} bytes)`;
+  }
+  if (d[1] === 0x43 && d.length === 7 && (d[2] & 0xf0) === 0x10 && d[3] < 2)
+    return `SysEx Yamaha (43) parameter change ${d[3] * 128 + d[4]} = ${d[5]}`; // DX7-style VCED
+  const m = sysexMfr(d);
+  return `SysEx ${m.name} (${m.id}), ${d.length} bytes`;
+}
+
+function describe(d) {
+  const st = d[0];
+  if (st === 0xf0) return describeSysex(d);
+  const sys = { 0xf6: "Tune request", 0xf8: "Clock", 0xfa: "Start", 0xfb: "Continue", 0xfc: "Stop", 0xfe: "Active sensing", 0xff: "Reset" }[st];
+  if (sys) return sys;
+  if (st === 0xf1) return `MTC quarter frame ${d[1] >> 4}:${d[1] & 15}`;
+  if (st === 0xf2) return `Song position ${(d[2] << 7) | d[1]}`;
+  if (st === 0xf3) return `Song select ${d[1]}`;
+  const type = st & 0xf0, ch = (st & 15) + 1;
+  switch (type) {
+    case 0x80: return `ch${ch} Note off ${noteName(d[1])}`;
+    case 0x90: return d[2] ? `ch${ch} Note on ${noteName(d[1])} vel ${d[2]}` : `ch${ch} Note off ${noteName(d[1])} (vel 0)`;
+    case 0xa0: return `ch${ch} Poly AT ${noteName(d[1])} ${d[2]}`;
+    case 0xb0: {
+      const name = ccName(d[1]);
+      return `ch${ch} CC ${d[1]}${name ? " " + name : ""} = ${d[1] === 122 ? (d[2] ? "on" : "off") : d[2]}`;
+    }
+    case 0xc0: return `ch${ch} Program ${d[1] + 1}`;
+    case 0xd0: return `ch${ch} Aftertouch ${d[1]}`;
+    case 0xe0: return `ch${ch} Pitch bend ${((d[2] << 7) | d[1]) - 8192}`;
+  }
+  return "?";
+}
+/** Monitor filter group of a message. */
+function msgKind(d) {
+  const st = d[0];
+  if (st === 0xf0) return "sysex";
+  if (st > 0xf0) return "system";
+  return { 0x80: "note", 0x90: "note", 0xa0: "touch", 0xb0: "cc", 0xc0: "pc", 0xd0: "touch", 0xe0: "touch" }[st & 0xf0] || "other";
+}
+
 // ----- incoming
 const ccSeen = new Map();
 function onMidiIn(e) {
@@ -252,70 +341,94 @@ function onMidiIn(e) {
   else if (type === 0x80 || (type === 0x90 && d[2] === 0)) light(d[1], false);
   else if (type === 0xb0) {
     const k = `${ch}:${d[1]}`;
-    const prev = ccSeen.get(k) || { ch, cc: d[1], count: 0 };
-    ccSeen.set(k, { ...prev, value: d[2], count: prev.count + 1 });
+    const prev = ccSeen.get(k) || { ch, cc: d[1], count: 0, min: d[2], max: d[2] };
+    ccSeen.set(k, { ...prev, value: d[2], count: prev.count + 1, min: Math.min(prev.min, d[2]), max: Math.max(prev.max, d[2]) });
     renderCcTable();
   } else if (type === 0xc0) {
-    $("#pcNum").value = d[1] + 1;
+    const pc = $("#pcNum");
+    if (pc) pc.value = d[1] + 1;
   }
 }
 
-function describe(d) {
-  const st = d[0];
-  if (st === 0xf0) {
-    if (d[1] === 0x43 && d[2] === 0x10 && d.length === 7) return `SysEx param ${d[3] * 128 + d[4]} = ${d[5]}`;
-    return `SysEx (${d.length} bytes)`;
-  }
-  const rt = { 0xf8: "Clock", 0xfa: "Start", 0xfb: "Continue", 0xfc: "Stop", 0xfe: "Active sensing", 0xff: "Reset" }[st];
-  if (rt) return rt;
-  const type = st & 0xf0, ch = (st & 15) + 1;
-  switch (type) {
-    case 0x80: return `ch${ch} Note off ${noteName(d[1])}`;
-    case 0x90: return d[2] ? `ch${ch} Note on ${noteName(d[1])} vel ${d[2]}` : `ch${ch} Note off ${noteName(d[1])} (vel 0)`;
-    case 0xa0: return `ch${ch} Poly AT ${noteName(d[1])} ${d[2]}`;
-    case 0xb0: {
-      const known = ch === S.settings.fxCh && FX_NAME[d[1]] ? ` (${FX_NAME[d[1]]})` : d[1] === 1 ? " (Mod wheel)" : d[1] === 64 ? " (Sustain)" : "";
-      return `ch${ch} CC ${d[1]} = ${d[2]}${known}`;
-    }
-    case 0xc0: return `ch${ch} Program ${d[1] + 1}`;
-    case 0xd0: return `ch${ch} Aftertouch ${d[1]}`;
-    case 0xe0: return `ch${ch} Pitch bend ${((d[2] << 7) | d[1]) - 8192}`;
-  }
-  return "?";
-}
-
-const MAX_LOG = 400;
+// ----- monitor: entries are kept for filtering and export; the DOM shows the last MAX_LOG matching ones
+const MAX_LOG = 400, MAX_KEEP = 3000;
+const monLog = [];
+const monShows = (r) => { const f = $("#monFilter")?.value || "all"; return f === "all" || r.kind === f; };
+const clockTime = () => new Date().toLocaleTimeString([], { hour12: false });
 function appendLog(box, row) {
   box.append(row);
   while (box.childElementCount > MAX_LOG) box.firstChild.remove();
   box.scrollTop = box.scrollHeight;
 }
-function logRow(dir, text, raw) {
-  const t = new Date().toLocaleTimeString([], { hour12: false });
-  return h("div", { class: dir }, `${t} ${dir === "in" ? "◀" : "▶"} `, h("b", { text }), raw ? `   ${raw}` : "");
+function logRow(dir, text, raw, t = clockTime()) {
+  return h("div", { class: dir, title: text }, `${t} ${dir === "in" ? "◀" : "▶"} `, h("b", { text }), raw ? `   ${raw}` : "");
+}
+function monAdd(r) {
+  monLog.push(r);
+  if (monLog.length > MAX_KEEP) monLog.splice(0, monLog.length - MAX_KEEP);
+  if (monShows(r)) appendLog($("#monitor"), logRow(r.dir, r.text, r.short, r.t));
+}
+function renderMonitor() {
+  const box = $("#monitor");
+  box.replaceChildren(...monLog.filter(monShows).slice(-MAX_LOG).map((r) => logRow(r.dir, r.text, r.short, r.t)));
+  box.scrollTop = box.scrollHeight;
+}
+function exportMonitor() {
+  const rows = monLog.filter(monShows);
+  if (!rows.length) return toast("Nothing to export: the monitor is empty", true);
+  const lines = rows.map((r) => [r.t, r.dir === "in" ? "IN " : "OUT", r.text, r.raw].filter(Boolean).join("\t"));
+  const n = new Date(), p2 = (x) => String(x).padStart(2, "0");
+  const stamp = `${n.getFullYear()}${p2(n.getMonth() + 1)}${p2(n.getDate())}-${p2(n.getHours())}${p2(n.getMinutes())}${p2(n.getSeconds())}`;
+  download(`midi-log-${stamp}.txt`, lines.join("\r\n") + "\r\n", "text/plain");
 }
 function logMidi(dir, bytes) {
   if (dir === "out" && !$("#monOut").checked) return;
-  const text = describe(bytes);
-  const raw = bytes.length > 12 ? hex(bytes.slice(0, 12)) + " …" : hex(bytes);
-  appendLog($("#monitor"), logRow(dir, text, raw));
-  if (dir === "in") {
-    const mini = $("#miniLog");
-    mini.append(logRow(dir, text));
+  const text = describe(bytes), t = clockTime();
+  const short = bytes.length > 12 ? hex(bytes.slice(0, 12)) + " …" : hex(bytes);
+  const raw = bytes.length > 256 ? hex(bytes.slice(0, 256)) + ` … (${bytes.length} bytes)` : hex(bytes);
+  monAdd({ t, dir, kind: msgKind(bytes), text, short, raw });
+  const mini = dir === "in" && $("#miniLog");
+  if (mini) {
+    mini.append(logRow(dir, text, "", t));
     while (mini.childElementCount > 40) mini.firstChild.remove();
     mini.scrollTop = mini.scrollHeight;
   }
 }
 function logText(dir, text) {
   if (dir === "out" && !$("#monOut").checked) return;
-  appendLog($("#monitor"), logRow(dir, text));
+  monAdd({ t: clockTime(), dir, kind: "info", text, short: "", raw: "" });
 }
 
+// ----- CC discovery and the "Send a message" card
 function renderCcTable() {
   const rows = [...ccSeen.values()].sort((a, b) => a.ch - b.ch || a.cc - b.cc);
   $("#ccTable tbody").replaceChildren(...rows.map((r) =>
-    h("tr", {}, h("td", { text: r.ch }), h("td", { text: r.cc }), h("td", { text: r.value }), h("td", { text: r.count }),
-      h("td", { text: r.ch === S.settings.fxCh && FX_NAME[r.cc] ? FX_NAME[r.cc] : r.cc === 1 ? "Mod wheel" : r.cc === 64 ? "Sustain" : "" }))));
+    h("tr", { title: "Load into Send a message", onclick: () => pickCc(r) },
+      h("td", { text: r.ch }), h("td", { text: r.cc }), h("td", { text: ccName(r.cc) || "–" }),
+      h("td", { text: r.value }), h("td", { text: r.min === r.max ? r.min : `${r.min}–${r.max}` }), h("td", { text: r.count }))));
+}
+function pickCc(r) {
+  $("#msgCh").value = r.ch;
+  $("#msgCc").value = r.cc;
+  $("#msgCcVal").value = r.value;
+  updateMsgCc();
+}
+const clampInt = (v, lo, hi, def = lo) => (v === "" || isNaN(+v) ? def : Math.max(lo, Math.min(hi, Math.round(+v))));
+const msgCh = () => (+$("#msgCh").value - 1) & 15;
+function updateMsgCc() {
+  const cc = clampInt($("#msgCc").value, 0, 127);
+  $("#msgCcName").textContent = `CC ${cc}: ${ccName(cc) || "not defined by the MIDI spec (free for any use)"}`;
+  $("#msgCcValOut").textContent = $("#msgCcVal").value;
+  return cc;
+}
+function sendProgram() {
+  const ch = msgCh();
+  const msb = $("#msgBankMsb").value, lsb = $("#msgBankLsb").value;
+  if (msb !== "") sendCC(ch, 0, clampInt(msb, 0, 127));
+  if (lsb !== "") sendCC(ch, 32, clampInt(lsb, 0, 127));
+  const n = clampInt($("#msgPc").value, 1, 128, 1);
+  $("#msgPc").value = n;
+  send([0xc0 | ch, n - 1]);
 }
 
 // ================================================================ keyboards
@@ -1591,9 +1704,13 @@ function wire() {
   $("#inSel").onchange = () => { bindPorts(); saveSettings(); };
   $("#releaseBtn").onclick = releaseMidi;
   chOptions($("#noteCh"), S.settings.noteCh);
-  chOptions($("#fxCh"), S.settings.fxCh);
   $("#noteCh").onchange = (e) => { S.settings.noteCh = +e.target.value; updateConn(); saveSettings(); };
-  $("#fxCh").onchange = (e) => { S.settings.fxCh = +e.target.value; updateConn(); saveSettings(); };
+  // The FX channel selector is FM-1-specific and no longer lives on Play & MIDI; wire it wherever it is.
+  const fxSel = $("#fxCh");
+  if (fxSel) {
+    chOptions(fxSel, S.settings.fxCh);
+    fxSel.onchange = (e) => { S.settings.fxCh = +e.target.value; updateConn(); saveSettings(); };
+  }
   $("#sysexGap").value = S.settings.sysexGap;
   $("#sysexGap").onchange = (e) => { S.settings.sysexGap = Math.max(0, Math.min(50, +e.target.value || 0)); saveSettings(); };
 
@@ -1618,12 +1735,30 @@ function wire() {
   pb.onchange = () => { pb.value = 0; send([0xe0 | nch(), 0, 64]); };
   $("#aftertouch").oninput = (e) => send([0xd0 | nch(), +e.target.value]);
   $("#sustain").onchange = (e) => sendCC(nch(), 64, e.target.checked ? 127 : 0);
-  $("#rawSend").onclick = () => {
-    const bytes = $("#rawHex").value.trim().split(/[\s,]+/).filter(Boolean).map((x) => parseInt(x, 16));
-    if (!bytes.length || bytes.some((b) => isNaN(b) || b < 0 || b > 255)) return toast("Enter hex bytes like 90 3C 64", true);
+  const rawSend = () => {
+    const parts = $("#rawHex").value.trim().split(/[\s,]+/).filter(Boolean);
+    const bytes = parts.map((x) => (/^(0x)?[0-9a-f]{1,2}$/i.test(x) ? parseInt(x, 16) : NaN));
+    if (!bytes.length || bytes.some(isNaN)) return toast("Enter hex bytes like 90 3C 64", true);
+    if (bytes[0] < 0x80) return toast("The first byte must be a status byte (80–FF)", true);
     send(bytes);
   };
-  $("#monClear").onclick = () => $("#monitor").replaceChildren();
+  $("#rawSend").onclick = rawSend;
+  $("#rawHex").onkeydown = (e) => { if (e.key === "Enter") rawSend(); };
+  $("#idReq").onclick = () => send([0xf0, 0x7e, 0x7f, 0x06, 0x01, 0xf7]);
+
+  // send a message (Program Change / any CC)
+  chOptions($("#msgCh"), S.settings.noteCh);
+  $("#msgPcSend").onclick = sendProgram;
+  $("#msgPc").onkeydown = (e) => { if (e.key === "Enter") sendProgram(); };
+  $("#msgCc").oninput = updateMsgCc;
+  $("#msgCcVal").oninput = () => sendCC(msgCh(), updateMsgCc(), +$("#msgCcVal").value);
+  $("#msgCcSend").onclick = () => sendCC(msgCh(), updateMsgCc(), +$("#msgCcVal").value);
+  updateMsgCc();
+
+  // monitor
+  $("#monFilter").onchange = renderMonitor;
+  $("#monExport").onclick = exportMonitor;
+  $("#monClear").onclick = () => { monLog.length = 0; $("#monitor").replaceChildren(); };
   $("#ccClear").onclick = () => { ccSeen.clear(); renderCcTable(); };
 
   // voice

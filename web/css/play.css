@@ -1,1 +1,20 @@
 /* play.css: owned by the play feature. Feature-specific styles go here, not in style.css. */
+
+/* Two-column grids collapse cleanly on narrow screens (the shared minmax(380px) would overflow a phone). */
+#tab-play .grid.two { grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); }
+#tab-play h1 small { font-size: 14px; font-weight: 400; }
+
+/* Send a message */
+#tab-play .play-msg { align-items: flex-end; }
+#tab-play .play-msg .stack { margin: 0; }
+#tab-play .play-msg input[type="number"] { width: 72px; }
+#tab-play .play-val { margin: 0; gap: 8px; flex-wrap: nowrap; }
+#tab-play .play-val input[type="range"] { flex: 1; min-width: 100px; }
+#tab-play .play-val output { min-width: 3ch; text-align: right; color: var(--ink); }
+
+/* Monitor and CC discovery */
+#tab-play .section-head .row { margin: 0; }
+#tab-play #monitor div { overflow: hidden; text-overflow: ellipsis; }
+#tab-play #ccTable tbody tr { cursor: pointer; }
+#tab-play #ccTable tbody tr:hover { background: var(--panel-2); }
+#tab-play #ccTable td:nth-child(n+4), #tab-play #ccTable th:nth-child(n+4) { font-variant-numeric: tabular-nums; }
