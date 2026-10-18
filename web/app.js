@@ -1450,8 +1450,9 @@ function renderFirmware() {
   const official = fw.catalog.filter((f) => f.kind !== "community");
   const top = (fw.ranked || []).slice(0, 10).filter((p) => byId.has(p.id));
 
-  const known = new Set(fw.catalog.map((f) => f.id));
-  const orphans = Object.entries(fw.library || {}).filter(([id]) => !known.has(id));
+  // Every downloaded file without a card on screen (official or live top 10) is listed under "Other files".
+  const carded = new Set([...official.map((f) => f.id), ...top.map((p) => p.id)]);
+  const orphans = Object.entries(fw.library || {}).filter(([id]) => !carded.has(id));
 
   $("#fwCards").replaceChildren(
     h("h2", { class: "fw-section" }, "Official"),
@@ -1625,7 +1626,7 @@ function validatedSection(fw, orphans) {
       octo("", "clean older"), "newer release not tested yet"),
     rows.length ? rows : h("p", { class: "muted", text: "Nothing validated yet. Validation happens in hands-on Claude Code sessions: flash, run, revert to stock (see VALIDATION.md)." }),
     orphans.length > 0 && h("details", {},
-      h("summary", { class: "muted", text: `Other files in library, not in the catalog (${orphans.reduce((n, [, l]) => n + l.length, 0)})` }),
+      h("summary", { class: "muted", text: `Other files in library, not in the top 10 (${orphans.reduce((n, [, l]) => n + l.length, 0)})` }),
       h("div", { class: "local" }, orphans.map(([id, files]) => files.map((l) => libFileRow(id, l))))));
 }
 
