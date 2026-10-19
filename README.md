@@ -239,4 +239,10 @@ this repository: Octo-Vave downloads them from each project. Discovery starts fr
 
 Octo-Vave is an independent project, not affiliated with or endorsed by M-VAVE.
 
+## <img src="docs/img/octo.svg" height="24" alt=""> License
+
+Octo-Vave's own code and docs are released under the [MIT License](LICENSE). The license doesn't
+cover the firmware projects or their screen captures in `web/img/fw/`, which stay under their
+authors' terms.
+
 <p align="center"><img src="docs/img/octo.svg" width="48" alt=""><br><sub>Octo-Vave · by Artificial Music</sub></p>
