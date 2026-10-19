@@ -92,8 +92,8 @@ function defaultFx() {
 }
 
 const WIDGETS = {
-  status: "Device status", perform: "Perform + FX", quickfx: "Quick FX", favorites: "Favorites",
-  notes: "Notes", keys: "Keyboard", voice: "Voice editor", explore: "About the FM-1",
+  status: "Device status", perform: "Perform + FX", quickfx: "Quick FX", keys: "Keyboard",
+  favorites: "Favorites", voice: "Voice editor", explore: "About the FM-1",
 };
 
 const DEFAULTS = {
@@ -931,9 +931,16 @@ async function applyPatch(name, { sendNow = true, force = false } = {}) {
     throw new Error(`"${name}" is a ${fmt?.name || p.format} patch; there's no editor for it here. Use Send.`);
   }
   const { done, skipped } = playPatch(p, fmt, sendNow);
-  if (fmt.send.some((s) => s.editor && p[s.field] != null)) saveSettings();
+  if (fmt.send.some((s) => s.editor && p[s.field] != null)) setVoiceNotes(p.notes || "");
   if (!done.length) return toast(`"${name}" has nothing to ${sendNow ? "send" : "load"}`, true);
   toast(`${sendNow ? "Sent" : "Loaded"} "${name}": ${done.join(", ")}${skipped ? ` (${skipped} values without an address skipped)` : ""}`);
+}
+
+/** The Voice editor's notes: kept in settings, saved into patches, loaded back with them. */
+function setVoiceNotes(text) {
+  S.settings.notes = text;
+  $("#userNotes").value = text;
+  saveSettings();
 }
 
 async function loadPatches() {
@@ -1053,7 +1060,7 @@ function openSave({ voice = true, fx = true, pc = false, firmware = "official", 
   $("#sdName").value = safePatchName(stock ? DX.getName(S.voice) : `${libFwName(firmware)} patch`) || "My patch";
   const ex = updateSaveExists();
   $("#sdTags").value = ex ? (ex.tags || []).join(", ") : "";
-  $("#sdNotes").value = ex ? ex.notes || "" : "";
+  $("#sdNotes").value = S.settings.notes || (ex ? ex.notes || "" : "");
   saveDlg.showModal();
 }
 
@@ -1088,6 +1095,7 @@ async function savePatchFromDialog() {
       notes: $("#sdNotes").value, tags: $("#sdTags").value.split(",").map((t) => t.trim()).filter(Boolean), ...content,
     };
     await api(patchUrl(name), { method: "PUT", body: JSON.stringify(patch) });
+    if (patch.notes !== (S.settings.notes || "")) setVoiceNotes(patch.notes);
     toast(`Saved "${name}" for ${fwText(firmware)}`);
     loadPatches();
   } catch (e) { toast(e.message, true); }

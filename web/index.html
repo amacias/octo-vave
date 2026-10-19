@@ -18,9 +18,9 @@
     <nav id="tabs" role="tablist">
       <button data-tab="firmware" class="active">Firmware</button>
       <button data-tab="home">FM-1 Home</button>
+      <button data-tab="library">Library</button>
       <button data-tab="play">Play &amp; MIDI</button>
       <button data-tab="check">Sound check</button>
-      <button data-tab="library">Library</button>
     </nav>
     <div class="conn">
       <span id="connDot" class="dot off"></span>
@@ -68,7 +68,7 @@
         <h1>FM-1 Home</h1>
         <button id="customizeBtn" class="ghost" aria-expanded="false" aria-controls="customizePanel">Customize</button>
       </div>
-      <p class="intro">Play and shape the FM-1 from the browser: perform controls and FX, favorite patches, notes, a keyboard and the voice editor. Customize picks what shows.</p>
+      <p class="intro">Play and shape the FM-1 from the browser: perform controls and FX, a keyboard, favorite patches and the voice editor. Customize picks what shows.</p>
       <div id="customizePanel" class="card hidden">
         <h3>Show on FM-1 Home</h3>
         <div id="widgetToggles" class="toggles"></div>
@@ -121,21 +121,15 @@
         <p class="hint widget" data-widget="perform">Voice is what the dashboard last sent: the FM-1 doesn't report presets picked on the device. Clock sends F8 at 24 ppqn plus Start/Stop, and the arp and sequencer follow it.</p>
       </div>
 
-      <div class="grid home-duo">
-        <div class="card widget" data-widget="favorites">
-          <h3>Favorite patches</h3>
-          <div id="favList" class="chips"><span class="muted">Star patches in the Library to pin them here.</span></div>
-        </div>
-        <div class="card widget" data-widget="notes">
-          <h3>Notes</h3>
-          <textarea id="userNotes" rows="4" placeholder="Your scratchpad. Saved automatically."></textarea>
-        </div>
-      </div>
-
       <div class="card widget" data-widget="keys">
         <h3>Keyboard <small class="muted">Z–M / Q–U rows, octave with ← →</small></h3>
         <div class="row"><span>Octave <b id="octLabel">4</b></span> <label>Velocity <input id="velocity" type="range" min="1" max="127" value="100"></label></div>
         <div id="kbHome" class="keyboard"></div>
+      </div>
+
+      <div class="card widget" data-widget="favorites">
+        <h3>Favorite patches</h3>
+        <div id="favList" class="chips"><span class="muted">Star patches in the Library to pin them here.</span></div>
       </div>
 
       <div class="card widget home-sec" data-widget="voice">
@@ -158,6 +152,7 @@
             <button id="exportSyx">Export .syx</button>
             <button id="saveVoicePatch">Save to Library…</button>
           </div>
+          <label class="stack voice-notes">Notes <textarea id="userNotes" rows="3" placeholder="Notes for this patch: saved with it to the Library, and loaded back with it."></textarea></label>
           <div id="bankPick" class="hidden">
             <h3>Bank <small id="bankName" class="muted"></small></h3>
             <div id="bankVoices" class="chips"></div>
