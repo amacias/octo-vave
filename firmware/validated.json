@@ -60,6 +60,21 @@
       "result": "clean",
       "checks": "installed twice as the revert target (AMB-1 installer's Back to the stock firmware; FM-1 Open workbench's Restore original V15); stock sound check 8/8: notes, program change, reverb, distortion, filter, SysEx voice, SysEx param, pitch bend",
       "notes": "Stock is the revert target, so its revert step is coming back to it from community firmware. The library's FM-1.fwsc matches the stock V15 SHA256 that community installers check (db1642b2...)."
+    },
+    {
+      "id": "sloop",
+      "version": "v2.7.1",
+      "file": "sloop-2.7.1.fwsc",
+      "sha256": "7c9d269d15d1c1a48e0ebada7ffa2c2aa196c19d51056fd3f760d322322b335f",
+      "date": "2026-10-18",
+      "steps": {
+        "install": true,
+        "run": true,
+        "revert": true
+      },
+      "result": "clean",
+      "checks": "played on the device; generic sound check 1-2 heard; stock sound check 8/8 after revert (run all)",
+      "notes": "Under SLOOP the FM-1's MIDI port is named 'Felucca' (USB 1209:0001, like Felucca and AMB-1). Generic step 1's notes started a looping take that kept playing until stopped: SLOOP is a live looper, so this looks like design. Return to the official firmware (V15) asks for the unmodified FM-1.fwsc; worked first time."
     }
   ]
 }
