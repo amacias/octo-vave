@@ -1543,11 +1543,23 @@ const TRAIT_SVG = {
   closed: '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="shell" d="M12 2C8.2 2 5 8 5 13.4 5 18.4 8 22 12 22s7-3.6 7-8.6C19 8 15.8 2 12 2z"/></svg>',
   sum: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="bg" cx="12" cy="12" r="10"/><path class="fg" d="M7.2 12.4l3.2 3.2 6.4-6.8" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   aid: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="bg" x="2.5" y="2.5" width="19" height="19" rx="4.5"/><path class="fg-fill" d="M10 6.5h4v3.5h3.5v4H14v3.5h-4V14H6.5v-4H10z"/></svg>',
+  // requires a stock ("original gangster") firmware version first: a bronze seal
+  og: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="bg" cx="12" cy="12" r="10.5"/><circle class="ring" cx="12" cy="12" r="8.4"/><text class="fg-text" x="12" y="15.4" text-anchor="middle">OG</text></svg>',
+  // install methods: web installer (globe), Python script (snake), M-UPGRADE (M with an up arrow)
+  web: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="bg" x="2.5" y="2.5" width="19" height="19" rx="4.5"/><g class="fg" fill="none" stroke-width="1.5"><circle cx="12" cy="12" r="6.2"/><ellipse cx="12" cy="12" rx="2.7" ry="6.2"/><path d="M5.8 12h12.4M6.8 8.8h10.4M6.8 15.2h10.4"/></g></svg>',
+  python: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="bg" x="2.5" y="2.5" width="19" height="19" rx="4.5"/><path class="fg" fill="none" stroke-width="2.2" stroke-linecap="round" d="M7 17.5c2.5 0 3.4-1.4 3.4-3s-1.6-2.6-1.6-4.2S10 7 12.4 7h2"/><circle class="fg-fill" cx="15.8" cy="7" r="2.1"/><circle class="eye" cx="16.4" cy="6.5" r=".55"/></svg>',
+  mupgrade: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="bg" x="2.5" y="2.5" width="19" height="19" rx="4.5"/><text class="fg-text" x="10.6" y="16.6" text-anchor="middle">M</text><path class="fg" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M17.6 11V5.6M15.6 7.6l2-2 2 2"/></svg>',
+};
+
+const INSTALL_METHODS = {
+  web: "Web installer: Chrome or Edge over USB, nothing to install",
+  python: "Python script installer (command line)",
+  "m-upgrade": "M-UPGRADE: M-VAVE's Windows updater",
 };
 
 function trait(kind, cls, title) {
   const s = h("span", { class: `trait ${kind} ${cls}`, title });
-  s.innerHTML = TRAIT_SVG[kind === "egg" ? cls : kind];
+  s.innerHTML = TRAIT_SVG[kind === "egg" ? cls : kind === "m-upgrade" ? "mupgrade" : kind];
   return s;
 }
 
@@ -1572,6 +1584,20 @@ function fwTraits(f, latest, primary) {
           : "Revert to stock: not checked yet (card not curated)"));
 }
 
+/** Install icons, next to the Install button: stock version needed first (OG) and how it installs. */
+function fwInstallTraits(f) {
+  const t = f.traits || {};
+  const rs = t.requires_stock_version; // "V15" | null (none) | undefined (unknown)
+  const methods = Array.isArray(t.install_method) ? t.install_method.filter((m) => INSTALL_METHODS[m]) : [];
+  const note = (s) => (s ? "\n" + s : "");
+  return h("span", { class: "fw-install" },
+    trait("og", rs ? "on" : "off",
+      rs ? `Requires stock ${rs} on the FM-1 before installing` + note(t.requires_stock_note)
+        : rs === null ? "No stock version required" + note(t.requires_stock_note)
+          : "Stock version requirement: not checked yet (card not curated)"),
+    methods.map((m) => trait(m, "on", "Install with: " + INSTALL_METHODS[m])));
+}
+
 function octoLegend() {
   return h("span", { class: "val-legend muted" },
     octo("Validated", "clean"), "validated", octo("Validated with issues", "issues"), "with issues", octo("Failed validation", "failed"), "failed",
@@ -1582,6 +1608,9 @@ function traitLegend() {
   return h("span", { class: "trait-legend muted" },
     trait("egg", "open", "Open source"), "open", trait("egg", "closed", "Closed source"), "closed source",
     trait("sum", "on", "Checksum published"), "checksum", trait("aid", "on", "Revert to stock in the installer"), "revert in installer",
+    trait("og", "on", "Requires a stock firmware version first"), "needs stock first",
+    trait("web", "on", INSTALL_METHODS.web), "web", trait("python", "on", INSTALL_METHODS.python), "python",
+    trait("m-upgrade", "on", INSTALL_METHODS["m-upgrade"]), "M-UPGRADE",
     h("span", { class: "trait-off-note", text: "(grey = no or unknown)" }));
 }
 
@@ -1632,7 +1661,8 @@ function validationState(fw, f) {
     const i = rels.findIndex((r) => verKey(r.version) === verKey(v.version));
     if (i >= 0 && (idx < 0 || i < idx)) { best = v; idx = i; }
   }
-  if (!rels.length) return { v: vals[0], current: true };
+  // No live release info: fall back on the nightly watcher's verdict in validated.json.
+  if (!rels.length) return { v: vals[0], current: !vals[0].supersededBy, newer: vals[0].supersededBy && { version: vals[0].supersededBy } };
   // releases are newest first; anything listed before the validated one is newer
   const newer = (idx >= 0 ? rels.slice(0, idx) : rels).find((r) => !r.prerelease);
   return { v: best || vals[0], current: !newer, newer };
@@ -1825,10 +1855,12 @@ function fwCard(f, fw, rank) {
         src?.error && !st && h("span", { class: "badge bad", title: src.error, text: "check failed" }),
         src?.stale && st && h("span", { class: "fw-partial", title: src.stale, text: "cached" }),
         !src && f.source?.type !== "manual" && h("span", { class: "muted", text: "press Check for updates" })),
+      valPin(val),
       h("div", { class: "fw-actions" },
         dlBtn,
         linkBtn(L.install, "ext", f.kind === "stock" ? "Updater" : "Install", "Open the installer"),
-        linkBtn(L.try, "play", "Try", "Play it in the browser, no FM-1 needed")),
+        linkBtn(L.try, "play", "Try", "Play it in the browser, no FM-1 needed"),
+        fwInstallTraits(f)),
       olderOnly && h("div", { class: "fw-lib" }, icon("check"), `In library: ${shortVer(local[0].version)} (older)`),
       h("details", { class: "fw-more" }, h("summary", { text: "More" }),
         h("p", { text: f.summary }),
@@ -1840,6 +1872,22 @@ function fwCard(f, fw, rank) {
             impVer, h("button", { class: "ghost", text: "Import file…", onclick: () => impFile.click() }), impFile,
             h("button", { class: "ghost", text: "Folder", onclick: () => api("firmware/reveal", { method: "POST", body: JSON.stringify({ id: f.id }) }).catch((e) => toast(e.message, true)) })),
           local.length ? local.map((l) => libFileRow(f.id, l)) : h("div", { class: "muted", text: "Nothing downloaded yet." })))));
+}
+
+/** The exact file a validation tested (sha256 pinned in validated.json), to compare a download against. */
+function valPin(val) {
+  const v = val?.v;
+  if (!v?.sha256) return null;
+  const tip = `${OUTCOME_LABEL[outcome(v)]}: ${v.file || v.version}\nsha256 ${v.sha256}\n`
+    + "Check a file you got elsewhere: certutil -hashfile FILE SHA256 (Windows) or shasum -a 256 FILE (macOS, Linux)";
+  const copy = h("button", { class: "ghost mini-btn", text: "Copy", title: "Copy the full SHA256" });
+  copy.onclick = () => navigator.clipboard.writeText(v.sha256)
+    .then(() => toast(`SHA256 of ${v.file || v.version} copied`), () => toast("Couldn't copy: select it from the tooltip", true));
+  return h("div", { class: "fw-pin", title: tip },
+    octo("Tested file", outcome(v) + (val.current ? "" : " older")),
+    h("span", { class: "muted", text: `tested ${shortVer(v.version)} sha256` }),
+    h("code", { text: `${v.sha256.slice(0, 8)}…${v.sha256.slice(-6)}` }),
+    copy);
 }
 
 async function markInstalled(id, version, note = "") {

@@ -53,6 +53,24 @@
 .trait.sum .fg { stroke: #fff; }
 .trait.aid .bg { fill: #2F7DE1; }
 .trait.aid .fg-fill { fill: #fff; }
+.trait.og .bg { fill: #B7791F; }
+.trait.og .ring { fill: none; stroke: #F6D9A3; stroke-width: .8; opacity: .7; }
+.trait .fg-text { fill: #fff; font: 800 9.5px system-ui, sans-serif; }
+.trait.web .bg { fill: #0E9AA7; }
+.trait.web .fg { stroke: #fff; }
+.trait.python .bg { fill: #E3B505; }
+.trait.python .fg { stroke: #2B2205; }
+.trait.python .fg-fill { fill: #2B2205; }
+.trait.python .eye { fill: #E3B505; }
+.trait.m-upgrade .bg { fill: #475569; }
+.trait.m-upgrade .fg { stroke: #fff; }
+.trait.m-upgrade .fg-text { font-size: 11px; }
+.fw-install { display: inline-flex; align-items: center; gap: 3px; margin-left: auto; }
+/* the validated file's pinned sha256 */
+.fw-pin { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12px; margin: 2px 0 6px; }
+.fw-pin .octo { width: 15px; height: 15px; }
+.fw-pin code { font: 12px var(--mono); }
+.fw-pin .mini-btn { padding: 1px 8px; font-size: 11.5px; }
 .trait.off .bg { fill: #8A9099; }
 .trait.off { opacity: .4; }
 .fw-legend-row { display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin: 4px 0 -6px; }
