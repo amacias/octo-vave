@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/img/octo.svg" width="150" alt="Octo-Vave: an orange octopus">
+  <img src="docs/img/octo-hero.svg" width="180" alt="Octo-Vave: an orange octopus">
 </p>
 
 <h1 align="center">Octo-Vave</h1>
