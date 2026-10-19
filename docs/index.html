@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Octo-Vave · free firmware for the M-VAVE FM-1</title>
+<meta name="description" content="Every free firmware for the M-VAVE FM-1 pocket synth in one local app: found, ranked, downloaded with checksum checks, and validated on a real FM-1. Look for the orange octopus.">
+<meta property="og:title" content="Octo-Vave · free firmware for the M-VAVE FM-1">
+<meta property="og:description" content="Find, download, check and play every free FM-1 firmware. The orange octopus marks firmware tested on a real FM-1.">
+<meta property="og:image" content="img/firmware.jpg">
+<meta property="og:type" content="website">
+<link rel="icon" href="img/octo.svg" type="image/svg+xml">
+<style>
+  :root {
+    --bg: #fbf8f4; --panel: #ffffff; --ink: #1d1a17; --muted: #6b645c; --line: #e9e1d7;
+    --accent: #F07A2B; --accent-ink: #fff; --code: #f3ede5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121110; --panel: #1b1a18; --ink: #efe9e2; --muted: #a39b91; --line: #2c2a27; --code: #24221f;
+    }
+  }
+  :root[data-theme="dark"] { --bg: #121110; --panel: #1b1a18; --ink: #efe9e2; --muted: #a39b91; --line: #2c2a27; --code: #24221f; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a { color: var(--accent); }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+  header.hero { text-align: center; padding: 56px 0 28px; }
+  .hero img.octo { width: 170px; height: auto; }
+  .hero h1 { font-size: clamp(34px, 6vw, 52px); margin: 8px 0 0; letter-spacing: -.01em; }
+  .hero .by { color: var(--muted); font-style: italic; margin: 0 0 16px; }
+  .hero .tag { font-size: clamp(17px, 2.4vw, 21px); max-width: 680px; margin: 0 auto 24px; }
+  .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 10px; font-weight: 600; text-decoration: none; border: 1px solid var(--line); color: var(--ink); background: var(--panel); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .shot { display: block; width: 100%; border-radius: 14px; border: 1px solid var(--line); box-shadow: 0 10px 40px rgba(0,0,0,.18); }
+  section { padding: 36px 0; }
+  h2 { font-size: 26px; margin: 0 0 14px; display: flex; align-items: center; gap: 10px; }
+  h2 img { width: 28px; height: auto; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
+  .card h3 { margin: 0 0 6px; font-size: 17px; }
+  .card p { margin: 0; color: var(--muted); }
+  ol.steps { padding-left: 22px; margin: 0; }
+  ol.steps li { margin: 6px 0; }
+  code, pre { font: 14px ui-monospace, SFMono-Regular, Consolas, monospace; background: var(--code); border-radius: 6px; }
+  code { padding: 1px 6px; }
+  pre { padding: 12px 14px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 15px; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+  td img { width: 20px; vertical-align: -4px; }
+  td.sha code { font-size: 12.5px; }
+  .grey { filter: grayscale(1); opacity: .5; }
+  .muted { color: var(--muted); }
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 20px; align-items: start; }
+  footer { padding: 36px 0 56px; text-align: center; color: var(--muted); font-size: 14px; }
+  footer img { width: 40px; }
+  .table-scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<header class="hero wrap">
+  <img class="octo" src="img/octo-hero.svg" alt="Octo-Vave: an orange octopus">
+  <h1>Octo-Vave</h1>
+  <p class="by">by Artificial Music</p>
+  <p class="tag">Every free firmware for the <b>M-VAVE FM-1</b> in one place: found, ranked, downloaded, checked and played.
+    The orange octopus marks firmware tested on a real FM-1.</p>
+  <div class="cta">
+    <a class="btn primary" href="https://github.com/amacias/octo-vave#-quick-start">Get started</a>
+    <a class="btn" href="https://github.com/amacias/octo-vave">View on GitHub</a>
+  </div>
+</header>
+
+<div class="wrap"><img class="shot" src="img/firmware.jpg" alt="The Octo-Vave Firmware page: official cards, safety tips and the icon legend"></div>
+
+<section class="wrap">
+  <h2><img src="img/octo.svg" alt="">What it does</h2>
+  <div class="grid">
+    <div class="card"><h3>Finds every free firmware</h3><p>Official, the community top 10 ranked by stars and downloads, free closed-source projects, and the next 20. Paid firmware is never listed.</p></div>
+    <div class="card"><h3>Tags what you're getting</h3><p>Open or closed source, published checksum, one-click revert to stock, and how it installs: web, Python or M-UPGRADE.</p></div>
+    <div class="card"><h3>Checks every download</h3><p>Files land in a local library, verified against the SHA256 each project publishes.</p></div>
+    <div class="card"><h3>Validated on a real FM-1</h3><p>Installed, played, Sound-checked and reverted to stock. The exact file tested is pinned by its SHA256.</p></div>
+    <div class="card"><h3>Plays the FM-1</h3><p>A key bed modeled on the device, perform and FX controls, a DX7-style voice editor, a patch library and MIDI tools.</p></div>
+    <div class="card"><h3>Runs on your computer</h3><p>A small Python server on 127.0.0.1 and a page in Chrome or Edge. No account, no cloud, nothing to install but Python.</p></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2><img src="img/octo.svg" alt="">Quick start</h2>
+  <div class="two">
+    <ol class="steps">
+      <li>Install <b>Python 3</b>. Nothing else: standard library only.</li>
+      <li><a href="https://github.com/amacias/octo-vave/archive/refs/heads/main.zip">Download the ZIP</a> and unzip it, or <code>git clone</code> the repository.</li>
+      <li>Run <code>python server.py</code> (Windows: double-click <code>start.cmd</code>).</li>
+      <li>In <b>Chrome or Edge</b> at <code>http://127.0.0.1:8765</code>, plug in the FM-1, press <b>Connect</b> and allow MIDI + SysEx.</li>
+      <li>Browse the Firmware page and look for the orange octopus.</li>
+    </ol>
+    <img class="shot" src="img/cards.png" alt="Felucca and SLOOP cards with their tags and orange octopus">
+  </div>
+</section>
+
+<section class="wrap">
+  <h2><img src="img/octo.svg" alt="">Validated firmware</h2>
+  <p class="muted">Live from <a href="https://github.com/amacias/octo-vave/blob/main/firmware/validated.json"><code>firmware/validated.json</code></a>.
+    A grey octopus means the project has a newer release that hasn't been tested yet; a nightly check flips it automatically.
+    Got the file somewhere else? Compare its SHA256 with the one below.</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th></th><th>Firmware</th><th>Version</th><th>Tested</th><th>File SHA256</th></tr></thead>
+      <tbody id="val"><tr><td colspan="5" class="muted">Loading…</td></tr></tbody>
+    </table>
+  </div>
+  <p class="muted">Tested one yourself? <a href="https://github.com/amacias/octo-vave/issues/new?template=validation-report.yml">Send a validation report</a>.</p>
+</section>
+
+<section class="wrap">
+  <h2><img src="img/octo.svg" alt="">The firmware</h2>
+  <img class="shot" src="img/top10.jpg" alt="Community top 10 firmware cards">
+</section>
+
+<section class="wrap two">
+  <div><h2><img src="img/octo.svg" alt="">Play it</h2><img class="shot" src="img/home.jpg" alt="FM-1 Home: perform controls and the FM-1 key bed"></div>
+  <div><h2><img src="img/octo.svg" alt="">Sound check</h2><img class="shot" src="img/sound-check.jpg" alt="Sound check: guided listening tests"></div>
+</section>
+
+<footer class="wrap">
+  <img src="img/octo.svg" alt=""><br>
+  Octo-Vave · by Artificial Music · <a href="https://github.com/amacias/octo-vave/blob/main/LICENSE">MIT License</a><br>
+  Every firmware is the work of its authors. Not affiliated with or endorsed by M-VAVE. Flashing is at your own risk.
+</footer>
+
+<script>
+  const NAMES = { official: "Stock V15", fm1open: "FM-1 Open", felucca: "Felucca", sloop: "SLOOP", x0x: "X0X", melodee: "Melodee",
+    choralroot: "ChoralRoot", fomni: "FoMni", ghoulbox: "GHOULBOX", amb1: "AMB-1", jangada: "Jangada", skiff: "Skiff",
+    fm1va: "FM-1+VA", aprilos: "April OS" };
+  const COLORS = { clean: "", issues: "hue-rotate(230deg)", failed: "hue-rotate(-25deg) saturate(1.4)" };
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  fetch("https://raw.githubusercontent.com/amacias/octo-vave/main/firmware/validated.json")
+    .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+    .then((doc) => {
+      const rows = (doc.validations || []).filter((v) => ["clean", "issues", "failed"].includes(v.result))
+        .sort((a, b) => (NAMES[a.id] || a.id).localeCompare(NAMES[b.id] || b.id));
+      document.getElementById("val").innerHTML = rows.map((v) => {
+        const grey = v.supersededBy ? " grey" : "";
+        const label = v.result === "clean" ? "validated" : v.result === "issues" ? "with issues" : "failed";
+        const title = `${label}${v.supersededBy ? `; newer release ${v.supersededBy} not tested yet` : ""}`;
+        return `<tr><td><img class="${grey}" style="filter:${COLORS[v.result] || ""}" src="img/octo.svg" alt="${esc(label)}" title="${esc(title)}"></td>`
+          + `<td>${esc(NAMES[v.id] || v.id)}</td><td><code>${esc(v.version)}</code>${v.supersededBy ? ` <span class="muted">(newer: ${esc(v.supersededBy)})</span>` : ""}</td>`
+          + `<td>${esc(v.date)}</td><td class="sha"><code title="${esc(v.file)}">${esc(v.sha256 || "")}</code></td></tr>`;
+      }).join("") || `<tr><td colspan="5" class="muted">Nothing validated yet.</td></tr>`;
+    })
+    .catch(() => {
+      document.getElementById("val").innerHTML = `<tr><td colspan="5" class="muted">Couldn't load the list here; see <a href="https://github.com/amacias/octo-vave/blob/main/firmware/validated.json">validated.json</a>.</td></tr>`;
+    });
+</script>
+</body>
+</html>
