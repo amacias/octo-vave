@@ -53,6 +53,7 @@
   td.sha code { font-size: 12.5px; }
   .grey { filter: grayscale(1); opacity: .5; }
   .muted { color: var(--muted); }
+  .inline-octo { width: 18px; vertical-align: -3px; }
   .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 20px; align-items: start; }
   footer { padding: 36px 0 56px; text-align: center; color: var(--muted); font-size: 14px; }
   footer img { width: 40px; }
@@ -116,12 +117,13 @@
 
 <section class="wrap">
   <h2><img src="img/octo.svg" alt="">The firmware</h2>
+  <p class="muted">Free firmware for the FM-1: stock, FM-1 Open and the top community projects, with downloads checked and kept in a local library. An orange octopus <img class="inline-octo" src="img/octo.svg" alt="orange octopus"> is our stamp of validation: that version was installed, played and reverted to stock on a real FM-1.</p>
   <img class="shot" src="img/top10.jpg" alt="Community top 10 firmware cards">
 </section>
 
 <section class="wrap two">
-  <div><h2><img src="img/octo.svg" alt="">Play it</h2><img class="shot" src="img/home.jpg" alt="FM-1 Home: perform controls and the FM-1 key bed"></div>
-  <div><h2><img src="img/octo.svg" alt="">Sound check</h2><img class="shot" src="img/sound-check.jpg" alt="Sound check: guided listening tests"></div>
+  <div><h2><img src="img/octo.svg" alt="">Play it</h2><p class="muted">Play and shape the FM-1 from the browser: perform controls and FX, a keyboard, favorite patches and the voice editor. Customize picks what shows.</p><img class="shot" src="img/home.jpg" alt="FM-1 Home: perform controls and the FM-1 key bed"></div>
+  <div><h2><img src="img/octo.svg" alt="">Sound check</h2><p class="muted">Check by ear that the firmware on the FM-1 answers MIDI: each step plays a short test and you mark what you heard. Results are kept per firmware.</p><img class="shot" src="img/sound-check.jpg" alt="Sound check: guided listening tests"></div>
 </section>
 
 <section class="wrap">
@@ -138,8 +140,9 @@
     <div class="card"><h3>Keep what you make</h3><p>Init, Randomize, then Save to Library with notes and tags. Notes come back with the patch; star it to pin it on FM-1 Home.</p></div>
   </div>
   <img class="shot" src="img/voice-operators.jpg" alt="Operator panels with oscillator settings, envelope graph and output levels">
-  <p class="muted">The FM-1 doesn't send its current voice back over MIDI, so editing starts from INIT, an import or a saved patch;
-    save on the device to keep a sound there. The voice editor targets the stock firmware; community firmware has its own sound engines.</p>
+  <p class="muted">DX7-compatible SysEx. The FM-1 doesn't send its current voice back, so the editor starts from INIT or an imported voice.
+    Live send writes each change as you move it. Edits change the active voice; save on the device to keep them there.
+    The voice editor targets the stock firmware; community firmware has its own sound engines.</p>
 </section>
 
 <footer class="wrap">
