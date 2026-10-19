@@ -1,4 +1,5 @@
 {
+  "schema_version": 1,
   "updated": "2026-10-18",
   "ranking": "Live ranking of free, open-source FM-1 firmware, rebuilt on every update check from the cicloid/awesome-fm-1 list (Custom firmware → Open source) and a GitHub repository search, scored ln(1+stars) + ln(1+total .fwsc downloads). Top 10 get cards, #11–#30 the list. Only projects with a GitHub release carrying a .fwsc image count. Free closed-source firmware (FM-1+VA, April OS) has no stars or download counts to compare, so it gets its own curated, unranked section. Paid firmware (Groove OS) is left out. Projects without a curated entry get a card from their GitHub metadata, marked \"not curated yet\". Offline fallback: firmware/directory.json.",
   "discovery": {
@@ -52,7 +53,12 @@
         "source": "closed",
         "sourceNote": "M-VAVE's factory firmware; no source published.",
         "revert": true,
-        "revertNote": "This is stock. M-UPGRADE (Windows) reinstalls it, and most community installers can too."
+        "revertNote": "This is stock. M-UPGRADE (Windows) reinstalls it, and most community installers can too.",
+        "requires_stock_version": null,
+        "requires_stock_note": "This is stock: M-UPGRADE (Windows) installs it over any firmware.",
+        "install_method": [
+          "m-upgrade"
+        ]
       }
     },
     {
@@ -99,7 +105,12 @@
         "source": "open",
         "sourceNote": "App source GPLv3 (SDK linking exception); the sound engine is a binary SDK.",
         "revert": true,
-        "revertNote": "The workbench's \"flash back to stock V15\" (刷回原厂 V15) reinstalls V15 and its 128 factory voices."
+        "revertNote": "The workbench's \"flash back to stock V15\" (刷回原厂 V15) reinstalls V15 and its 128 factory voices.",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web"
+        ]
       }
     },
     {
@@ -137,7 +148,12 @@
       "traits": {
         "source": "open",
         "revert": true,
-        "revertNote": "The installer's \"Return to official V15\" puts stock back (it asks for your unmodified FM-1.fwsc)."
+        "revertNote": "The installer's \"Return to official V15\" puts stock back (it asks for your unmodified FM-1.fwsc).",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web"
+        ]
       }
     },
     {
@@ -174,7 +190,13 @@
       "traits": {
         "source": "open",
         "revert": true,
-        "revertNote": "The installer's \"Install the official V15\" puts stock back (it asks for your FM-1.fwsc)."
+        "revertNote": "The installer's \"Install the official V15\" puts stock back (it asks for your FM-1.fwsc).",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web",
+          "python"
+        ]
       }
     },
     {
@@ -212,7 +234,12 @@
       "traits": {
         "source": "open",
         "revert": true,
-        "revertNote": "The installer's \"Back to the stock firmware\" puts stock back."
+        "revertNote": "The installer's \"Back to the stock firmware\" puts stock back.",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web"
+        ]
       }
     },
     {
@@ -250,7 +277,13 @@
       "traits": {
         "source": "open",
         "revert": true,
-        "revertNote": "The installer's \"Return to official V15\" puts stock back (it asks for your unmodified FM-1.fwsc). Black screen: fm1-recover from the release."
+        "revertNote": "The installer's \"Return to official V15\" puts stock back (it asks for your unmodified FM-1.fwsc). Black screen: fm1-recover from the release.",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web",
+          "python"
+        ]
       }
     },
     {
@@ -287,7 +320,13 @@
       "traits": {
         "source": "open",
         "revert": true,
-        "revertNote": "The installer's \"Return to official V15\" puts stock back (it asks for your unmodified FM-1.fwsc)."
+        "revertNote": "The installer's \"Return to official V15\" puts stock back (it asks for your unmodified FM-1.fwsc).",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web",
+          "python"
+        ]
       }
     },
     {
@@ -323,7 +362,12 @@
       "traits": {
         "source": "open",
         "revert": true,
-        "revertNote": "The installer's \"Back to the stock firmware\" puts stock back."
+        "revertNote": "The installer's \"Back to the stock firmware\" puts stock back.",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web"
+        ]
       }
     },
     {
@@ -362,7 +406,12 @@
       "traits": {
         "source": "open",
         "revert": true,
-        "revertNote": "The installer's \"Return to official V15\" puts stock back (it asks for your unmodified FM-1.fwsc)."
+        "revertNote": "The installer's \"Return to official V15\" puts stock back (it asks for your unmodified FM-1.fwsc).",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web"
+        ]
       }
     },
     {
@@ -399,7 +448,12 @@
       "traits": {
         "source": "open",
         "revert": true,
-        "revertNote": "The installer's \"Back to the stock firmware\" puts stock back. Validation: the first try left a black screen, the second worked."
+        "revertNote": "The installer's \"Back to the stock firmware\" puts stock back. Validation: the first try left a black screen, the second worked.",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web"
+        ]
       }
     },
     {
@@ -436,7 +490,13 @@
       "traits": {
         "source": "open",
         "revert": true,
-        "revertNote": "The installer's \"Back up and install the official V15\" puts stock back."
+        "revertNote": "The installer's \"Back up and install the official V15\" puts stock back.",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web",
+          "python"
+        ]
       }
     },
     {
@@ -474,7 +534,13 @@
       "traits": {
         "source": "open",
         "revert": true,
-        "revertNote": "The installer's \"Return to official V15\" puts stock back (it asks for your unmodified FM-1.fwsc)."
+        "revertNote": "The installer's \"Return to official V15\" puts stock back (it asks for your unmodified FM-1.fwsc).",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web",
+          "python"
+        ]
       }
     },
     {
@@ -510,7 +576,12 @@
         "source": "closed",
         "sourceNote": "Free, closed source; the author has said the source will be released.",
         "revert": false,
-        "revertNote": "No return-to-stock in its installer: M-UPGRADE with FM-1.fwsc (FM-1+VA 94 or later), or another installer's \"Return to official V15\"."
+        "revertNote": "No return-to-stock in its installer: M-UPGRADE with FM-1.fwsc (FM-1+VA 94 or later), or another installer's \"Return to official V15\".",
+        "requires_stock_version": null,
+        "requires_stock_note": "Installs over stock or other firmware. Its own Version 93 and earlier block M-UPGRADE; update to 94 or later before going back to stock.",
+        "install_method": [
+          "web"
+        ]
       }
     },
     {
@@ -545,7 +616,12 @@
         "source": "closed",
         "sourceNote": "Free; a Felucca fork whose repository holds only the installer page, not the firmware source.",
         "revert": false,
-        "revertNote": "No return-to-stock button in its installer: M-UPGRADE with FM-1.fwsc, or another installer's \"Return to official V15\"."
+        "revertNote": "No return-to-stock button in its installer: M-UPGRADE with FM-1.fwsc, or another installer's \"Return to official V15\".",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web"
+        ]
       }
     }
   ],

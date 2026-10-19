@@ -14,6 +14,7 @@ See VALIDATION.md for the procedure. Standard library only.
     python tools/fm1_validate.py add sloop v2.7 --result failed --steps install --notes "black screen on boot"
     python tools/fm1_validate.py add felucca v1.6.1 --steps install,run      # partial: not shown
     python tools/fm1_validate.py remove felucca v1.6.1
+    python tools/fm1_validate.py check       # validate validated.json and catalog.json (CI runs this on PRs)
 """
 import argparse
 import datetime
@@ -39,7 +40,7 @@ def load(path, default):
 
 def save(doc):
     tmp = VALIDATED.with_suffix(".json.tmp")
-    tmp.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    tmp.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
     tmp.replace(VALIDATED)
 
 
@@ -125,6 +126,76 @@ def cmd_remove(doc, args):
     print(f"removed {before - len(doc['validations'])} record(s)")
 
 
+SCHEMA_VERSION = 1
+INSTALL_METHODS = {"web", "python", "m-upgrade"}
+DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}$")
+SHA_RE = re.compile(r"[0-9a-f]{64}$")
+
+
+def problems(doc, cat):
+    """Everything wrong with validated.json and the catalog fields other tools rely on."""
+    out = []
+    for name, d in (("validated.json", doc), ("catalog.json", cat)):
+        if d.get("schema_version") != SCHEMA_VERSION:
+            out.append(f"{name}: schema_version should be {SCHEMA_VERSION}, found {d.get('schema_version')!r}")
+    ids = set()
+    for f in cat.get("firmware", []):
+        ids.add(f.get("id"))
+        t = f.get("traits") or {}
+        where = f"catalog.json {f.get('id')}"
+        if t.get("source") not in ("open", "closed"):
+            out.append(f"{where}: traits.source must be open or closed")
+        if not isinstance(t.get("revert"), bool):
+            out.append(f"{where}: traits.revert must be true or false")
+        rs = t.get("requires_stock_version", "missing")
+        if rs is not None and not (isinstance(rs, str) and re.fullmatch(r"V\d+", rs)):
+            out.append(f"{where}: traits.requires_stock_version must be null or a stock version like V15")
+        im = t.get("install_method")
+        if not isinstance(im, list) or not im or not set(im) <= INSTALL_METHODS:
+            out.append(f"{where}: traits.install_method must list one or more of {sorted(INSTALL_METHODS)}")
+    seen = set()
+    for i, v in enumerate(doc.get("validations", [])):
+        where = f"validated.json #{i + 1} ({v.get('id')} {v.get('version')})"
+        if v.get("id") not in ids:
+            out.append(f"{where}: unknown firmware id")
+        if not isinstance(v.get("version"), str) or not v["version"].strip():
+            out.append(f"{where}: version missing")
+        key = (v.get("id"), norm(v.get("version", "")))
+        if key in seen:
+            out.append(f"{where}: duplicate record for this firmware and version")
+        seen.add(key)
+        if not DATE_RE.match(str(v.get("date", ""))):
+            out.append(f"{where}: date must be YYYY-MM-DD")
+        steps = v.get("steps") or {}
+        if set(steps) != set(STEPS) or not all(isinstance(steps[k], bool) for k in steps):
+            out.append(f"{where}: steps must have install, run and revert as true/false")
+        res = v.get("result")
+        if res is not None and res not in RESULTS:
+            out.append(f"{where}: result must be one of {', '.join(RESULTS)}")
+        if res in ("clean", "issues") and not all(steps.get(k) for k in STEPS):
+            out.append(f"{where}: result {res} needs all three steps")
+        if res in ("issues", "failed") and not v.get("notes"):
+            out.append(f"{where}: result {res} needs notes")
+        if res in RESULTS and not (isinstance(v.get("sha256"), str) and SHA_RE.match(v["sha256"])):
+            out.append(f"{where}: sha256 of the tested file is required (64 lowercase hex digits)")
+        if "supersededBy" in v and not isinstance(v["supersededBy"], str):
+            out.append(f"{where}: supersededBy must be a version string")
+        for field in ("checks", "notes"):
+            hit = PRIVATE.search(v.get(field) or "")
+            if hit:
+                out.append(f"{where}: {field} contains {hit.group(0)!r} (local path, device ID or email)")
+    return out
+
+
+def cmd_check(doc, _args):
+    found = problems(doc, load(CATALOG, {}))
+    for p in found:
+        print("x", p)
+    if found:
+        sys.exit(f"{len(found)} problem(s)")
+    print(f"ok: {len(doc.get('validations', []))} validation records, catalog fields valid")
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -141,9 +212,10 @@ def main():
     a.add_argument("--no-library", action="store_true", help="record without a library file / checksum")
     r = sub.add_parser("remove", help="delete a record")
     r.add_argument("id"); r.add_argument("version")
+    sub.add_parser("check", help="validate validated.json and the catalog fields tools rely on")
     args = p.parse_args()
-    doc = load(VALIDATED, {"validations": []})
-    {"list": cmd_list, "add": cmd_add, "remove": cmd_remove}[args.cmd](doc, args)
+    doc = load(VALIDATED, {"schema_version": SCHEMA_VERSION, "validations": []})
+    {"list": cmd_list, "add": cmd_add, "remove": cmd_remove, "check": cmd_check}[args.cmd](doc, args)
 
 
 if __name__ == "__main__":
