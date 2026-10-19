@@ -1,0 +1,41 @@
+# Nightly: look for new firmware releases and grey out validations they supersede
+# (adds "supersededBy" to firmware/validated.json; see tools/fm1_watch.py).
+name: Watch firmware releases
+
+on:
+  schedule:
+    - cron: "23 6 * * *"   # every day, 06:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: watch-releases
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check releases
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python -I tools/fm1_watch.py --write
+      - name: Validate records
+        run: python -I tools/fm1_validate.py check
+      - name: Commit changes
+        run: |
+          if git diff --quiet -- firmware/validated.json; then
+            echo "No new releases affect validated firmware."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Grey out validations superseded by new releases" -- firmware/validated.json
+          git push
