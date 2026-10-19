@@ -2167,6 +2167,8 @@ const CHECK_SETS = {
 };
 
 let checkRunning = false;
+// Steps run again but not answered yet: their earlier answer shows grey until a new click.
+const checkAwaiting = new Set();
 
 function checkMode() {
   const inst = S.fw?.installed;
@@ -2238,8 +2240,13 @@ function buildChecks() {
     const expect = h("div", { class: "expect", text: "Listen for: " + (typeof c.expect === "function" ? c.expect(vals) : c.expect) });
     const runBtn = h("button", { class: "primary", text: "▶ Run" });
     const ans = (val, label) => {
-      const b = h("button", { text: label, class: results[c.id]?.result === val ? "sel-" + val : "" });
-      b.onclick = () => { results[c.id] = { ...results[c.id], result: val, at: new Date().toISOString() }; saveSettings(); buildChecks(); };
+      const was = results[c.id]?.result === val;
+      const b = h("button", { text: label, class: was ? (checkAwaiting.has(c.id) ? "was" : "sel-" + val) : "",
+        title: was && checkAwaiting.has(c.id) ? "Earlier answer: click an answer for this run" : "" });
+      b.onclick = () => {
+        checkAwaiting.delete(c.id);
+        results[c.id] = { ...results[c.id], result: val, at: new Date().toISOString() }; saveSettings(); buildChecks();
+      };
       return b;
     };
     const paramInputs = (c.params || []).map((p) => h("label", { class: "stack" }, p.label,
@@ -2261,6 +2268,8 @@ function buildChecks() {
       if (checkRunning) return toast("A step is already running", true);
       if (!S.out) return toast("Not connected. Press Connect first.", true);
       checkRunning = true;
+      checkAwaiting.add(c.id);
+      card.querySelectorAll(".answers button[class^='sel-']").forEach((b) => (b.className = "was"));
       $$(".check button, #checkHead button").forEach((b) => (b.disabled = true));
       card.classList.add("running");
       const cap = (t) => (caption.textContent = t);
