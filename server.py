@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""FM-1 Dashboard local server.
+"""Octo-Vave local server.
 
 Serves the web UI from ./web and a small JSON API for:
   - patches/configurations   (data/patches/*.json)
@@ -41,7 +41,7 @@ FW_LIB = ROOT / "firmware" / "library"
 
 HOST = "127.0.0.1"
 PORT = int(os.environ.get("FM1_PORT", "8765"))
-USER_AGENT = "fm1-dashboard/1.0"
+USER_AGENT = "octo-vave/1.0"
 _token = None
 
 
@@ -870,7 +870,7 @@ def reveal(fid):
 # ---------------------------------------------------------------- HTTP
 
 class Handler(SimpleHTTPRequestHandler):
-    server_version = "FM1Dashboard/1.0"
+    server_version = "OctoVave/1.0"
 
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=str(WEB), **kw)
@@ -1318,7 +1318,7 @@ def main():
         d.mkdir(parents=True, exist_ok=True)
     srv = ThreadingHTTPServer((HOST, PORT), Handler)
     url = f"http://{HOST}:{PORT}/"
-    print(f"FM-1 Dashboard running at {url}  (Ctrl+C to stop)")
+    print(f"Octo-Vave running at {url}  (Ctrl+C to stop)")
     if "--no-browser" not in sys.argv:
         webbrowser.open(url)
     try:

@@ -2504,12 +2504,10 @@ function chOptions(sel, value) {
 }
 
 function switchTab(name) {
-  // Old saved tabs (voice, fx, explore) now live on FM-1 Home.
-  if (!document.getElementById("tab-" + name)) name = "home";
+  if (!document.getElementById("tab-" + name)) name = "firmware";
   $$("#tabs button").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
   $$(".tab").forEach((t) => t.classList.toggle("active", t.id === "tab-" + name));
   updateStockWarn();
-  try { localStorage.setItem("fm1.tab", name); } catch {}
   // Always re-read: validated.json and the library change outside the app.
   if (name === "firmware") loadFirmware({ autoRefresh: !S.fw });
 }
@@ -2669,9 +2667,9 @@ async function init() {
   loadPatches();
   loadFirmware({ autoRefresh: true });
 
-  let tab = "home";
-  try { tab = localStorage.getItem("fm1.tab") || "home"; } catch {}
-  switchTab(tab);
+  // Launch always opens on Firmware.
+  switchTab("firmware");
+  $$("[data-octo]").forEach((el) => el.replaceWith(octo("Validated on a real FM-1", "clean")));
   // Coming back to the window: pick up validations or downloads made meanwhile.
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden && $("#tabs .active")?.dataset.tab === "firmware") loadFirmware();

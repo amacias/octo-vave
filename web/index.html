@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>FM-1 Dashboard</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23e8743b'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='14' font-weight='700' text-anchor='middle' fill='white'%3EFM%3C/text%3E%3C/svg%3E">
+  <title>Octo-Vave</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='2 2 28 30'%3E%3Cpath fill='%23F07A2B' d='M16 3C10 3 6 7.3 6 13c0 3.2 1.4 5.6 3.4 7.1L7 24.5c-.6 1.1-1.9 1.5-3 1-.6-.3-1.3.1-1.2.8.2 1.6 2 2.6 3.7 2.1 1.6-.5 2.6-1.8 3.4-3.2l1.6-2.8.5 4.2c.1 1.2-.6 2.3-1.7 2.7-.6.2-.6 1.1.1 1.2 2 .4 3.8-1 4-3l.4-4.3h2.4l.4 4.3c.2 2 2 3.4 4 3 .7-.1.7-1 .1-1.2-1.1-.4-1.8-1.5-1.7-2.7l.5-4.2 1.6 2.8c.8 1.4 1.8 2.7 3.4 3.2 1.7.5 3.5-.5 3.7-2.1.1-.7-.6-1.1-1.2-.8-1.1.5-2.4.1-3-1l-2.4-4.4C24.6 18.6 26 16.2 26 13c0-5.7-4-10-10-10z'/%3E%3Ccircle cx='12.4' cy='13' r='2' fill='%23fff'/%3E%3Ccircle cx='19.6' cy='13' r='2' fill='%23fff'/%3E%3Ccircle cx='12.8' cy='13.4' r='1' fill='%232b1a10'/%3E%3Ccircle cx='20' cy='13.4' r='1' fill='%232b1a10'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="css/home.css">
   <link rel="stylesheet" href="css/keys.css">
@@ -14,13 +14,13 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand"><span class="logo">FM</span><div><strong>FM-1 Dashboard</strong><small id="fwBadge">firmware: unknown</small></div></div>
+    <div class="brand"><svg class="logo" viewBox="2 2 28 30" aria-hidden="true"><path fill="#F07A2B" d="M16 3C10 3 6 7.3 6 13c0 3.2 1.4 5.6 3.4 7.1L7 24.5c-.6 1.1-1.9 1.5-3 1-.6-.3-1.3.1-1.2.8.2 1.6 2 2.6 3.7 2.1 1.6-.5 2.6-1.8 3.4-3.2l1.6-2.8.5 4.2c.1 1.2-.6 2.3-1.7 2.7-.6.2-.6 1.1.1 1.2 2 .4 3.8-1 4-3l.4-4.3h2.4l.4 4.3c.2 2 2 3.4 4 3 .7-.1.7-1 .1-1.2-1.1-.4-1.8-1.5-1.7-2.7l.5-4.2 1.6 2.8c.8 1.4 1.8 2.7 3.4 3.2 1.7.5 3.5-.5 3.7-2.1.1-.7-.6-1.1-1.2-.8-1.1.5-2.4.1-3-1l-2.4-4.4C24.6 18.6 26 16.2 26 13c0-5.7-4-10-10-10z"/><circle cx="12.4" cy="13" r="2" fill="#fff"/><circle cx="19.6" cy="13" r="2" fill="#fff"/><circle cx="12.8" cy="13.4" r="1" fill="#2b1a10"/><circle cx="20" cy="13.4" r="1" fill="#2b1a10"/></svg><div><strong>Octo-Vave</strong><small class="byline">by Artificial Music</small><small id="fwBadge">firmware: unknown</small></div></div>
     <nav id="tabs" role="tablist">
-      <button data-tab="home" class="active">FM-1 Home</button>
+      <button data-tab="firmware" class="active">Firmware</button>
+      <button data-tab="home">FM-1 Home</button>
       <button data-tab="play">Play &amp; MIDI</button>
       <button data-tab="check">Sound check</button>
       <button data-tab="library">Library</button>
-      <button data-tab="firmware">Firmware</button>
     </nav>
     <div class="conn">
       <span id="connDot" class="dot off"></span>
@@ -34,12 +34,41 @@
   </div>
 
   <main>
+    <!-- FIRMWARE ----------------------------------------------------- -->
+    <section id="tab-firmware" class="tab active">
+      <div class="section-head">
+        <h1>Firmware</h1>
+        <div class="row"><span id="fwChecked" class="muted"></span><button id="fwRefresh" class="primary">Check for updates</button><button id="fwReveal">Open library folder</button></div>
+      </div>
+      <p class="intro">Free firmware for the FM-1: stock, FM-1 Open and the top community projects, with downloads checked and kept in a local library. An orange octopus <span data-octo></span> is our stamp of validation: that version was installed, played and reverted to stock on a real FM-1.</p>
+      <div class="fw-top">
+        <div class="card safety fw-safe">
+          <div class="safe-item"><span class="safe-ic"><svg viewBox="0 0 24 24" class="ic"><path d="M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0zM12 17v5"/></svg></span><span>Keep USB + power connected while flashing</span></div>
+          <div class="safe-item"><span class="safe-ic"><svg viewBox="0 0 24 24" class="ic"><path d="M12 4l8 9H4zM4 18h16"/></svg></span><span>Release the MIDI port before M-UPGRADE</span></div>
+          <div class="safe-item"><span class="safe-ic"><svg viewBox="0 0 24 24" class="ic"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M5.6 5.6l3.6 3.6M18.4 5.6l-3.6 3.6M5.6 18.4l3.6-3.6M18.4 18.4l-3.6-3.6"/></svg></span><span>Hold <b>OCT−</b> at power-on for USB rescue</span></div>
+          <div class="safe-item"><span class="safe-ic"><svg viewBox="0 0 24 24" class="ic"><path d="M9 14L4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"/></svg></span><span>Stock V15 + M-UPGRADE = way back</span></div>
+        </div>
+        <div class="card">
+          <h3>On the device</h3>
+          <div class="row wrap">
+            <select id="fwInstalledSel"></select>
+            <input id="fwInstalledVer" placeholder="version, e.g. V15">
+            <input id="fwInstalledNote" class="grow" placeholder="note (optional)">
+            <button id="fwMarkInstalled">Log</button>
+          </div>
+          <details><summary class="muted">History</summary><table class="table" id="fwHistory"><tbody></tbody></table></details>
+        </div>
+      </div>
+      <div id="fwCards"></div>
+    </section>
+
     <!-- FM-1 HOME: perform + FX, favorites, notes, keyboard, voice editor, about ---------- -->
-    <section id="tab-home" class="tab active">
+    <section id="tab-home" class="tab">
       <div class="section-head">
         <h1>FM-1 Home</h1>
         <button id="customizeBtn" class="ghost" aria-expanded="false" aria-controls="customizePanel">Customize</button>
       </div>
+      <p class="intro">Play and shape the FM-1 from the browser: perform controls and FX, favorite patches, notes, a keyboard and the voice editor. Customize picks what shows.</p>
       <div id="customizePanel" class="card hidden">
         <h3>Show on FM-1 Home</h3>
         <div id="widgetToggles" class="toggles"></div>
@@ -152,6 +181,7 @@
     <!-- PLAY & MIDI -------------------------------------------------- -->
     <section id="tab-play" class="tab">
       <h1>Play &amp; MIDI <small class="muted">generic MIDI I/O, any device</small></h1>
+      <p class="intro">Plain MIDI tools that work with any device: pick ports and channels, play, send messages and watch what comes back.</p>
       <div class="grid two">
         <div class="card">
           <h3>Ports &amp; channel</h3>
@@ -230,6 +260,7 @@
         <h1>Sound check</h1>
         <div class="row"><span id="checkSummary" class="muted"></span><button id="checkReset" class="ghost">Clear answers</button></div>
       </div>
+      <p class="intro">Check by ear that the firmware on the FM-1 answers MIDI: each step plays a short test and you mark what you heard. Results are kept per firmware.</p>
       <div class="card safety">
         Turn the FM-1's volume up and listen. Each step plays a <b>BEFORE</b> and an <b>AFTER</b>, and the caption shows
         which is playing; answer whether you heard the difference. <b>Run all tests</b> goes through every step and waits
@@ -249,6 +280,7 @@
           <label class="file-btn">Import JSON<input id="libImport" type="file" accept=".json" hidden></label>
         </div>
       </div>
+      <p class="intro">Save and recall patches, each made for one firmware. They are plain files on this computer, easy to back up.</p>
       <div class="lib-toolbar">
         <input id="libSearch" type="search" placeholder="Search…" aria-label="Search patches">
         <label>Firmware <select id="libFw"></select></label>
@@ -262,33 +294,6 @@
       <div id="libStatus" class="lib-status"></div>
       <p class="hint">Each patch is saved for one firmware, in one of that firmware's formats: a stock patch holds a voice (156 DX7 params), an FX snapshot and a program number; other firmwares store parameters, CCs or SysEx as described in <code>firmware/formats/</code>. Sending a patch made for another firmware than the one logged on the device asks first. Files live in <code>data/patches/</code>, so they're easy to back up or keep in git.</p>
       <div id="libList"></div>
-    </section>
-
-    <!-- FIRMWARE ----------------------------------------------------- -->
-    <section id="tab-firmware" class="tab">
-      <div class="section-head">
-        <h1>Firmware</h1>
-        <div class="row"><span id="fwChecked" class="muted"></span><button id="fwRefresh" class="primary">Check for updates</button><button id="fwReveal">Open library folder</button></div>
-      </div>
-      <div class="fw-top">
-        <div class="card safety fw-safe">
-          <div class="safe-item"><span class="safe-ic"><svg viewBox="0 0 24 24" class="ic"><path d="M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0zM12 17v5"/></svg></span><span>Keep USB + power connected while flashing</span></div>
-          <div class="safe-item"><span class="safe-ic"><svg viewBox="0 0 24 24" class="ic"><path d="M12 4l8 9H4zM4 18h16"/></svg></span><span>Release the MIDI port before M-UPGRADE</span></div>
-          <div class="safe-item"><span class="safe-ic"><svg viewBox="0 0 24 24" class="ic"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M5.6 5.6l3.6 3.6M18.4 5.6l-3.6 3.6M5.6 18.4l3.6-3.6M18.4 18.4l-3.6-3.6"/></svg></span><span>Hold <b>OCT−</b> at power-on for USB rescue</span></div>
-          <div class="safe-item"><span class="safe-ic"><svg viewBox="0 0 24 24" class="ic"><path d="M9 14L4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"/></svg></span><span>Stock V15 + M-UPGRADE = way back</span></div>
-        </div>
-        <div class="card">
-          <h3>On the device</h3>
-          <div class="row wrap">
-            <select id="fwInstalledSel"></select>
-            <input id="fwInstalledVer" placeholder="version, e.g. V15">
-            <input id="fwInstalledNote" class="grow" placeholder="note (optional)">
-            <button id="fwMarkInstalled">Log</button>
-          </div>
-          <details><summary class="muted">History</summary><table class="table" id="fwHistory"><tbody></tbody></table></details>
-        </div>
-      </div>
-      <div id="fwCards"></div>
     </section>
 
   </main>

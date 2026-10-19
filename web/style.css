@@ -39,6 +39,8 @@ a { color: var(--accent); }
 code, .mono { font-family: var(--mono); }
 .muted { color: var(--muted); }
 .hint { color: var(--muted); font-size: 12.5px; margin: 8px 0 0; }
+.intro { color: var(--muted); margin: -4px 0 14px; max-width: 80ch; line-height: 1.5; }
+.intro .octo { width: 18px; height: 18px; vertical-align: -4px; }
 .hidden { display: none !important; }
 
 /* top bar */
@@ -48,10 +50,9 @@ code, .mono { font-family: var(--mono); }
 }
 .brand { display: flex; align-items: center; gap: 10px; }
 .brand small { display: block; color: var(--muted); font-size: 12px; }
-.logo {
-  width: 34px; height: 34px; border-radius: 8px; background: var(--accent); color: var(--accent-ink);
-  display: grid; place-items: center; font: 700 13px var(--mono);
-}
+.logo { width: 46px; height: 46px; flex: none; }
+.brand strong { font-size: 17px; letter-spacing: .01em; }
+.brand small.byline { font-style: italic; }
 nav { display: flex; gap: 2px; flex-wrap: wrap; flex: 1; }
 nav button { background: none; border: 0; padding: 8px 12px; border-radius: 8px; color: var(--muted); font-weight: 500; }
 nav button:hover { background: var(--panel-2); color: var(--ink); }

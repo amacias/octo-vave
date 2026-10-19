@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Record firmware validations for the FM-1 Dashboard (firmware/validated.json).
+"""Record firmware validations for Octo-Vave (firmware/validated.json).
 
 A firmware counts as validated when it was installed on a real FM-1, ran, and was
 reverted to stock. The result sets the octopus colour on the dashboard:
