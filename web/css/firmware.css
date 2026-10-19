@@ -36,11 +36,10 @@
 /* card traits: egg open/closed source, green checksum, blue first-aid revert; grey = no or unknown */
 .fw-headtext .by { display: flex; align-items: center; gap: 6px; }
 .fw-headtext .by .by-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.fw-tools { display: inline-flex; align-items: center; gap: 3px; margin-left: auto; flex: none; }
+.fw-tools { display: inline-flex; align-items: center; gap: 3px; flex: none; }
 .fw-tools a.mini { color: var(--muted); display: inline-flex; padding: 1px; border-radius: 6px; }
 .fw-tools a.mini:hover { color: var(--ink); background: var(--panel-2); }
 .fw-tools a.mini .ic { width: 16px; height: 16px; }
-.fw-tools .fw-traits { margin-left: 4px; }
 .fw-traits { display: inline-flex; gap: 3px; flex: none; }
 /* top line: name left, octopus alone on the right, 1.5x size */
 .fw-title { min-height: 30px; }
@@ -65,7 +64,12 @@
 .trait.m-upgrade .bg { fill: #475569; }
 .trait.m-upgrade .fg { stroke: #fff; }
 .trait.m-upgrade .fg-text { font-size: 11px; }
-.fw-install { display: inline-flex; align-items: center; gap: 3px; margin-left: auto; }
+.fw-install { display: inline-flex; align-items: center; gap: 3px; }
+/* all card icons in one row under the buttons, groups split by a thin rule */
+.fw-icons { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.fw-icons > * + * { padding-left: 7px; border-left: 1px solid var(--line); }
+/* the newer install icons (OG, install methods) sit at the right edge */
+.fw-icons > .fw-install { margin-left: auto; border-left: 0; }
 /* the validated file's pinned sha256 */
 .fw-pin { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12px; margin: 2px 0 6px; }
 .fw-pin .octo { width: 15px; height: 15px; }
