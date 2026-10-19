@@ -183,6 +183,8 @@ function updateConn() {
   $("#connText").textContent = on ? S.out.name : S.midi ? "No output selected" : "Not connected";
   $("#connectBtn").textContent = S.midi ? "Rescan" : "Connect";
   renderHomeStatus();
+  buildChecks();  // Sound check's Auto mode follows the connected port
+  syncFirmwareFromPort();
 }
 
 let warnedNoOut = false;
@@ -1469,6 +1471,7 @@ function renderFirmware() {
     validatedSection(fw, orphans),
     fwDirectory(fw)].filter(Boolean));
   buildChecks();
+  syncFirmwareFromPort();
 }
 
 /** The next 20 most popular projects after the cards (#11–#30), one line each. */
@@ -2170,11 +2173,53 @@ let checkRunning = false;
 // Steps run again but not answered yet: their earlier answer shows grey until a new click.
 const checkAwaiting = new Set();
 
-function checkMode() {
+/** What the connected MIDI port says is running. Stock V15 names its port "FM-1 Midi";
+ *  community firmware renames it ("Felucca" for Felucca and its forks, "AMB-1 FM-1"),
+ *  and FM-1 Open shows up as "USB-Midi". null = not connected. */
+function portFirmware() {
+  const n = S.out?.name || "";
+  if (!n) return null;
+  if (/^FM-?1 Midi/i.test(n)) return { stock: true, label: "stock firmware (port FM-1 Midi)" };
+  if (/^AMB-1/i.test(n)) return { stock: false, id: "amb1", label: "AMB-1 (port AMB-1 FM-1)" };
+  if (/felucca/i.test(n)) return { stock: false, label: "Felucca or a Felucca fork (port Felucca)" };
+  if (/^USB-?Midi/i.test(n)) return { stock: false, label: "FM-1 Open or update mode (port USB-Midi)" };
+  return { stock: false, label: `port ${n}` };
+}
+
+/** Stock or Generic: from the connected port when there is one, else from the firmware log. */
+function autoMode() {
+  const pf = portFirmware();
+  if (pf) return pf.stock ? "stock" : "generic";
   const inst = S.fw?.installed;
-  const m = S.settings.checkMode || "auto";
-  if (m !== "auto") return m;
   return inst && inst.id !== "official" ? "generic" : "stock";
+}
+
+// A manual mode pick is kept only while the same firmware is loaded.
+const loadedKey = () => `${S.out?.name || "-"}|${S.fw?.installed?.id || "-"}@${S.fw?.installed?.version || "-"}`;
+function checkMode() {
+  const m = S.settings.checkMode || "auto";
+  if (m === "auto" || S.settings.checkModeFor !== loadedKey()) return autoMode();
+  return m;
+}
+
+/** The port says stock but the log says otherwise (after a revert): log stock, so results
+ *  land in the right profile. Other firmwares can't be told apart by port, so they are not
+ *  logged automatically. */
+let portSyncBusy = false;
+async function syncFirmwareFromPort() {
+  const pf = portFirmware();
+  const inst = S.fw?.installed;
+  if (!pf?.stock || !S.fw || !inst || inst.id === "official" || portSyncBusy) return;
+  portSyncBusy = true;
+  try {
+    const version = S.fw.releases?.sources?.official?.releases?.[0]?.version || "V15";
+    await api("firmware/installed", { method: "POST",
+      body: JSON.stringify({ id: "official", version, note: "auto: the FM-1's port shows stock firmware" }) });
+    S.fw = await api("firmware");
+    renderFirmware();
+    toast(`Stock firmware detected on the port: logged ${fwNameVer("official", version)}`);
+  } catch (e) { toast(e.message, true); }
+  finally { portSyncBusy = false; buildChecks(); }
 }
 
 /** Results are kept per test mode and per logged firmware. */
@@ -2191,7 +2236,8 @@ function checkProfile() {
     all["stock|unlogged"] = { mode: "stock", label: "Stock M-VAVE · firmware not logged", steps: flat };
   }
   const key = `${mode}|${fwKey}`;
-  all[key] ||= { mode, label: `${CHECK_SETS[mode].label} · ${fwLabel}`, steps: {} };
+  all[key] ||= { mode, steps: {} };
+  all[key].label = `${CHECK_SETS[mode].label} · ${fwLabel}`;
   return { key, mode, fwLabel, entry: all[key], all };
 }
 
@@ -2206,50 +2252,64 @@ function tally(steps, total) {
   return `${n("yes")} heard · ${n("no")} not heard · ${n("unsure")} unsure · ${total - v.length} to go`;
 }
 
+// Run all tests: plays each step, then waits for its answer before the next one.
+let runAll = null; // { stop, wait: { id, resolve } }
+
 function buildChecks() {
   if (checkRunning) return;
   const prof = checkProfile();
   const set = CHECK_SETS[prof.mode];
   const results = prof.entry.steps;
   const inst = S.fw?.installed;
+  const pf = portFirmware();
 
-  // header: mode switch, what's being recorded, earlier profiles
-  const pick = S.settings.checkMode || "auto";
+  // header: mode switch, Run all, what's being recorded, earlier profiles
+  const pick = S.settings.checkMode && S.settings.checkModeFor === loadedKey() ? S.settings.checkMode : "auto";
   const modeBtn = (m, label) => h("button", {
-    class: pick === m ? "primary" : "", text: label,
-    onclick: () => { S.settings.checkMode = m; saveSettings(); buildChecks(); },
+    class: pick === m ? "primary" : "", text: label, disabled: !!runAll,
+    onclick: () => { S.settings.checkMode = m; S.settings.checkModeFor = loadedKey(); saveSettings(); buildChecks(); },
   });
+  const allBtn = runAll
+    ? h("button", { class: "danger", text: "■ Stop", onclick: stopRunAll })
+    : h("button", { class: "primary", text: "▶ Run all tests", onclick: () => runAllChecks(set) });
+  const mismatch = pf && !pf.stock && inst?.id === "official";
   const others = Object.entries(prof.all).filter(([k]) => k !== prof.key);
-  $("#checkHead").replaceChildren(
+  $("#checkHead").replaceChildren(...[
     h("div", { class: "row" },
+      allBtn,
+      h("span", { class: "grow" }),
       h("b", { text: "Mode:" }),
-      modeBtn("auto", `Auto → ${inst && inst.id !== "official" ? "Generic" : "Stock"}`),
+      modeBtn("auto", `Auto → ${autoMode() === "generic" ? "Generic" : "Stock"}`),
       modeBtn("stock", "Stock M-VAVE"), modeBtn("generic", "Generic MIDI")),
-    h("p", { class: "hint", text: set.blurb }),
-    prof.mode === "stock" && inst && inst.id !== "official"
-      && h("p", { class: "badge warn", text: `The device is logged as ${prof.fwLabel}. Stock steps may not apply; Generic MIDI is the safer choice.` }),
+    h("p", { class: "hint", text: set.blurb + (pf ? ` Detected: ${pf.label}.` : "") }),
+    mismatch && h("p", { class: "badge warn", text: `The port shows ${pf.label}, but the log says Stock. Log the firmware on the Firmware tab so results are kept under the right one.` }),
+    prof.mode === "stock" && pf && !pf.stock
+      && h("p", { class: "badge warn", text: `The device runs ${pf.label}. Stock steps may not apply; Generic MIDI is the safer choice.` }),
     h("p", { class: "hint" }, "Recording results for: ", h("b", { text: prof.entry.label }),
       inst ? "" : ". Log the firmware on the Firmware tab to keep results per firmware."),
     others.length > 0 && h("details", {}, h("summary", { class: "muted", text: `Earlier results (${others.length})` }),
       h("table", { class: "table" }, h("tbody", {}, others.map(([, p]) =>
-        h("tr", {}, h("td", { text: p.label }), h("td", { class: "muted", text: tally(p.steps, CHECK_SETS[p.mode]?.checks.length || 0) })))))));
+        h("tr", {}, h("td", { text: p.label }), h("td", { class: "muted", text: tally(p.steps, CHECK_SETS[p.mode]?.checks.length || 0) }))))))].filter(Boolean));
 
   $("#checkList").replaceChildren(...set.checks.map((c) => {
     const vals = checkParams(c);
-    const caption = h("div", { class: "caption" });
     const expect = h("div", { class: "expect", text: "Listen for: " + (typeof c.expect === "function" ? c.expect(vals) : c.expect) });
-    const runBtn = h("button", { class: "primary", text: "▶ Run" });
+    const runBtn = h("button", { class: "primary", text: "▶ Run", disabled: !!runAll });
+    runBtn.onclick = () => runCheck(c);
     const ans = (val, label) => {
       const was = results[c.id]?.result === val;
       const b = h("button", { text: label, class: was ? (checkAwaiting.has(c.id) ? "was" : "sel-" + val) : "",
         title: was && checkAwaiting.has(c.id) ? "Earlier answer: click an answer for this run" : "" });
       b.onclick = () => {
         checkAwaiting.delete(c.id);
-        results[c.id] = { ...results[c.id], result: val, at: new Date().toISOString() }; saveSettings(); buildChecks();
+        results[c.id] = { ...results[c.id], result: val, at: new Date().toISOString() }; saveSettings();
+        const w = runAll?.wait;
+        if (w?.id === c.id) { runAll.wait = null; w.resolve(true); }
+        buildChecks();
       };
       return b;
     };
-    const paramInputs = (c.params || []).map((p) => h("label", { class: "stack" }, p.label,
+    const paramInputs = (c.params || []).map((p) => h("label", { class: "inline" }, p.label,
       h("input", { type: "number", min: p.min, max: p.max, value: vals[p.key], onchange: (e) => {
         const v = Math.max(p.min, Math.min(p.max, +e.target.value || 0));
         e.target.value = v; vals[p.key] = v;
@@ -2257,39 +2317,75 @@ function buildChecks() {
         expect.textContent = "Listen for: " + c.expect(vals);
         saveSettings();
       } })));
-    const note = h("input", { class: "grow", placeholder: "Notes (optional)" + (c.noteHint ? `: ${c.noteHint}` : ""), value: results[c.id]?.note || "",
-      onchange: (e) => { results[c.id] = { ...results[c.id], note: e.target.value }; saveSettings(); } });
-    const card = h("div", { class: "check", "data-id": c.id },
-      h("div", {}, h("div", { class: "t", text: c.title }), expect),
+    return h("div", { class: "check" + (runAll?.wait?.id === c.id ? " awaiting" : ""), "data-id": c.id },
+      h("div", { class: "check-text" }, h("div", { class: "t", text: c.title }), expect,
+        paramInputs.length > 0 && h("div", { class: "check-params" }, paramInputs)),
       h("div", { class: "answers" }, runBtn, ans("yes", "Heard it"), ans("no", "Didn't hear"), ans("unsure", "Not sure")),
-      h("div", { class: "row", style: "grid-column:1/-1" }, paramInputs, note),
-      caption);
-    runBtn.onclick = async () => {
-      if (checkRunning) return toast("A step is already running", true);
-      if (!S.out) return toast("Not connected. Press Connect first.", true);
-      checkRunning = true;
-      checkAwaiting.add(c.id);
-      card.querySelectorAll(".answers button[class^='sel-']").forEach((b) => (b.className = "was"));
-      $$(".check button, #checkHead button").forEach((b) => (b.disabled = true));
-      card.classList.add("running");
-      const cap = (t) => (caption.textContent = t);
-      try {
-        await c.run(cap, vals);
-        cap("Restoring…");
-        if (c.restore) await c.restore();
-        cap("Done. Did you hear it? Answer on the right, or press Run again.");
-      } catch (e) {
-        cap("Error: " + e.message);
-        await scGenericReset().catch(() => {});
-      } finally {
-        checkRunning = false;
-        card.classList.remove("running");
-        $$(".check button, #checkHead button").forEach((b) => (b.disabled = false));
-      }
-    };
-    return card;
+      h("div", { class: "caption", text: runAll?.wait?.id === c.id ? "Did you hear it? Answer to go on to the next step." : "" }));
   }));
   $("#checkSummary").textContent = tally(results, set.checks.length);
+}
+
+/** Play one step (with on-screen captions), then restore the synth. */
+async function runCheck(c) {
+  if (checkRunning) return toast("A step is already running", true);
+  if (!S.out) return toast("Not connected. Press Connect first.", true);
+  const card = $(`.check[data-id="${c.id}"]`);
+  const caption = card.querySelector(".caption");
+  const vals = checkParams(c);
+  checkRunning = true;
+  checkAwaiting.add(c.id);
+  card.querySelectorAll(".answers button[class^='sel-']").forEach((b) => (b.className = "was"));
+  $$(".check button, #checkHead button").forEach((b) => (b.disabled = !(runAll && b.classList.contains("danger"))));
+  card.classList.add("running");
+  card.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  const cap = (t) => (caption.textContent = t);
+  try {
+    await c.run(cap, vals);
+    cap("Restoring…");
+    if (c.restore) await c.restore();
+    cap(runAll ? "Did you hear it? Answer to go on to the next step." : "Done. Did you hear it? Answer on the right, or press Run again.");
+  } catch (e) {
+    cap("Error: " + e.message);
+    await scGenericReset().catch(() => {});
+  } finally {
+    checkRunning = false;
+    card.classList.remove("running");
+    $$(".check button, #checkHead button").forEach((b) => (b.disabled = false));
+    if (runAll) $$(".check .answers button.primary, #checkHead .row button:not(.danger)").forEach((b) => (b.disabled = true));
+  }
+}
+
+async function runAllChecks(set) {
+  if (checkRunning || runAll) return;
+  if (!S.out) return toast("Not connected. Press Connect first.", true);
+  runAll = { stop: false, wait: null };
+  buildChecks();
+  try {
+    for (const c of set.checks) {
+      if (runAll.stop) break;
+      await runCheck(c);
+      if (runAll.stop) break;
+      const answered = new Promise((resolve) => (runAll.wait = { id: c.id, resolve }));
+      buildChecks();
+      $(`.check[data-id="${c.id}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      if (!(await answered)) break;
+    }
+  } finally {
+    const stopped = runAll.stop;
+    runAll = null;
+    buildChecks();
+    toast(stopped ? "Run all stopped" : "All steps done");
+  }
+}
+
+function stopRunAll() {
+  if (!runAll) return;
+  runAll.stop = true;
+  const w = runAll.wait;
+  runAll.wait = null;
+  if (w) w.resolve(false);
+  else { const cap = $(".check.running .caption"); if (cap) cap.textContent = "Stopping after this step…"; }
 }
 
 // ================================================================ explore

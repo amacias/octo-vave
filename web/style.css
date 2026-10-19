@@ -245,12 +245,17 @@ button.got { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 50%, v
 @media (max-width: 640px) { .fw-safe { grid-template-columns: 1fr; } .fw-top { grid-template-columns: 1fr; } .dir-list li { white-space: normal; } }
 
 /* sound check */
-.check-list { display: grid; gap: 12px; }
-.check { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; align-items: center; }
+.check-list { display: grid; gap: 6px; }
+.check { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 12px; display: grid; grid-template-columns: 1fr auto; gap: 2px 14px; align-items: center; }
 .check.running { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.check .t { font-weight: 600; font-size: 15px; }
-.check .expect { color: var(--muted); }
-.check .caption { grid-column: 1 / -1; font: 600 15px var(--mono); color: var(--accent); min-height: 1.4em; }
+.check.awaiting { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok); }
+.check .t { font-weight: 600; font-size: 14px; }
+.check .expect { color: var(--muted); font-size: 12.5px; line-height: 1.35; }
+.check .check-params { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; font-size: 12.5px; }
+.check .check-params label.inline { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
+.check .check-params input { width: 70px; }
+.check .caption { grid-column: 1 / -1; font: 600 13px var(--mono); color: var(--accent); }
+.check .caption:empty { display: none; }
 .check .answers { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .check .answers button.sel-yes { background: var(--ok); color: #fff; border-color: var(--ok); }
 .check .answers button.sel-no { background: var(--bad); color: #fff; border-color: var(--bad); }
