@@ -17,6 +17,21 @@
       "notes": "First revert via the AMB-1 installer's 'Back to the stock firmware' left a black screen in USB update mode (enumerated as generic USB-Midi 4D4A:4155); running it a second time restored stock V15."
     },
     {
+      "id": "felucca",
+      "version": "v1.6.1",
+      "file": "felucca-1.6.1.fwsc",
+      "sha256": "dff3a38f7e5b9833e15aba322558c9485e9e422e3ff813c616c91b3584a2d909",
+      "date": "2026-10-18",
+      "steps": {
+        "install": true,
+        "run": true,
+        "revert": true
+      },
+      "result": "clean",
+      "checks": "sounds, keys and knobs work; generic sound check 1-4 heard (notes, channels, velocity, sustain); stock steps 1-4 also heard (notes, program change, reverb, distortion); keys sent as MIDI notes on ch 1; stock sound check passed after revert",
+      "notes": "Under Felucca the FM-1 shows up as MIDI port 'Felucca' (USB 1209:0001, shared with AMB-1) and ignores MIDI identity requests. Return to official V15 asks for the unmodified FM-1.fwsc and saves a full backup first; worked first time. Arpeggiator not figured out during the test."
+    },
+    {
       "id": "fm1open",
       "version": "V13",
       "file": "FM1-Open-V13-Workbench.html",
