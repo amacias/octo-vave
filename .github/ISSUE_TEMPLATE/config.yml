@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: How validation works
+    url: https://github.com/amacias/octo-vave/blob/main/VALIDATION.md
+    about: The install → play → revert procedure behind the orange octopus.

@@ -65,4 +65,29 @@ and checks. Ask for each action as one clearly marked prompt, separate from stat
 ```
 
 `id` matches `firmware/catalog.json`. A card shows a full-color octopus when its latest release
-is validated, and a faded one when only an older release is.
+is validated, and a faded one when only an older release is. The nightly watcher
+(`tools/fm1_watch.py`, run by `.github/workflows/watch-releases.yml`) adds
+`"supersededBy": "<version>"` when a newer stable release appears, so the octopus greys out even
+where the app has no live release data, and removes it again if that changes.
+
+## Contributing a validation
+
+Validations from other FM-1 owners are welcome. The flow:
+
+1. **Run the session** above on your own FM-1: install with the project's installer, play it, run the
+   Sound check, revert to stock V15.
+2. **Open a [validation report](https://github.com/amacias/octo-vave/issues/new?template=validation-report.yml).**
+   It asks for the firmware, version, the file you flashed and its SHA256, the result, the steps that
+   worked, and what you checked. Everything in it is public: no serial numbers, USB instance IDs,
+   local paths or email addresses.
+3. **Pull request** (by you or a maintainer): download the same file in Octo-Vave (its SHA256 must
+   match the report), then
+   ```
+   python tools/fm1_validate.py add <id> <version> --result clean|issues|failed --checks "…" --notes "…"
+   python tools/fm1_validate.py check
+   ```
+   and open a pull request that changes `firmware/validated.json`, with `Closes #<issue>` in the
+   description. CI runs the same `check` on it.
+4. A maintainer reviews it and merges; the octopus shows up on the card and on the homepage.
+
+A report with `issues` or `failed` is just as useful: it warns the next person.
