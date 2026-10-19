@@ -66,7 +66,8 @@
 .trait.m-upgrade .fg-text { font-size: 11px; }
 .fw-install { display: inline-flex; align-items: center; gap: 3px; }
 /* all card icons in one row under the buttons, groups split by a thin rule */
-.fw-icons { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.fw-icons { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 6px -14px 0; padding: 7px 14px;
+  background: var(--panel-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .fw-icons > * + * { padding-left: 7px; border-left: 1px solid var(--line); }
 /* the newer install icons (OG, install methods) sit at the right edge */
 .fw-icons > .fw-install { margin-left: auto; border-left: 0; }
