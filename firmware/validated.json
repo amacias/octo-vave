@@ -17,6 +17,21 @@
       "notes": "First revert via the AMB-1 installer's 'Back to the stock firmware' left a black screen in USB update mode (enumerated as generic USB-Midi 4D4A:4155); running it a second time restored stock V15."
     },
     {
+      "id": "choralroot",
+      "version": "v0.25.1",
+      "file": "choralroot-0.25.1.fwsc",
+      "sha256": "ef57eaccf6e7452317a1603b8de09662a0a74b77828ecd3f20b896ffe22504d5",
+      "date": "2026-10-18",
+      "steps": {
+        "install": true,
+        "run": true,
+        "revert": true
+      },
+      "result": "clean",
+      "checks": "boots to ChoralRoot, keys play; generic sound check: heard notes, channel scan, velocity, program change, all notes off; unsure sustain, mod wheel; not heard pitch bend, aftertouch, clock sync, CC probe; sends MIDI clock and notes on ch 1-2; stock sound check 8/8 after revert (run all)",
+      "notes": "MIDI port 'ChoralRoot FM-1' (USB 1209:0001). It sends its own MIDI clock, so it leads rather than follows external clock. Installed over stock with 'Skip the backup' (stock cannot be backed up); Back up and return to official V15 asks for the unmodified FM-1.fwsc, saves a backup first and worked first time."
+    },
+    {
       "id": "felucca",
       "version": "v1.6.1",
       "file": "felucca-1.6.1.fwsc",
