@@ -12,9 +12,9 @@
         "run": true,
         "revert": true
       },
-      "result": "issues",
-      "checks": "boots and plays; presets and the 4 knobs work; MIDI out notes (ch 1-3, 10) and clock seen; generic sound check 1-2 silent by design (ch 1 notes edit the scale); stock sound check 8/8 after revert",
-      "notes": "First revert via the AMB-1 installer's 'Back to the stock firmware' left a black screen in USB update mode (enumerated as generic USB-Midi 4D4A:4155); running it a second time restored stock V15."
+      "result": "clean",
+      "checks": "re-test: install, play and revert all clean; boots and plays; presets and the 4 knobs work; MIDI out notes (ch 1-3, 10) and clock seen; generic sound check 1-2 silent by design (ch 1 notes edit the scale); stock sound check 8/8 after revert (run all)",
+      "notes": "MIDI port 'AMB-1 FM-1' (USB 1209:0001). Re-test: 'Back to the stock firmware' worked first time. In the first session the revert once left a black screen in USB update mode (generic USB-Midi 4D4A:4155); running it again restored stock V15."
     },
     {
       "id": "choralroot",
