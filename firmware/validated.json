@@ -79,6 +79,21 @@
       "notes": ""
     },
     {
+      "id": "fm1va",
+      "version": "102",
+      "file": "FM-1+VA-102.fwsc",
+      "sha256": "7b169a69b30570581d0ebc7b44851e3e08898d2956ade155363bcf18fac5c348",
+      "date": "2026-10-19",
+      "steps": {
+        "install": true,
+        "run": true,
+        "revert": true
+      },
+      "result": "clean",
+      "checks": "installed from baudgirl.com's web installer, run and reverted to stock V15 by the owner on a real FM-1",
+      "notes": "Its installer has no return to stock: reverted to stock V15 with the FM-1 Open Workbench."
+    },
+    {
       "id": "official",
       "version": "V15",
       "file": "FM-1.fwsc",
