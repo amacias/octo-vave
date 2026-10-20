@@ -88,9 +88,22 @@ def read_json(path, default):
 
 def write_json(path, obj):
     path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(path.suffix + ".tmp")
+    # a temp name per thread: two requests writing the same file at once mustn't share one
+    tmp = path.with_suffix(f"{path.suffix}.{threading.get_ident()}.tmp")
     tmp.write_text(json.dumps(obj, indent=2), encoding="utf-8")
     tmp.replace(path)
+
+
+# read-modify-write of firmware-state.json, one request at a time (requests run in threads:
+# the Install button's log and the stock-port auto-log can arrive together)
+STATE_LOCK = threading.Lock()
+
+
+def state_writer(fn):
+    def locked(*args, **kwargs):
+        with STATE_LOCK:
+            return fn(*args, **kwargs)
+    return locked
 
 
 def sha256_file(path):
@@ -786,6 +799,7 @@ def local_library():
     return out
 
 
+@state_writer
 def record_file(fid, version, path, source_url, verified, sha):
     state = read_json(FW_STATE, {})
     key = f"{fid}/{version}/{path.name}"
@@ -847,6 +861,7 @@ def import_file(fid, version, name, data):
     return record_file(fid, safe_version(version), dest, "manual import", None, sha256_file(dest))
 
 
+@state_writer
 def delete_file(key):
     state = read_json(FW_STATE, {})
     meta = state.get("files", {}).pop(key, None)
@@ -862,6 +877,17 @@ def delete_file(key):
     write_json(FW_STATE, state)
 
 
+def library_file(key):
+    meta = read_json(FW_STATE, {}).get("files", {}).get(key)
+    if not meta:
+        raise ValueError("unknown file")
+    p = (ROOT / meta["path"]).resolve()
+    if FW_LIB.resolve() not in p.parents or not p.is_file():
+        raise ValueError("unknown file")
+    return p.read_bytes()
+
+
+@state_writer
 def set_installed(body):
     state = read_json(FW_STATE, {})
     rec = {
@@ -1003,6 +1029,15 @@ class Handler(SimpleHTTPRequestHandler):
             if sub == "file" and method == "DELETE":
                 delete_file(q.get("key", ""))
                 return self._send_json({"ok": True})
+            if sub == "file" and method == "GET":
+                # a library file's bytes, for the Install button (the page checks its sha256)
+                data = library_file(q.get("key", ""))
+                self.send_response(200)
+                self.send_header("Content-Type", "application/octet-stream")
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+                return None
             if sub == "installed" and method == "POST":
                 return self._send_json(set_installed(self._json_body()))
             if sub == "reveal" and method == "POST":

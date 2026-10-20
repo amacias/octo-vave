@@ -156,3 +156,29 @@
 .trait-legend { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; font-size: 12px; }
 .trait-legend .trait svg { width: 15px; height: 15px; }
 .trait-legend .trait:not(:first-child), .trait-off-note { margin-left: 8px; }
+
+/* Install button and dialog (fm1flash.js): Validated firmware list in the app and on the homepage */
+.fw-install-btn { font-size: 12.5px; padding: 3px 10px; white-space: nowrap; }
+a.btn.fw-install-btn { padding: 3px 10px; }
+.fw-flash { width: min(520px, calc(100vw - 32px)); padding: 18px 20px; border: 1px solid var(--line); border-radius: var(--radius, 10px);
+  background: var(--panel); color: var(--ink); box-shadow: 0 18px 50px rgba(0,0,0,.35); font-size: 14px; line-height: 1.45; }
+.fw-flash::backdrop { background: rgba(0,0,0,.45); }
+.fw-flash h3 { margin: 0 0 6px; font-size: 17px; text-transform: none; letter-spacing: 0; color: var(--ink); }
+.fw-flash .muted { color: var(--muted); }
+.fw-flash p { margin: 6px 0; }
+.fw-i-notes { margin: 6px 0 10px; padding-left: 18px; color: var(--muted); font-size: 13px; }
+.fw-i-file { font-size: 13px; }
+.fw-i-file.ok, .fw-i-msg.ok { color: var(--ok); }
+.fw-i-file.bad, .fw-i-msg.bad { color: var(--bad); }
+.fw-i-msg.warn { color: var(--warn); }
+.fw-i-pick { border: 1px dashed var(--line); border-radius: 8px; padding: 8px 12px; margin: 6px 0; font-size: 13px; }
+.fw-i-steps { margin: 10px 0 6px; padding-left: 22px; font-size: 13px; color: var(--muted); }
+.fw-i-steps li.active { color: var(--ink); font-weight: 600; }
+.fw-i-steps li.done { color: var(--ok); }
+.fw-i-steps li.done::after { content: " ✓"; }
+.fw-flash progress { width: 100%; height: 8px; accent-color: var(--accent); }
+.fw-i-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+.fw-flash button { font: inherit; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); cursor: pointer; }
+.fw-flash button.ghost { background: none; }
+.fw-flash button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.fw-flash button:disabled { opacity: .5; cursor: default; }

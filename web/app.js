@@ -2,6 +2,7 @@ import * as DX from "./dx7.js";
 import { mountFm1Keys, fm1LowNote } from "./fm1keys.js";
 import { h, fmtBytes, normVer, fwDirectory, fwSections, octo, octoFor, outcome, isValidated,
   validationTip, stepsText, verKey, shortVer, relTime } from "./fwcards.js";
+import { installAction } from "./fm1flash.js";
 
 // ================================================================ helpers
 
@@ -120,7 +121,8 @@ async function connectMidi(quiet = false) {
     if (!quiet) toast("MIDI access was denied: " + e.message, true);
     return;
   }
-  S.midi.onstatechange = () => fillPorts();
+  // while installing, the FM-1 drops off and comes back twice: keep the chosen ports until it's done
+  S.midi.onstatechange = () => { if (!S.flashing) fillPorts(); };
   fillPorts();
 }
 
@@ -175,6 +177,7 @@ function updateConn() {
 
 let warnedNoOut = false;
 function send(bytes, { ts, silent } = {}) {
+  if (S.flashing) return false;   // an Install is talking to the FM-1: nothing else goes out
   if (!S.out) {
     if (!warnedNoOut) { toast("Not connected. Press Connect first.", true); warnedNoOut = true; setTimeout(() => (warnedNoOut = false), 3000); }
     return false;
@@ -319,6 +322,7 @@ function msgKind(d) {
 // ----- incoming
 const ccSeen = new Map();
 function onMidiIn(e) {
+  if (S.flashing) return;   // the install's own SysEx traffic
   const d = e.data;
   const st = d[0];
   if (st === 0xf8 || st === 0xfe) { if ($("#monClock").checked) logMidi("in", d); return; }
@@ -1479,7 +1483,8 @@ function validatedSection(fw, orphans) {
       o !== "clean" && h("span", { class: "val-label " + o, text: o === "issues" ? "with issues" : "failed" }),
       h("span", { class: "val-steps " + o, text: stepsText(v) }),
       h("span", { class: "val-note", text: v.notes || "" }),
-      action);
+      action,
+      f && installAction(v, installOpts(f, v, rel, asset)));
   });
   const n = (o) => recs.filter((v) => outcome(v) === o).length;
   return h("section", { class: "card val" },
@@ -1490,6 +1495,44 @@ function validatedSection(fw, orphans) {
     orphans.length > 0 && h("details", {},
       h("summary", { class: "muted", text: `Other downloaded files, not in the top 10 (${orphans.reduce((n, [, l]) => n + l.length, 0)})` }),
       h("div", { class: "local" }, orphans.map(([id, files]) => files.map((l) => libFileRow(id, l))))));
+}
+
+/** The Install button's hooks for a validated record: the library file (downloaded first if needed). */
+function installOpts(f, v, rel, asset) {
+  return {
+    name: f.name, stock: f.id === "official", installUrl: f.links?.install, mount: $("#fwCards"),
+    prefer: () => S.out?.name,
+    async getAccess() {
+      if (!S.midi) await connectMidi();
+      if (!S.midi) throw new Error("The app needs MIDI access with SysEx: press Connect and allow it (Chrome or Edge).");
+      return S.midi;
+    },
+    async getFile() {
+      let file = validatedFile(S.fw, v);
+      if (!file) {
+        if (!rel || !asset) throw new Error(`${v.file} isn't in the library and its release isn't listed: download it on the ${f.name} card first.`);
+        await api("firmware/download", { method: "POST", body: JSON.stringify({ id: f.id, version: rel.version, asset: asset.name }) });
+        S.fw = await api("firmware");
+        file = validatedFile(S.fw, v);
+        if (!file) throw new Error(`The downloaded ${asset.name} isn't the validated file.`);
+      }
+      const r = await fetch("/api/firmware/file?key=" + encodeURIComponent(file.key));
+      if (!r.ok) throw new Error(`Couldn't read ${file.name} from the library.`);
+      return new Uint8Array(await r.arrayBuffer());
+    },
+    before() { stopClock(false); S.flashing = true; },
+    async after(result) {
+      // log first, then reconnect: back on the stock port, the auto-log would otherwise post too
+      if (result) {
+        await api("firmware/installed", { method: "POST", body: JSON.stringify({ id: f.id, version: v.version,
+          note: `Install button${result.identity ? `: the FM-1 reports ${result.identity}` : ""}` }) }).catch(() => {});
+        S.fw = await api("firmware").catch(() => S.fw);
+        renderFirmware();
+      }
+      S.flashing = false;
+      fillPorts();   // back on the FM-1's port (by its saved name) if it's there again
+    },
+  };
 }
 
 async function downloadAsset(f, rel, a, btn) {

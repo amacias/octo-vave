@@ -7,6 +7,7 @@ computer (library, installed firmware, history):
 
     docs/data/firmware.json   server.public_firmware() + schema_version, generated_at
     docs/js/fwcards.js        copy of web/fwcards.js      (card rendering)
+    docs/js/fm1flash.js       copy of web/fm1flash.js     (Install button of the Validated list)
     docs/css/firmware.css     copy of web/css/firmware.css (card styles)
     docs/img/fw/*             copies of web/img/fw/*      (firmware screens)
 
@@ -36,6 +37,7 @@ SNAPSHOT = DOCS / "data" / "firmware.json"
 SCHEMA_VERSION = 1
 COPIES = [  # (source in web/, copy in docs/)
     (ROOT / "web" / "fwcards.js", DOCS / "js" / "fwcards.js"),
+    (ROOT / "web" / "fm1flash.js", DOCS / "js" / "fm1flash.js"),
     (ROOT / "web" / "css" / "firmware.css", DOCS / "css" / "firmware.css"),
 ]
 IMG_SRC, IMG_DST = ROOT / "web" / "img" / "fw", DOCS / "img" / "fw"

@@ -143,11 +143,13 @@
   <h3 class="sub" id="validated"><img class="inline-octo" src="img/octo.svg" alt="">Validated firmware</h3>
   <p class="muted">From <a href="https://github.com/amacias/octo-vave/blob/main/firmware/validated.json"><code>firmware/validated.json</code></a>.
     A grey octopus means the project has a newer release that hasn't been tested yet.
-    Got the file somewhere else? Compare its SHA256 with the one below.</p>
+    Got the file somewhere else? Compare its SHA256 with the one below.
+    <b>Install</b> puts that exact file on your FM-1 from this page (Chrome or Edge, USB cable);
+    Install on the Stock V15 row takes it back to stock.</p>
   <div class="table-scroll">
     <table>
-      <thead><tr><th></th><th>Firmware</th><th>Version</th><th>Tested</th><th>File SHA256</th></tr></thead>
-      <tbody id="val"><tr><td colspan="5" class="muted">Loading…</td></tr></tbody>
+      <thead><tr><th></th><th>Firmware</th><th>Version</th><th>Tested</th><th>File SHA256</th><th></th></tr></thead>
+      <tbody id="val"><tr><td colspan="6" class="muted">Loading…</td></tr></tbody>
     </table>
   </div>
   <p class="muted">Tested one yourself? <a href="https://github.com/amacias/octo-vave/issues/new?template=validation-report.yml">Send a validation report</a>.</p>
@@ -200,8 +202,9 @@
   // The Firmware section renders with the app's own card code (js/fwcards.js, a copy of web/fwcards.js)
   // from the nightly snapshot docs/data/firmware.json (tools/fm1_site.py). Read from the repository
   // first, so a new snapshot shows before Pages republishes; this site's own copy is the fallback.
-  import { h, fwSections, octoFor, validationState, validationTip, stepsText, shortVer, relTime, copySha, isValidated }
+  import { h, fwSections, octoFor, validationState, validationTip, stepsText, shortVer, relTime, copySha, isValidated, verKey }
     from "./js/fwcards.js";
+  import { installAction } from "./js/fm1flash.js";
   const SNAPSHOTS = ["https://raw.githubusercontent.com/amacias/octo-vave/main/docs/data/firmware.json", "data/firmware.json"];
   const $ = (id) => document.getElementById(id);
 
@@ -219,7 +222,7 @@
     const name = (id) => fw.catalog.find((f) => f.id === id)?.name || id;
     const recs = fw.validated.filter(isValidated)
       .sort((a, b) => name(a.id).localeCompare(name(b.id)) || String(b.date).localeCompare(String(a.date)));
-    if (!recs.length) return [h("tr", {}, h("td", { colspan: 5, class: "muted", text: "Nothing validated yet." }))];
+    if (!recs.length) return [h("tr", {}, h("td", { colspan: 6, class: "muted", text: "Nothing validated yet." }))];
     return recs.map((v) => {
       // grey when a newer stable release is out, judged for this record alone (as on its card)
       const st = validationState({ ...fw, validated: [v] }, { id: v.id });
@@ -231,9 +234,36 @@
         h("td", {}, h("b", { text: name(v.id) }), h("div", { class: "muted", style: "font-size:12px", text: stepsText(v) })),
         h("td", {}, h("code", { text: shortVer(v.version) }),
           !st.current && h("div", { class: "muted", style: "font-size:12px", text: `newer: ${shortVer(st.newer.version)}` })),
-        h("td", { text: v.date }),
-        h("td", { class: "sha" }, v.sha256 ? [h("code", { title: v.file || "", text: v.sha256 }), copy] : h("span", { class: "muted", text: "not recorded" })));
+        h("td", { style: "white-space:nowrap", text: v.date }),
+        h("td", { class: "sha" }, v.sha256 ? [h("code", { title: v.file || "", text: v.sha256 }), copy] : h("span", { class: "muted", text: "not recorded" })),
+        h("td", {}, installAction(v, installOpts(fw, v))));
     });
+  }
+
+  // Install button: the browser flashes the validated file over Web MIDI (js/fm1flash.js). Most hosts
+  // don't let another site fetch their files, so the user downloads it and drops it in; the dialog
+  // checks its SHA256 against the record either way.
+  function installOpts(fw, v) {
+    const f = fw.catalog.find((c) => c.id === v.id) || { id: v.id, name: v.id };
+    const rel = fw.releases?.sources?.[v.id]?.releases?.find((r) => verKey(r.version) === verKey(v.version));
+    const asset = rel?.assets?.find((a) => a.name === v.file);
+    let access = null;
+    return {
+      name: f.name, stock: f.id === "official", installUrl: f.links?.install, downloadUrl: asset?.url || rel?.url,
+      async getAccess() {
+        if (!navigator.requestMIDIAccess) throw new Error("This browser has no Web MIDI. Use Chrome or Edge on a computer.");
+        try { access = access || await navigator.requestMIDIAccess({ sysex: true }); }
+        catch { throw new Error("MIDI access with SysEx was blocked. Allow it for this page (the icon in the address bar) and try again."); }
+        return access;
+      },
+      async getFile() {
+        if (!asset) return null;
+        try {
+          const r = await fetch(asset.url);
+          return r.ok ? new Uint8Array(await r.arrayBuffer()) : null;
+        } catch { return null; }
+      },
+    };
   }
 
   loadSnapshot().then((fw) => {
