@@ -83,7 +83,7 @@ const WIDGETS = {
 };
 
 const DEFAULTS = {
-  outName: "", inName: "", noteCh: 1, fxCh: 2, sysexGap: 4, bpm: 120, octave: 4, velocity: 100, arp: false,
+  outName: "", inName: "", noteCh: 1, fxCh: 2, sysexGap: 4, bpm: 120, octave: 4, velocity: 100,
   liveSend: true, widgets: Object.fromEntries(Object.keys(WIDGETS).map((k) => [k, true])),
   notes: "", theme: "auto", accent: "", voice: null, fx: null, program: 1, soundcheck: {},
 };
@@ -199,7 +199,6 @@ function panic() {
     S.out.send([0xb0 | ch, 64, 0], t); S.out.send([0xb0 | ch, 123, 0], t); S.out.send([0xb0 | ch, 120, 0], t);
   }
   for (let n = 0; n < 128; n++) S.out.send([0x80 | nch(), n, 0], t + 2 + n * 0.5);
-  arpStop();
   S.held.clear();
   $$(".keyboard .on").forEach((k) => k.classList.remove("on"));
   logText("out", "Panic: sustain off, all notes off on every channel");
@@ -226,43 +225,6 @@ function stopClock(sendStop = true) {
   if (clock) { clearInterval(clock.timer); clock = null; }
   if (sendStop && S.out) { S.out.send([0xfc]); logText("out", "Clock stop"); }
   $("#clockStart")?.classList.remove("primary");
-}
-
-// ----- arpeggiator, played by the dashboard: the FM-1 has no MIDI control for its own arp.
-// With ARP on, keys held on the on-screen keyboards or the computer keyboard play one at a
-// time, lowest to highest, in eighth notes at the Perform BPM (half-length notes).
-const arp = { notes: [], step: 0, timer: null };
-function arpTick() {
-  if (!arp.notes.length) { arp.timer = null; return; }
-  const n = arp.notes[arp.step++ % arp.notes.length], len = 30000 / S.settings.bpm;
-  send([0x90 | nch(), n, S.settings.velocity], { silent: true });
-  send([0x80 | nch(), n, 0], { ts: performance.now() + len / 2, silent: true });
-  arp.timer = setTimeout(arpTick, len);
-}
-function arpStop() {
-  clearTimeout(arp.timer); arp.timer = null;
-  for (const n of arp.notes) { S.held.delete(n); light(n, false); }
-  arp.notes = [];
-}
-function setArp(on, save = true) {
-  S.settings.arp = on;
-  if (!on) arpStop();
-  const b = $("#arpBtn");
-  if (b) { b.classList.toggle("primary", on); b.setAttribute("aria-pressed", on); }
-  if (save) saveSettings();
-}
-// The keyboards play through these: straight to the FM-1, or into the arp when it is on.
-function keyOn(n) {
-  if (!S.settings.arp) return noteOn(n);
-  if (n < 0 || n > 127 || S.held.has(n)) return;
-  S.held.add(n); light(n, true);
-  arp.notes.push(n); arp.notes.sort((a, b) => a - b);
-  if (!arp.timer) { arp.step = 0; arpTick(); }
-}
-function keyOff(n) {
-  if (!arp.notes.includes(n)) return noteOff(n);
-  arp.notes = arp.notes.filter((m) => m !== n);
-  S.held.delete(n); light(n, false);
 }
 
 // ----- standard MIDI names (MIDI 1.0 / General MIDI), used by the Play & MIDI monitor and CC discovery
@@ -476,10 +438,10 @@ function buildKeyboard(container, octaves) {
       wi++;
     }
     if (S.held.has(n)) key.classList.add("on");
-    key.addEventListener("pointerdown", (e) => { e.preventDefault(); key.releasePointerCapture?.(e.pointerId); keyOn(n); });
-    key.addEventListener("pointerenter", (e) => { if (e.buttons & 1) keyOn(n); });
-    key.addEventListener("pointerup", () => keyOff(n));
-    key.addEventListener("pointerleave", () => { if (S.held.has(n)) keyOff(n); });
+    key.addEventListener("pointerdown", (e) => { e.preventDefault(); key.releasePointerCapture?.(e.pointerId); noteOn(n); });
+    key.addEventListener("pointerenter", (e) => { if (e.buttons & 1) noteOn(n); });
+    key.addEventListener("pointerup", () => noteOff(n));
+    key.addEventListener("pointerleave", () => { if (S.held.has(n)) noteOff(n); });
     container.append(key);
   }
 }
@@ -494,7 +456,7 @@ function buildKeyboards() {
   const home = $("#kbHome"), play = $("#kbPlay"), o = S.settings.octave;
   if (home) mountFm1Keys(home, {
     low: fm1LowNote(o), octave: o, canDown: o > OCT_MIN, canUp: o < OCT_MAX,
-    held: S.held, noteOn: keyOn, noteOff: keyOff, onOctave: shiftOctave,
+    held: S.held, noteOn, noteOff, onOctave: shiftOctave,
   });
   if (play) buildKeyboard(play, 3);
   const lbl = $("#octLabel");
@@ -515,13 +477,13 @@ document.addEventListener("keydown", (e) => {
   if (off === undefined || e.repeat || qwertyDown.has(e.key.toLowerCase())) return;
   const n = (S.settings.octave + 1) * 12 + off;
   qwertyDown.set(e.key.toLowerCase(), n);
-  keyOn(n);
+  noteOn(n);
 });
 document.addEventListener("keyup", (e) => {
   const n = qwertyDown.get(e.key.toLowerCase());
-  if (n !== undefined) { qwertyDown.delete(e.key.toLowerCase()); keyOff(n); }
+  if (n !== undefined) { qwertyDown.delete(e.key.toLowerCase()); noteOff(n); }
 });
-window.addEventListener("blur", () => { for (const n of qwertyDown.values()) keyOff(n); qwertyDown.clear(); });
+window.addEventListener("blur", () => { for (const n of qwertyDown.values()) noteOff(n); qwertyDown.clear(); });
 
 // ================================================================ voice editor
 
@@ -2270,8 +2232,6 @@ function wire() {
   $("#panicBtn").onclick = panic;
   $("#velocity").value = S.settings.velocity;
   $("#velocity").oninput = (e) => { S.settings.velocity = +e.target.value; saveSettings(); };
-  setArp(!!S.settings.arp, false);
-  $("#arpBtn").onclick = () => setArp(!S.settings.arp);
 
   // controllers
   $("#modWheel").oninput = (e) => sendCC(nch(), 1, +e.target.value);
