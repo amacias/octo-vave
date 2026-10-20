@@ -18,7 +18,7 @@
     <nav id="tabs" role="tablist">
       <button data-tab="firmware" class="active">Firmware</button>
       <button data-tab="home">FM-1 Home</button>
-      <button data-tab="library">Library</button>
+      <button data-tab="library">Patches</button>
       <button data-tab="play">Play &amp; MIDI</button>
       <button data-tab="check">Sound check</button>
     </nav>
@@ -109,7 +109,7 @@
               <span class="muted">CC 0–23. CC 1 here is Filter Type, not the mod wheel.</span>
               <div class="row">
                 <button id="fxSendAll" class="primary">Send all</button>
-                <button id="fxSave">Save to Library…</button>
+                <button id="fxSave">Save to Patches…</button>
               </div>
             </div>
             <div id="fxGrid" class="fx-grid"></div>
@@ -124,13 +124,14 @@
 
       <div class="card widget" data-widget="keys">
         <h3>Keyboard <small class="muted">Z–M / Q–U rows, octave with ← →</small></h3>
-        <div class="row"><span>Octave <b id="octLabel">4</b></span> <label>Velocity <input id="velocity" type="range" min="1" max="127" value="100"></label></div>
+        <div class="row"><span>Octave <b id="octLabel">4</b></span> <label>Velocity <input id="velocity" type="range" min="1" max="127" value="100"></label>
+          <button id="arpBtn" aria-pressed="false" title="Arpeggiator: held keys play one at a time, lowest to highest, in eighth notes at the Perform BPM. Played by this app: the FM-1's own arp can't be switched over MIDI.">ARP</button></div>
         <div id="kbHome" class="keyboard"></div>
       </div>
 
       <div class="card widget" data-widget="favorites">
         <h3>Favorite patches</h3>
-        <div id="favList" class="chips"><span class="muted">Star patches in the Library to pin them here.</span></div>
+        <div id="favList" class="chips"><span class="muted">Star patches in Patches to pin them here.</span></div>
       </div>
 
       <div class="card widget home-sec" data-widget="voice">
@@ -151,9 +152,9 @@
             <button id="randVoiceBtn">Randomize</button>
             <label class="file-btn">Import .syx<input id="syxFile" type="file" accept=".syx,.SYX" hidden></label>
             <button id="exportSyx">Export .syx</button>
-            <button id="saveVoicePatch">Save to Library…</button>
+            <button id="saveVoicePatch">Save to Patches…</button>
           </div>
-          <label class="stack voice-notes">Notes <textarea id="userNotes" rows="3" placeholder="Notes for this patch: saved with it to the Library, and loaded back with it."></textarea></label>
+          <label class="stack voice-notes">Notes <textarea id="userNotes" rows="3" placeholder="Notes for this patch: saved with it in Patches, and loaded back with it."></textarea></label>
           <div id="bankPick" class="hidden">
             <h3>Bank <small id="bankName" class="muted"></small></h3>
             <div id="bankVoices" class="chips"></div>
@@ -267,10 +268,10 @@
       <div id="checkList" class="check-list"></div>
     </section>
 
-    <!-- LIBRARY ------------------------------------------------------ -->
+    <!-- PATCHES ------------------------------------------------------ -->
     <section id="tab-library" class="tab">
       <div class="section-head">
-        <h1>Library</h1>
+        <h1>Patches</h1>
         <div class="row">
           <button id="libNew" class="primary">Save current…</button>
           <label class="file-btn">Import JSON<input id="libImport" type="file" accept=".json" hidden></label>

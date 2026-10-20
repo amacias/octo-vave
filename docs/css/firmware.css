@@ -9,7 +9,9 @@
 .fw-section { font-size: 15px; margin: 22px 0 10px; display: flex; align-items: center; gap: 8px; }
 .fw-section .info { color: var(--muted); cursor: help; font-weight: 400; }
 .fw-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
-.fw-card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; transition: transform .15s, box-shadow .15s; }
+.fw-card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; transition: transform .15s, box-shadow .15s;
+  display: grid; grid-template-columns: minmax(0, 1fr); grid-row: span 2; grid-template-rows: subgrid; row-gap: 0; }  /* top part / buttons + More, on the row's shared tracks */
+.fw-top { display: flex; flex-direction: column; }
 .fw-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.18); }
 .fw-card.current { border-color: hsl(var(--h) 70% 55%); box-shadow: 0 0 0 2px hsl(var(--h) 70% 55%); }
 /* Header: the square LCD capture beside name, author and tagline. */
@@ -25,7 +27,8 @@
 .flag.on { background: var(--ok); }
 .flag.up { background: var(--warn); }
 .flag.new { background: var(--accent); }
-.fw-body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.fw-body { padding: 12px 14px 0; display: flex; flex-direction: column; gap: 8px; }
+.fw-body.fw-foot { padding: 8px 14px 14px; }
 .fw-title { display: flex; align-items: baseline; gap: 8px; }
 .fw-title b { font-size: 17px; }
 .fw-title .by { color: var(--muted); font-size: 12px; margin-left: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -36,7 +39,7 @@
 :root[data-theme="dark"] .fw-chips span { color: hsl(var(--h) 80% 72%); }
 .fw-stats { display: flex; gap: 12px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; align-items: center; }
 .fw-stats b { color: var(--ink); font-family: var(--mono); font-weight: 600; }
-.fw-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; padding-top: 4px; }
+.fw-actions { display: flex; gap: 6px; flex-wrap: wrap; padding-top: 4px; }
 .fw-actions .btn, .fw-actions button { font-size: 13px; padding: 6px 10px; }
 .fw-lib { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ok); }
 .fw-more summary { cursor: pointer; color: var(--muted); font-size: 12.5px; }

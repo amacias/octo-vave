@@ -28,7 +28,7 @@
   body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
   a { color: var(--accent); }
   .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; scroll-padding-top: 70px; }  /* section links stop below the sticky top bar */
   header.hero { text-align: center; padding: 40px 0 28px; }
   .hero img.octo { width: 170px; height: auto; }
   .hero h1 { font-size: clamp(34px, 6vw, 52px); margin: 8px 0 0; letter-spacing: -.01em; }
@@ -74,27 +74,27 @@
   footer img { width: 40px; }
   .table-scroll { overflow-x: auto; }
   /* live Firmware section: the app's cards (css/firmware.css) on this page's controls */
-  #firmware .fw-status { font-size: 14px; margin: -4px 0 4px; }
+  #leaderboard .fw-status { font-size: 14px; margin: -4px 0 4px; }
   #fwLive { font-size: 14px; line-height: 1.45; }  /* the app's type size, so cards lay out as on the Firmware page */
   #fwLive code { background: none; padding: 0; }
-  #firmware .btn { font-weight: 500; border-radius: 8px; gap: 6px; }
-  #firmware .btn.ghost { background: none; }
-  #firmware button { font: inherit; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); cursor: pointer; }
-  #firmware button.ghost { background: none; }
-  #firmware button:hover, #firmware .btn:hover { border-color: var(--muted); }
-  #firmware .mini-btn { padding: 1px 8px; font-size: 12px; }
-  #firmware .ic { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
-  #firmware .badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); }
-  #firmware .badge.ok { color: var(--ok); border-color: var(--ok); }
-  #firmware .badge.warn { color: var(--warn); border-color: var(--warn); }
-  #firmware .badge.bad { color: var(--bad); border-color: var(--bad); }
-  #firmware .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 6px 0; }
-  #firmware .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-  #firmware .card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0; }
-  #firmware .fw-section { font-size: 18px; margin: 28px 0 12px; }
-  #firmware .fw-legend-row { margin: 14px 0 -4px; }
-  #firmware h3.sub { font-size: 18px; margin: 32px 0 6px; display: flex; align-items: center; gap: 8px; }
-  #firmware td .copy { margin-left: 6px; }
+  #leaderboard .btn { font-weight: 500; border-radius: 8px; gap: 6px; }
+  #leaderboard .btn.ghost { background: none; }
+  #leaderboard button { font: inherit; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); cursor: pointer; }
+  #leaderboard button.ghost { background: none; }
+  #leaderboard button:hover, #leaderboard .btn:hover { border-color: var(--muted); }
+  #leaderboard .mini-btn { padding: 1px 8px; font-size: 12px; }
+  #leaderboard .ic { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  #leaderboard .badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); }
+  #leaderboard .badge.ok { color: var(--ok); border-color: var(--ok); }
+  #leaderboard .badge.warn { color: var(--warn); border-color: var(--warn); }
+  #leaderboard .badge.bad { color: var(--bad); border-color: var(--bad); }
+  #leaderboard .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 6px 0; }
+  #leaderboard .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  #leaderboard .card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0; }
+  #leaderboard .fw-section { font-size: 18px; margin: 28px 0 12px; }
+  #leaderboard .fw-legend-row { margin: 14px 0 -4px; }
+  #leaderboard h3.sub { font-size: 18px; margin: 32px 0 6px; display: flex; align-items: center; gap: 8px; }
+  #leaderboard td .copy { margin-left: 6px; }
 </style>
 </head>
 <body>
@@ -102,8 +102,8 @@
   <div class="wrap topbar-in">
     <a class="brand" href="#top"><img src="img/octo.svg" alt="">Octo-Vave</a>
     <div class="links">
-      <a href="#firmware">Firmware</a>
-      <a href="https://github.com/amacias/octo-vave#-quick-start">Quick start</a>
+      <a href="#leaderboard">Leaderboard</a>
+      <a href="#install">Install App</a>
       <a href="https://github.com/amacias/octo-vave/issues/new?template=validation-report.yml">Report a validation</a>
       <a class="gh-link" href="https://github.com/amacias/octo-vave"><svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
     </div>
@@ -116,8 +116,8 @@
   <p class="tag">Every free firmware for the <b>M-VAVE FM-1</b> in one place: found, ranked, downloaded, checked and played.
     The orange octopus marks firmware tested on a real FM-1.</p>
   <div class="cta">
-    <a class="btn primary" href="https://github.com/amacias/octo-vave#-quick-start">Get started</a>
-    <a class="btn" href="https://github.com/amacias/octo-vave">View on GitHub</a>
+    <a class="btn primary" href="#leaderboard">Get started</a>
+    <a class="btn" href="#install">Install App</a>
   </div>
 </header>
 
@@ -133,19 +133,8 @@
   </div>
 </section>
 
-<section class="wrap">
-  <h2><img src="img/octo.svg" alt="">Quick start</h2>
-  <ol class="steps">
-      <li>Install <b>Python 3</b>. Nothing else: standard library only.</li>
-      <li><a href="https://github.com/amacias/octo-vave/archive/refs/heads/main.zip">Download the ZIP</a> and unzip it, or <code>git clone</code> the repository.</li>
-      <li>Run <code>python server.py</code> (Windows: double-click <code>start.cmd</code>).</li>
-      <li>In <b>Chrome or Edge</b> at <code>http://127.0.0.1:8765</code>, plug in the FM-1, press <b>Connect</b> and allow MIDI + SysEx.</li>
-      <li>Browse the Firmware page and look for the orange octopus.</li>
-  </ol>
-</section>
-
-<section class="wrap" id="firmware">
-  <h2><img src="img/octo.svg" alt="">The firmware</h2>
+<section class="wrap" id="leaderboard">
+  <h2><img src="img/octo.svg" alt="">Firmware Leaderboard</h2>
   <p class="muted">Free firmware for the FM-1: stock, FM-1 Open and the top community projects, the same cards as the app's Firmware page.
     An orange octopus <img class="inline-octo" src="img/octo.svg" alt="orange octopus"> is our stamp of validation: that version was installed, played and reverted to stock on a real FM-1.</p>
   <p class="muted fw-status" id="fwStatus">Loading the firmware list…</p>
@@ -162,6 +151,17 @@
     </table>
   </div>
   <p class="muted">Tested one yourself? <a href="https://github.com/amacias/octo-vave/issues/new?template=validation-report.yml">Send a validation report</a>.</p>
+</section>
+
+<section class="wrap" id="install">
+  <h2><img src="img/octo.svg" alt="">Install the Full Featured App</h2>
+  <ol class="steps">
+      <li>Install <b>Python 3</b>. Nothing else: standard library only.</li>
+      <li><a href="https://github.com/amacias/octo-vave/archive/refs/heads/main.zip">Download the ZIP</a> and unzip it, or <code>git clone</code> the repository.</li>
+      <li>Run <code>python server.py</code> (Windows: double-click <code>start.cmd</code>).</li>
+      <li>In <b>Chrome or Edge</b> at <code>http://127.0.0.1:8765</code>, plug in the FM-1, press <b>Connect</b> and allow MIDI + SysEx.</li>
+      <li>Browse the Firmware page and look for the orange octopus.</li>
+  </ol>
 </section>
 
 <section class="wrap two">
@@ -190,7 +190,7 @@
 <footer class="wrap">
   <img src="img/octo.svg" alt=""><br>
   <a class="gh-link" href="https://github.com/amacias/octo-vave"><svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>amacias/octo-vave on GitHub</a><br>
-  <span class="foot-links"><a href="https://github.com/amacias/octo-vave#-quick-start">Quick start</a> ·
+  <span class="foot-links"><a href="#install">Install App</a> ·
     <a href="https://github.com/amacias/octo-vave/issues">Issues</a> · <a href="https://github.com/amacias/octo-vave/blob/main/VALIDATION.md">How validation works</a></span><br>
   Octo-Vave · by Artificial Music · <a href="https://github.com/amacias/octo-vave/blob/main/LICENSE">MIT License</a><br>
   Every firmware is the work of its authors. Not affiliated with or endorsed by M-VAVE. Flashing is at your own risk.

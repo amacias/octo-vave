@@ -83,7 +83,7 @@ const WIDGETS = {
 };
 
 const DEFAULTS = {
-  outName: "", inName: "", noteCh: 1, fxCh: 2, sysexGap: 4, bpm: 120, octave: 4, velocity: 100,
+  outName: "", inName: "", noteCh: 1, fxCh: 2, sysexGap: 4, bpm: 120, octave: 4, velocity: 100, arp: false,
   liveSend: true, widgets: Object.fromEntries(Object.keys(WIDGETS).map((k) => [k, true])),
   notes: "", theme: "auto", accent: "", voice: null, fx: null, program: 1, soundcheck: {},
 };
@@ -199,6 +199,7 @@ function panic() {
     S.out.send([0xb0 | ch, 64, 0], t); S.out.send([0xb0 | ch, 123, 0], t); S.out.send([0xb0 | ch, 120, 0], t);
   }
   for (let n = 0; n < 128; n++) S.out.send([0x80 | nch(), n, 0], t + 2 + n * 0.5);
+  arpStop();
   S.held.clear();
   $$(".keyboard .on").forEach((k) => k.classList.remove("on"));
   logText("out", "Panic: sustain off, all notes off on every channel");
@@ -225,6 +226,43 @@ function stopClock(sendStop = true) {
   if (clock) { clearInterval(clock.timer); clock = null; }
   if (sendStop && S.out) { S.out.send([0xfc]); logText("out", "Clock stop"); }
   $("#clockStart")?.classList.remove("primary");
+}
+
+// ----- arpeggiator, played by the dashboard: the FM-1 has no MIDI control for its own arp.
+// With ARP on, keys held on the on-screen keyboards or the computer keyboard play one at a
+// time, lowest to highest, in eighth notes at the Perform BPM (half-length notes).
+const arp = { notes: [], step: 0, timer: null };
+function arpTick() {
+  if (!arp.notes.length) { arp.timer = null; return; }
+  const n = arp.notes[arp.step++ % arp.notes.length], len = 30000 / S.settings.bpm;
+  send([0x90 | nch(), n, S.settings.velocity], { silent: true });
+  send([0x80 | nch(), n, 0], { ts: performance.now() + len / 2, silent: true });
+  arp.timer = setTimeout(arpTick, len);
+}
+function arpStop() {
+  clearTimeout(arp.timer); arp.timer = null;
+  for (const n of arp.notes) { S.held.delete(n); light(n, false); }
+  arp.notes = [];
+}
+function setArp(on, save = true) {
+  S.settings.arp = on;
+  if (!on) arpStop();
+  const b = $("#arpBtn");
+  if (b) { b.classList.toggle("primary", on); b.setAttribute("aria-pressed", on); }
+  if (save) saveSettings();
+}
+// The keyboards play through these: straight to the FM-1, or into the arp when it is on.
+function keyOn(n) {
+  if (!S.settings.arp) return noteOn(n);
+  if (n < 0 || n > 127 || S.held.has(n)) return;
+  S.held.add(n); light(n, true);
+  arp.notes.push(n); arp.notes.sort((a, b) => a - b);
+  if (!arp.timer) { arp.step = 0; arpTick(); }
+}
+function keyOff(n) {
+  if (!arp.notes.includes(n)) return noteOff(n);
+  arp.notes = arp.notes.filter((m) => m !== n);
+  S.held.delete(n); light(n, false);
 }
 
 // ----- standard MIDI names (MIDI 1.0 / General MIDI), used by the Play & MIDI monitor and CC discovery
@@ -438,10 +476,10 @@ function buildKeyboard(container, octaves) {
       wi++;
     }
     if (S.held.has(n)) key.classList.add("on");
-    key.addEventListener("pointerdown", (e) => { e.preventDefault(); key.releasePointerCapture?.(e.pointerId); noteOn(n); });
-    key.addEventListener("pointerenter", (e) => { if (e.buttons & 1) noteOn(n); });
-    key.addEventListener("pointerup", () => noteOff(n));
-    key.addEventListener("pointerleave", () => { if (S.held.has(n)) noteOff(n); });
+    key.addEventListener("pointerdown", (e) => { e.preventDefault(); key.releasePointerCapture?.(e.pointerId); keyOn(n); });
+    key.addEventListener("pointerenter", (e) => { if (e.buttons & 1) keyOn(n); });
+    key.addEventListener("pointerup", () => keyOff(n));
+    key.addEventListener("pointerleave", () => { if (S.held.has(n)) keyOff(n); });
     container.append(key);
   }
 }
@@ -456,7 +494,7 @@ function buildKeyboards() {
   const home = $("#kbHome"), play = $("#kbPlay"), o = S.settings.octave;
   if (home) mountFm1Keys(home, {
     low: fm1LowNote(o), octave: o, canDown: o > OCT_MIN, canUp: o < OCT_MAX,
-    held: S.held, noteOn, noteOff, onOctave: shiftOctave,
+    held: S.held, noteOn: keyOn, noteOff: keyOff, onOctave: shiftOctave,
   });
   if (play) buildKeyboard(play, 3);
   const lbl = $("#octLabel");
@@ -477,13 +515,13 @@ document.addEventListener("keydown", (e) => {
   if (off === undefined || e.repeat || qwertyDown.has(e.key.toLowerCase())) return;
   const n = (S.settings.octave + 1) * 12 + off;
   qwertyDown.set(e.key.toLowerCase(), n);
-  noteOn(n);
+  keyOn(n);
 });
 document.addEventListener("keyup", (e) => {
   const n = qwertyDown.get(e.key.toLowerCase());
-  if (n !== undefined) { qwertyDown.delete(e.key.toLowerCase()); noteOff(n); }
+  if (n !== undefined) { qwertyDown.delete(e.key.toLowerCase()); keyOff(n); }
 });
-window.addEventListener("blur", () => { for (const n of qwertyDown.values()) noteOff(n); qwertyDown.clear(); });
+window.addEventListener("blur", () => { for (const n of qwertyDown.values()) keyOff(n); qwertyDown.clear(); });
 
 // ================================================================ voice editor
 
@@ -911,7 +949,7 @@ async function applyPatch(name, { sendNow = true, force = false } = {}) {
     const block = sendBlock(p);
     if (block) throw new Error(block);
     const mm = fwMismatch(p.firmware);
-    if (mm && !force) throw new Error(`${mm} Use Send in the Library to confirm.`);
+    if (mm && !force) throw new Error(`${mm} Use Send in Patches to confirm.`);
     if (!S.out) throw new Error("Not connected. Press Connect first.");
   } else if (!fmt?.send?.some((s) => s.editor)) {
     throw new Error(`"${name}" is a ${fmt?.name || p.format} patch; there's no editor for it here. Use Send.`);
@@ -931,7 +969,7 @@ function setVoiceNotes(text) {
 
 async function loadPatches() {
   const [list] = await Promise.all([
-    api("patches").catch((e) => { toast("Library: " + e.message, true); return []; }),
+    api("patches").catch((e) => { toast("Patches: " + e.message, true); return []; }),
     loadFormats(),
   ]);
   S.patches = list;
@@ -953,7 +991,7 @@ let saveDlg, saveOpts = {};
 function buildSaveDialog() {
   saveDlg = h("dialog", { class: "card lib-save" },
     h("form", { method: "dialog" },
-      h("h3", { text: "Save to Library" }),
+      h("h3", { text: "Save to Patches" }),
       h("label", { class: "stack" }, "Name", h("input", { id: "sdName", required: true, maxlength: 64, pattern: "[A-Za-z0-9][A-Za-z0-9 _.()\\-]*" })),
       h("div", { id: "sdExists", class: "hint hidden" }),
       h("div", { class: "row" },
@@ -1031,7 +1069,7 @@ function updateSaveExists() {
 /**
  * Open the Save dialog. Called with {voice, fx, pc} by the stock Voice/FX editors and Home:
  * their content is a stock DX7 voice + FX, so it is saved for the official firmware. Pass
- * {firmware} to save for another firmware (the Library's "Save current…" uses the device's).
+ * {firmware} to save for another firmware (the Patches tab's "Save current…" uses the device's).
  */
 function openSave({ voice = true, fx = true, pc = false, firmware = "official", format } = {}) {
   saveOpts = { voice, fx, pc };
@@ -1352,10 +1390,10 @@ function renderFavorites() {
   box.replaceChildren(...(favs.length
     ? favs.map((p) => {
       const why = sendBlock(p) || fwMismatch(p.firmware);
-      return h("button", { class: "chip" + (why ? " fw-other" : ""), text: p.name, title: why ? `${why} Open the Library to send it.` : fwText(p.firmware),
+      return h("button", { class: "chip" + (why ? " fw-other" : ""), text: p.name, title: why ? `${why} Open Patches to send it.` : fwText(p.firmware),
         onclick: () => applyPatch(p.name).catch((e) => toast(e.message, true)) });
     })
-    : [h("span", { class: "muted", text: "Star patches in the Library to pin them here." })]));
+    : [h("span", { class: "muted", text: "Star patches in Patches to pin them here." })]));
 }
 
 async function importPatchFile(file) {
@@ -1455,7 +1493,7 @@ function validatedFile(fw, v) {
     v.sha256 ? l.sha256 === v.sha256 : verKey(l.version) === verKey(v.version) && (!v.file || l.name === v.file));
 }
 
-/** "Validated firmware in Library": every validated firmware, and whether its exact file is kept. */
+/** "Validated firmware": every validated firmware, and whether its exact file is kept. */
 function validatedSection(fw, orphans) {
   const recs = (fw.validated || []).filter(isValidated)
     .sort((a, b) => fwName(a.id).localeCompare(fwName(b.id)) || String(b.date).localeCompare(String(a.date)));
@@ -1465,11 +1503,11 @@ function validatedSection(fw, orphans) {
     const rel = fw.releases?.sources?.[v.id]?.releases?.find((r) => verKey(r.version) === verKey(v.version));
     const asset = rel?.assets.find((a) => a.name === v.file) || rel?.assets.find((a) => /\.fwsc$/i.test(a.name));
     let action;
-    if (file) action = h("span", { class: "badge ok", title: "sha256 " + file.sha256, text: "✓ in library" });
+    if (file) action = h("span", { class: "badge ok", title: "sha256 " + file.sha256, text: "✓ downloaded" });
     else if (f && rel && asset) {
       action = h("button", { class: "ghost", text: "Download" });
       action.onclick = () => downloadAsset(f, rel, asset, action);
-    } else action = h("span", { class: "muted", text: "not in library" });
+    } else action = h("span", { class: "muted", text: "not downloaded" });
     const o = outcome(v);
     return h("div", { class: "val-row " + o, title: validationTip(v) },
       octoFor(v, validationTip(v)),
@@ -1484,11 +1522,11 @@ function validatedSection(fw, orphans) {
   const n = (o) => recs.filter((v) => outcome(v) === o).length;
   return h("section", { class: "card val" },
     h("div", { class: "section-head" },
-      h("h3", {}, octo("Validated"), " Validated firmware in Library"),
+      h("h3", {}, octo("Validated"), " Validated firmware"),
       h("span", { class: "muted", text: [`${n("clean")} validated`, n("issues") && `${n("issues")} with issues`, n("failed") && `${n("failed")} failed`].filter(Boolean).join(" · ") })),
     rows.length ? rows : h("p", { class: "muted", text: "Nothing validated yet. Validation happens in hands-on Claude Code sessions: flash, run, revert to stock (see VALIDATION.md)." }),
     orphans.length > 0 && h("details", {},
-      h("summary", { class: "muted", text: `Other files in library, not in the top 10 (${orphans.reduce((n, [, l]) => n + l.length, 0)})` }),
+      h("summary", { class: "muted", text: `Other downloaded files, not in the top 10 (${orphans.reduce((n, [, l]) => n + l.length, 0)})` }),
       h("div", { class: "local" }, orphans.map(([id, files]) => files.map((l) => libFileRow(id, l))))));
 }
 
@@ -2232,6 +2270,8 @@ function wire() {
   $("#panicBtn").onclick = panic;
   $("#velocity").value = S.settings.velocity;
   $("#velocity").oninput = (e) => { S.settings.velocity = +e.target.value; saveSettings(); };
+  setArp(!!S.settings.arp, false);
+  $("#arpBtn").onclick = () => setArp(!S.settings.arp);
 
   // controllers
   $("#modWheel").oninput = (e) => sendCC(nch(), 1, +e.target.value);

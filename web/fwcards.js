@@ -263,7 +263,12 @@ export function fwCard(f, fw, rank, app = null) {
   const isCurrent = inst?.id === f.id;
   const rels = src?.releases || [];
   const latest = rels.find((r) => !r.prerelease) || rels[0];
-  const haveLocal = (ver, name) => local.some((l) => verKey(l.version) === verKey(ver) && l.name === name);
+  const localFile = (ver, name) => local.find((l) => verKey(l.version) === verKey(ver) && l.name === name);
+  const haveLocal = (ver, name) => !!localFile(ver, name);
+  // A downloaded file is "validated" when a passing record (clean or with issues) pins it: by sha256, else by version.
+  const passed = (l) => !!l && (fw.validated || []).some((v) => v.id === f.id && ["clean", "issues"].includes(outcome(v))
+    && (v.sha256 ? v.sha256 === l.sha256 : verKey(v.version) === verKey(l.version)));
+  const gotLabel = (l) => (passed(l) ? "Validated" : "Downloaded");
   const updateAvail = isCurrent && latest && verKey(inst.version) !== verKey(latest.version);
   const fresh = latest?.date && Date.now() - Date.parse(latest.date) < 2 * 864e5
     && !local.some((l) => verKey(l.version) === verKey(latest.version));
@@ -283,9 +288,9 @@ export function fwCard(f, fw, rank, app = null) {
   const sizeTitle = (a) => `${a.name}${a.size ? " · " + fmtBytes(a.size) : ""}`;
   let dlBtn = null;
   if (primary && app) {
-    const got = haveLocal(latest.version, primary.name);
+    const file = localFile(latest.version, primary.name), got = !!file;
     dlBtn = h("button", { class: got ? "got" : "primary", title: sizeTitle(primary) },
-      icon(got ? "check" : "dl"), got ? "In library" : dlLabel(primary));
+      icon(got ? "check" : "dl"), got ? gotLabel(file) : dlLabel(primary));
     dlBtn.onclick = () => (got ? dlBtn.closest(".fw-card").querySelector("details").setAttribute("open", "") : app.download(f, latest, primary, dlBtn));
   } else if (primary?.url) {
     dlBtn = h("a", { class: "btn primary", href: primary.url, rel: "noopener", title: sizeTitle(primary) }, icon("dl"), dlLabel(primary));
@@ -305,7 +310,7 @@ export function fwCard(f, fw, rank, app = null) {
       rel.url && h("a", { href: rel.url, target: "_blank", rel: "noopener", text: "notes ↗" })),
     rel.assets.length ? rel.assets.map((a) => h("div", { class: "asset" }, h("span", { class: "name", title: a.url, text: a.name }),
       a.size ? h("span", { class: "muted", text: fmtBytes(a.size) }) : null,
-      haveLocal(rel.version, a.name) && h("span", { class: "badge ok", text: "in library" }), assetAction(rel, a)))
+      haveLocal(rel.version, a.name) && h("span", { class: "badge ok", text: gotLabel(localFile(rel.version, a.name)).toLowerCase() }), assetAction(rel, a)))
       : h("div", { class: "muted", text: "No installable files in this release." }));
 
   let libBlock = null;
@@ -314,7 +319,7 @@ export function fwCard(f, fw, rank, app = null) {
     const impFile = h("input", { type: "file", hidden: true, accept: ".fwsc,.bin,.zip,.html" });
     impFile.onchange = () => impFile.files[0] && app.importFile(f, impVer.value || "manual", impFile.files[0]);
     libBlock = h("div", { class: "local" },
-      h("div", { class: "row" }, h("b", { text: `Library (${local.length})` }), h("span", { class: "grow" }),
+      h("div", { class: "row" }, h("b", { text: `Downloaded files (${local.length})` }), h("span", { class: "grow" }),
         impVer, h("button", { class: "ghost", text: "Import file…", onclick: () => impFile.click() }), impFile,
         h("button", { class: "ghost", text: "Folder", onclick: () => app.reveal(f) })),
       local.length ? local.map((l) => app.fileRow(f.id, l)) : h("div", { class: "muted", text: "Nothing downloaded yet." }));
@@ -324,8 +329,18 @@ export function fwCard(f, fw, rank, app = null) {
   // A library line only when it adds something: files kept, but not the latest release.
   const olderOnly = local.length > 0 && !(primary && haveLocal(latest.version, primary.name));
 
+  const more = h("details", { class: "fw-more" }, h("summary", { text: "More" }),
+    h("p", { text: f.summary }),
+    h("p", { class: "muted" }, h("b", { text: "Install: " }), f.install),
+    st && h("p", { class: "muted", text: `${st.license || "no license"} · ${st.releases} releases · last push ${st.pushed}` }),
+    rels.map(relBlock),
+    libBlock);
+  more.addEventListener("toggle", () => syncRow(more));
+
+  // Two parts on the row's shared tracks (CSS subgrid): the buttons start at the same height in
+  // every card of a row, and opening More only grows the lower part.
   return h("div", { class: "fw-card" + (isCurrent ? " current" : ""), "data-id": f.id, style: `--h:${f.art?.hue ?? 20}` },
-    h("div", { class: "fw-head" },
+    h("div", { class: "fw-top" }, h("div", { class: "fw-head" },
       art,
       h("div", { class: "fw-headtext" },
         h("div", { class: "fw-title" }, rank && h("span", { class: "rank", text: `#${rank}` }), h("b", { text: f.name }),
@@ -343,7 +358,8 @@ export function fwCard(f, fw, rank, app = null) {
         src?.error && !st && h("span", { class: "badge bad", title: src.error, text: "check failed" }),
         src?.stale && st && h("span", { class: "fw-partial", title: src.stale, text: "cached" }),
         !src && f.source?.type !== "manual" && h("span", { class: "muted", text: "press Check for updates" })),
-      valPin(val, app?.toast),
+      valPin(val, app?.toast))),
+    h("div", { class: "fw-body fw-foot" },
       h("div", { class: "fw-actions" },
         dlBtn,
         linkBtn(L.install, "ext", f.kind === "stock" ? "Updater" : "Install", "Open the installer"),
@@ -353,13 +369,18 @@ export function fwCard(f, fw, rank, app = null) {
         (L.docs || L.repo) && h("span", { class: "fw-tools" }, iconLink(L.docs, "doc", "Manual / docs"), iconLink(L.repo, "code", "Source code")),
         fwTraits(f, latest, primary),
         fwInstallTraits(f)),
-      olderOnly && h("div", { class: "fw-lib" }, icon("check"), `In library: ${shortVer(local[0].version)} (older)`),
-      h("details", { class: "fw-more" }, h("summary", { text: "More" }),
-        h("p", { text: f.summary }),
-        h("p", { class: "muted" }, h("b", { text: "Install: " }), f.install),
-        st && h("p", { class: "muted", text: `${st.license || "no license"} · ${st.releases} releases · last push ${st.pushed}` }),
-        rels.map(relBlock),
-        libBlock)));
+      olderOnly && h("div", { class: "fw-lib" }, icon("check"), `${gotLabel(local[0])}: ${shortVer(local[0].version)} (older)`),
+      more));
+}
+
+/** Opening or closing "More" on a card does the same for the other cards in its grid row. */
+function syncRow(more) {
+  const card = more.closest(".fw-card");
+  if (!card?.parentElement) return;
+  for (const c of card.parentElement.children) {
+    const d = c !== card && c.offsetTop === card.offsetTop && c.querySelector("details.fw-more");
+    if (d && d.open !== more.open) d.open = more.open;
+  }
 }
 
 /** Copy a validated file's full sha256; `toast` reports the result (the homepage flashes the button instead). */
