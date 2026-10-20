@@ -748,6 +748,24 @@ def firmware_entries():
     return catalog()["firmware"] + entries, ranked, disc
 
 
+def public_firmware():
+    """The Firmware page's data without anything from this computer (library, installed, history).
+    GET /api/firmware adds those; tools/fm1_site.py publishes this part for the homepage."""
+    entries, ranked, disc = firmware_entries()
+    return {
+        "catalog": entries,  # curated catalog + cards for new, not yet curated entrants
+        "ranking": catalog().get("ranking"),
+        "ranked": ranked,  # live community ranking: #1-10 cards, #11-30 list
+        "discovery": {
+            "checked": disc.get("checked"), "auth": disc.get("auth"), "notes": disc.get("notes", []),
+            "stats": disc.get("stats"), "source": discovery_config()["awesomePage"],
+            "fallback": read_json(DIRECTORY, {}).get("updated") if not disc.get("ranked") else None,
+        },
+        "validated": read_json(VALIDATED, {"validations": []}).get("validations", []),
+        "releases": read_json(RELEASE_CACHE, {"checked": None, "sources": {}}),
+    }
+
+
 def known_entry(fid):
     return catalog_entry(fid) or next((e for e in firmware_entries()[0] if e["id"] == fid), None)
 
@@ -962,18 +980,8 @@ class Handler(SimpleHTTPRequestHandler):
             sub = parts[1] if len(parts) > 1 else ""
             if sub == "" and method == "GET":
                 state = read_json(FW_STATE, {})
-                entries, ranked, disc = firmware_entries()
                 return self._send_json({
-                    "catalog": entries,  # curated catalog + cards for new, not yet curated entrants
-                    "ranking": catalog().get("ranking"),
-                    "ranked": ranked,  # live community ranking: #1-10 cards, #11-30 list
-                    "discovery": {
-                        "checked": disc.get("checked"), "auth": disc.get("auth"), "notes": disc.get("notes", []),
-                        "stats": disc.get("stats"), "source": discovery_config()["awesomePage"],
-                        "fallback": read_json(DIRECTORY, {}).get("updated") if not disc.get("ranked") else None,
-                    },
-                    "validated": read_json(VALIDATED, {"validations": []}).get("validations", []),
-                    "releases": read_json(RELEASE_CACHE, {"checked": None, "sources": {}}),
+                    **public_firmware(),
                     "library": local_library(),
                     "installed": state.get("installed"),
                     "history": state.get("history", []),

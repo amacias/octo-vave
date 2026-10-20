@@ -180,6 +180,11 @@ pinned SHA256 of the file that was tested.
   runs `tools/fm1_watch.py`, which checks every validated firmware for a newer stable release and
   marks superseded records with `"supersededBy": "<version>"`. The app and the homepage show those
   octopuses grey until the new release is validated. Run it yourself with `python tools/fm1_watch.py`.
+- **The homepage shows the live Firmware page.** The same nightly Action runs `tools/fm1_site.py`, which
+  runs Check for updates and publishes the Firmware page's data, without anything from your computer,
+  to `docs/data/firmware.json`. The homepage draws it with the app's own card code: `web/fwcards.js`
+  and `web/css/firmware.css`, copied to `docs/` with the firmware screens. After changing those, run
+  `python tools/fm1_site.py --write`; CI's `--check` fails when the copies differ.
 - **Anyone can contribute a validation.** Open a
   [validation report](https://github.com/amacias/octo-vave/issues/new?template=validation-report.yml),
   then a pull request that adds the record with `tools/fm1_validate.py add`. CI runs
@@ -250,9 +255,10 @@ FX patch, and `midi-cc.json` captures CCs, SysEx and a program number for any fi
 ```
 server.py               local server + JSON API (127.0.0.1 only, origin-checked)
 start.cmd               Windows launcher
-web/                    the app (index.html, app.js, dx7.js, fm1keys.js, style.css, css/<feature>.css)
+web/                    the app (index.html, app.js, dx7.js, fm1keys.js, fwcards.js, style.css, css/<feature>.css)
 web/img/fw/             firmware screen captures (credited in catalog.json)
-docs/                   homepage (GitHub Pages: index.html) and README images (img/)
+docs/                   homepage (GitHub Pages: index.html), its firmware data (data/) and copies
+                        of the card code and styles (js/, css/, img/fw/), README images (img/)
 .github/                workflows (nightly release watch, record checks), issue and PR templates
 firmware/catalog.json   curated firmware cards + discovery settings
 firmware/formats/       patch format registry (one file per firmware)
@@ -263,6 +269,7 @@ tools/fm1_test.py       interactive command-line MIDI tester
 tools/fm1_validate.py   record firmware validations (firmware/validated.json)
 tools/fm1_discover.py   run firmware discovery from the command line
 tools/fm1_watch.py      grey out validations superseded by new releases (nightly Action)
+tools/fm1_site.py       publish the Firmware page's data and card code to the homepage (nightly Action)
 ```
 
 ## <img src="docs/img/octo.svg" height="24" alt=""> Notes

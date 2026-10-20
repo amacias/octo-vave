@@ -1,0 +1,155 @@
+/* firmware.css: owned by the firmware feature. Feature-specific styles go here, not in style.css. */
+/* The card rules are shared with the homepage (docs/css/firmware.css, a copy kept by tools/fm1_site.py).
+   They use only theme variables: --bg, --panel, --panel-2, --ink, --muted, --line, --accent, --ok, --warn, --bad, --mono, --radius. */
+
+/* cards, the Also popular list, the validated rows */
+.fw-title a.mini { color: var(--muted); display: inline-flex; padding: 2px; border-radius: 6px; }
+.fw-title a.mini:hover { color: var(--ink); background: var(--panel-2); }
+.fw-title .by + a.mini { margin-left: 4px; }
+.fw-section { font-size: 15px; margin: 22px 0 10px; display: flex; align-items: center; gap: 8px; }
+.fw-section .info { color: var(--muted); cursor: help; font-weight: 400; }
+.fw-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+.fw-card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; transition: transform .15s, box-shadow .15s; }
+.fw-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+.fw-card.current { border-color: hsl(var(--h) 70% 55%); box-shadow: 0 0 0 2px hsl(var(--h) 70% 55%); }
+/* Header: the square LCD capture beside name, author and tagline. */
+.fw-head { display: grid; grid-template-columns: 92px 1fr; gap: 12px; padding: 14px 14px 0; align-items: start; }
+.fw-art { width: 92px; height: 92px; border-radius: 8px; overflow: hidden; background: #000; box-shadow: 0 1px 0 var(--line), 0 2px 8px rgba(0,0,0,.35); }
+.fw-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fw-headtext { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.fw-headtext .by { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fw-headtext .fw-tag { margin-top: 4px; font-size: 13px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.fw-title .grow { flex: 1; min-width: 0; }
+.fw-title .rank { font: 700 12px var(--mono); color: var(--muted); align-self: center; }
+.flag { font: 700 10px var(--mono); letter-spacing: .06em; padding: 2px 7px; border-radius: 999px; color: #fff; }
+.flag.on { background: var(--ok); }
+.flag.up { background: var(--warn); }
+.flag.new { background: var(--accent); }
+.fw-body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.fw-title { display: flex; align-items: baseline; gap: 8px; }
+.fw-title b { font-size: 17px; }
+.fw-title .by { color: var(--muted); font-size: 12px; margin-left: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fw-tag { font-size: 13.5px; }
+.fw-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.fw-chips span { font-size: 11.5px; padding: 2px 8px; border-radius: 999px; background: hsl(var(--h) 60% 50% / .14); color: hsl(var(--h) 55% 45%); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .fw-chips span { color: hsl(var(--h) 80% 72%); } }
+:root[data-theme="dark"] .fw-chips span { color: hsl(var(--h) 80% 72%); }
+.fw-stats { display: flex; gap: 12px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; align-items: center; }
+.fw-stats b { color: var(--ink); font-family: var(--mono); font-weight: 600; }
+.fw-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; padding-top: 4px; }
+.fw-actions .btn, .fw-actions button { font-size: 13px; padding: 6px 10px; }
+.fw-lib { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ok); }
+.fw-more summary { cursor: pointer; color: var(--muted); font-size: 12.5px; }
+.fw-more[open] { font-size: 13px; }
+.fw-more p { margin: 8px 0; }
+.fw-card .rel, details .rel { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 8px; }
+.asset { display: flex; align-items: center; gap: 8px; font-size: 12.5px; padding: 3px 0; }
+.asset .name { font-family: var(--mono); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.local { background: var(--panel-2); border-radius: 8px; padding: 8px 10px; font-size: 12.5px; margin-top: 8px; }
+.local .f { display: flex; gap: 8px; align-items: center; padding: 3px 0; flex-wrap: wrap; }
+.local .sha { font: 11px var(--mono); color: var(--muted); flex: 1; }
+.dir, .val { margin-top: 22px; }
+.dir-list { list-style: none; margin: 0; padding: 0; columns: 2 460px; column-gap: 36px; font-size: 13px; }
+.dir-list li { display: grid; grid-template-columns: 2.6em 1fr auto; gap: 8px; align-items: baseline; padding: 5px 0; border-bottom: 1px solid var(--line); break-inside: avoid; }
+.dir-rank { color: var(--muted); font: 12px var(--mono); }
+.dir-main { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dir-stats { color: var(--muted); font: 11.5px var(--mono); white-space: nowrap; }
+.dir-list li a { font-weight: 600; text-decoration: none; }
+.dir-list li a:hover { text-decoration: underline; }
+.dir-desc { color: var(--muted); }
+.dir-star { color: var(--accent); margin-left: 4px; font-size: 11px; }
+.dir-tag { font-size: 10.5px; margin-left: 6px; padding: 1px 6px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+/* validation (orange octopus) */
+.octo-wrap { display: inline-flex; align-items: center; cursor: help; }
+.octo { width: 20px; height: 20px; display: block; filter: drop-shadow(0 1px 1px rgba(0,0,0,.25)); }
+.fw-title .octo-wrap { align-self: center; }
+.val h3 { display: flex; align-items: center; gap: 8px; }
+.val-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 13px; flex-wrap: wrap; }
+.val-row .grow { flex: 1; min-width: 0; }
+.val-steps { color: var(--ok); font-size: 12px; }
+.val details { margin-top: 10px; }
+@media (max-width: 640px) { .dir-list li { white-space: normal; } .fw-cards { grid-template-columns: 1fr; } }
+
+/* Neutral stand-in screen for cards built from GitHub metadata (never a fetched screenshot). */
+.fw-art.ph { display: grid; place-items: center; background:
+  repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 4px), #111; }
+.fw-art.ph span { font: 700 11px var(--mono); letter-spacing: .08em; color: rgba(255,255,255,.38);
+  text-align: center; padding: 0 6px; line-height: 1.3; word-break: break-word; }
+
+/* "not curated yet" marker next to the author */
+.fw-uncur { margin-left: 6px; font-size: 10.5px; padding: 0 6px; border-radius: 999px;
+  border: 1px dashed var(--line); color: var(--muted); cursor: help; }
+
+/* partial / cached data hints */
+.fw-partial { font-size: 10.5px; padding: 0 6px; border-radius: 999px; border: 1px solid var(--warn);
+  color: var(--warn); cursor: help; }
+
+/* greyed octopus: validated, but a newer stable release is out */
+.octo-wrap.older { opacity: .5; filter: grayscale(1); }
+/* outcome colours: orange = validated, purple = with issues, red = failed */
+.octo-wrap.clean { --octo: #F07A2B; }
+.octo-wrap.issues { --octo: #9B5DE5; }
+.octo-wrap.failed { --octo: #E03C31; }
+.val-label { font-size: 11px; padding: 1px 7px; border-radius: 999px; border: 1px solid; }
+.val-label.issues { color: #9B5DE5; }
+.val-label.failed { color: #E03C31; }
+.val-steps.issues { color: #9B5DE5; }
+.val-steps.failed { color: #E03C31; }
+.val-note { flex: 1; min-width: 0; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.val-legend { display: inline-flex; align-items: center; gap: 4px 6px; flex-wrap: wrap; font-size: 12px; }
+.val-legend .octo { width: 15px; height: 15px; }
+.val-legend .octo-wrap + .octo-wrap, .val-legend .octo-wrap { margin-left: 8px; }
+.val-legend .octo-wrap:first-child { margin-left: 0; }
+.dir-main .octo-wrap { margin-left: 5px; vertical-align: -3px; }
+.dir-main .octo { width: 15px; height: 15px; }
+
+/* card traits: egg open/closed source, green checksum, blue first-aid revert; grey = no or unknown */
+.fw-headtext .by { display: flex; align-items: center; gap: 6px; }
+.fw-headtext .by .by-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.fw-tools { display: inline-flex; align-items: center; gap: 3px; flex: none; }
+.fw-tools a.mini { color: var(--muted); display: inline-flex; padding: 1px; border-radius: 6px; }
+.fw-tools a.mini:hover { color: var(--ink); background: var(--panel-2); }
+.fw-tools a.mini .ic { width: 16px; height: 16px; }
+.fw-traits { display: inline-flex; gap: 3px; flex: none; }
+/* top line: name left, octopus alone on the right, 1.5x size */
+.fw-title { min-height: 30px; }
+.fw-title .octo { width: 30px; height: 30px; }
+.trait { display: inline-flex; cursor: help; }
+.trait svg { width: 17px; height: 17px; display: block; }
+.trait .shell { fill: #F1E6CC; stroke: #A8916A; stroke-width: 1; stroke-linejoin: round; }
+.trait .yolk { fill: #F2B705; }
+.trait.sum .bg { fill: #2FB36A; }
+.trait.sum .fg { stroke: #fff; }
+.trait.aid .bg { fill: #2F7DE1; }
+.trait.aid .fg-fill { fill: #fff; }
+.trait.og .bg { fill: #B7791F; }
+.trait.og .ring { fill: none; stroke: #F6D9A3; stroke-width: .8; opacity: .7; }
+.trait .fg-text { fill: #fff; font: 800 9.5px system-ui, sans-serif; }
+.trait.web .bg { fill: #0E9AA7; }
+.trait.web .fg { stroke: #fff; }
+.trait.python .bg { fill: #E3B505; }
+.trait.python .fg { stroke: #2B2205; }
+.trait.python .fg-fill { fill: #2B2205; }
+.trait.python .eye { fill: #E3B505; }
+.trait.m-upgrade .bg { fill: #475569; }
+.trait.m-upgrade .fg { stroke: #fff; }
+.trait.m-upgrade .fg-text { font-size: 11px; }
+.fw-install { display: inline-flex; align-items: center; gap: 3px; }
+/* all card icons in one row under the buttons, groups split by a thin rule */
+.fw-icons { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 6px -14px 0; padding: 7px 14px;
+  background: var(--panel-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.fw-icons > * + * { padding-left: 7px; border-left: 1px solid var(--line); }
+/* the newer install icons (OG, install methods) sit at the right edge */
+.fw-icons > .fw-install { margin-left: auto; border-left: 0; }
+/* the validated file's pinned sha256 */
+.fw-pin { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12px; margin: 2px 0 6px; }
+.fw-pin .octo { width: 15px; height: 15px; }
+.fw-pin code { font: 12px var(--mono); }
+.fw-pin .mini-btn { padding: 1px 8px; font-size: 11.5px; }
+.trait.off .bg { fill: #8A9099; }
+.trait.off { opacity: .4; }
+.fw-legend-row { display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin: 4px 0 -6px; }
+.legend-sep { width: 1px; height: 14px; background: var(--line); }
+.trait-legend { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; font-size: 12px; }
+.trait-legend .trait svg { width: 15px; height: 15px; }
+.trait-legend .trait:not(:first-child), .trait-off-note { margin-left: 8px; }

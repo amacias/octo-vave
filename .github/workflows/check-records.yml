@@ -1,5 +1,6 @@
 # Pull requests and pushes: firmware/validated.json and catalog.json must stay valid
-# (schema_version, record fields, sha256 pins, no private data).
+# (schema_version, record fields, sha256 pins, no private data), and the homepage's copies
+# of the card code, styles and screens must match web/ (tools/fm1_site.py --write syncs them).
 name: Check firmware records
 
 on:
@@ -7,11 +8,19 @@ on:
     paths:
       - "firmware/**"
       - "tools/**"
+      - "web/fwcards.js"
+      - "web/css/firmware.css"
+      - "web/img/fw/**"
+      - "docs/**"
   push:
     branches: [main]
     paths:
       - "firmware/**"
       - "tools/**"
+      - "web/fwcards.js"
+      - "web/css/firmware.css"
+      - "web/img/fw/**"
+      - "docs/**"
 
 permissions:
   contents: read
@@ -26,3 +35,4 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -I tools/fm1_validate.py check
+      - run: python -I tools/fm1_site.py --check
