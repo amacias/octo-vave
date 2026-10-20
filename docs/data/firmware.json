@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-10-20T00:51:54Z",
+ "generated_at": "2026-10-20T04:11:14Z",
  "catalog": [
   {
    "id": "official",
@@ -1771,7 +1771,23 @@
    },
    "result": "clean",
    "checks": "force flash from stock V15 (FM-1_015) via the V13 workbench; groovebox runs: PLAY, presets, keys, 4 knobs (level, source, step, tempo); generic sound check 1-2 heard; no MIDI out seen; stock sound check passed after revert",
-   "notes": "Installing from stock needs the workbench's Force flash. Under Open the FM-1 enumerates as USB-Midi (3654:7756) and answers only the workbench's own handshake, not a MIDI identity request. Restore original V15 worked first time and also resets all four voice banks to the 128 factory voices."
+   "notes": "Installing from stock needs the workbench's Force flash. Under Open the FM-1 enumerates as USB-Midi (3654:7756) and answers only the workbench's own handshake, not a MIDI identity request. Restore original V15 worked first time and also resets all four voice banks to the 128 factory voices.",
+   "supersededBy": "V14"
+  },
+  {
+   "id": "fm1open",
+   "version": "V14",
+   "file": "FM1-Open-V14-Workbench.html",
+   "sha256": "4b3197fdb23d9922a122b72fd11cdf9100215cc9c812de381b0888662d59e6c8",
+   "date": "2026-10-19",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "installed, run and reverted to stock V15 by the owner on a real FM-1; stock sound check 8/8 passed after the revert",
+   "notes": ""
   },
   {
    "id": "official",
@@ -1802,6 +1818,21 @@
    "result": "clean",
    "checks": "played on the device; generic sound check 1-2 heard; stock sound check 8/8 after revert (run all)",
    "notes": "Under SLOOP the FM-1's MIDI port is named 'Felucca' (USB 1209:0001, like Felucca and AMB-1). Generic step 1's notes started a looping take that kept playing until stopped: SLOOP is a live looper, so this looks like design. Return to the official firmware (V15) asks for the unmodified FM-1.fwsc; worked first time."
+  },
+  {
+   "id": "x0x",
+   "version": "v1.1.0",
+   "file": "x0x-1.1.0.fwsc",
+   "sha256": "a0c29deb930c65f1d40b5691b7d673f861418b438b7e65027cb9c671e6f44f5b",
+   "date": "2026-10-19",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "installed, run and reverted to stock V15 by the owner on a real FM-1; stock sound check 8/8 passed after the revert",
+   "notes": ""
   }
  ],
  "releases": {

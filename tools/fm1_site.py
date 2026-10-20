@@ -10,7 +10,7 @@ computer (library, installed firmware, history):
     docs/css/firmware.css     copy of web/css/firmware.css (card styles)
     docs/img/fw/*             copies of web/img/fw/*      (firmware screens)
 
-    python tools/fm1_site.py --write            # snapshot from the local caches in data/ (no network; never older data)
+    python tools/fm1_site.py --write            # snapshot from the local caches in data/ (no network; never older releases)
     python tools/fm1_site.py --refresh --write  # run Check for updates first, caches in a temp folder
     python tools/fm1_site.py --check            # copies match web/ and the snapshot is readable (CI)
 
@@ -135,9 +135,12 @@ def main():
     if not a.write:
         return
     older = not a.refresh and previous and str(snap["releases"].get("checked", "")) < str(previous["releases"].get("checked", ""))
-    if older:  # this computer's caches predate the published list: don't publish older data
-        print(f"{SNAPSHOT.relative_to(ROOT).as_posix()}: the local caches are older than the published list, left as is (use --refresh)")
-    elif previous and comparable(previous) == comparable(snap):
+    if older:
+        # This computer's caches predate the published list: keep its releases, ranking and cards
+        # (the catalog includes cards built from discovery), but take validated.json as it is now.
+        snap = {**previous, "generated_at": snap["generated_at"], "validated": snap["validated"]}
+        print("  local caches are older than the published list: kept its releases and cards, updated validations (use --refresh for new releases)")
+    if previous and comparable(previous) == comparable(snap):
         print(f"{SNAPSHOT.relative_to(ROOT).as_posix()}: nothing changed besides timestamps, left as is")
     else:
         SNAPSHOT.parent.mkdir(parents=True, exist_ok=True)

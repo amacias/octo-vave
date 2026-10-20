@@ -64,6 +64,21 @@
       "supersededBy": "V14"
     },
     {
+      "id": "fm1open",
+      "version": "V14",
+      "file": "FM1-Open-V14-Workbench.html",
+      "sha256": "4b3197fdb23d9922a122b72fd11cdf9100215cc9c812de381b0888662d59e6c8",
+      "date": "2026-10-19",
+      "steps": {
+        "install": true,
+        "run": true,
+        "revert": true
+      },
+      "result": "clean",
+      "checks": "installed, run and reverted to stock V15 by the owner on a real FM-1; stock sound check 8/8 passed after the revert",
+      "notes": ""
+    },
+    {
       "id": "official",
       "version": "V15",
       "file": "FM-1.fwsc",
@@ -92,6 +107,21 @@
       "result": "clean",
       "checks": "played on the device; generic sound check 1-2 heard; stock sound check 8/8 after revert (run all)",
       "notes": "Under SLOOP the FM-1's MIDI port is named 'Felucca' (USB 1209:0001, like Felucca and AMB-1). Generic step 1's notes started a looping take that kept playing until stopped: SLOOP is a live looper, so this looks like design. Return to the official firmware (V15) asks for the unmodified FM-1.fwsc; worked first time."
+    },
+    {
+      "id": "x0x",
+      "version": "v1.1.0",
+      "file": "x0x-1.1.0.fwsc",
+      "sha256": "a0c29deb930c65f1d40b5691b7d673f861418b438b7e65027cb9c671e6f44f5b",
+      "date": "2026-10-19",
+      "steps": {
+        "install": true,
+        "run": true,
+        "revert": true
+      },
+      "result": "clean",
+      "checks": "installed, run and reverted to stock V15 by the owner on a real FM-1; stock sound check 8/8 passed after the revert",
+      "notes": ""
     }
   ]
 }
