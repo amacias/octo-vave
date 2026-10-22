@@ -123,7 +123,8 @@
       },
       "result": "clean",
       "checks": "played on the device; generic sound check 1-2 heard; stock sound check 8/8 after revert (run all)",
-      "notes": "Under SLOOP the FM-1's MIDI port is named 'Felucca' (USB 1209:0001, like Felucca and AMB-1). Generic step 1's notes started a looping take that kept playing until stopped: SLOOP is a live looper, so this looks like design. Return to the official firmware (V15) asks for the unmodified FM-1.fwsc; worked first time."
+      "notes": "Under SLOOP the FM-1's MIDI port is named 'Felucca' (USB 1209:0001, like Felucca and AMB-1). Generic step 1's notes started a looping take that kept playing until stopped: SLOOP is a live looper, so this looks like design. Return to the official firmware (V15) asks for the unmodified FM-1.fwsc; worked first time.",
+      "supersededBy": "v2.8"
     },
     {
       "id": "x0x",
