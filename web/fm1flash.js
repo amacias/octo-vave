@@ -23,9 +23,9 @@ const DONE_CHECK = 0xe0000000, DONE_WRITE = 0xf0000000;   // the device's two "f
 const HEADER_BLOCKS = 20, BLOCK = 0x30;                   // .fwsc header: 47 data bytes + 1 marker per block
 const MAX_REQUEST = 512;
 // Ports worth a handshake: the FM-1 under stock ("FM-1 Midi"), its update loader and FM-1 Open
-// ("USB-Midi") and the community firmware ("Felucca", "AMB-1 FM-1", "ChoralRoot FM-1").
+// ("USB-Midi") and the community firmware ("Felucca", "AMB-1 FM-1", "ChoralRoot FM-1", "Hortator").
 // Other MIDI gear is never probed, even when it is the app's selected port.
-const FM1_PORT = /fm-?1|felucca|choralroot|ota|usb-midi|composite|sinco/i;
+const FM1_PORT = /fm-?1|felucca|choralroot|hortator|ota|usb-midi|composite|sinco/i;
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function fail(code, message) { return Object.assign(new Error(message), { code }); }

@@ -34,6 +34,21 @@
       "supersededBy": "v0.27"
     },
     {
+      "id": "choralroot",
+      "version": "v0.27",
+      "file": "choralroot-0.27.fwsc",
+      "sha256": "a09f9e19b66a91351de37c532e0d15cdc03ff9e9c82a0b152cdb66ca3fdc0326",
+      "date": "2026-10-27",
+      "steps": {
+        "install": true,
+        "run": true,
+        "revert": true
+      },
+      "result": "clean",
+      "checks": "installed with ChoralRoot's web installer over stock (Skip the backup), FM-1 answered as FM-1_920; played on the device; generic sound check (run all): heard notes, velocity, sustain, program change, all notes off; unsure channel scan, mod wheel, pitch bend, aftertouch, CC 74 probe; clock sync not heard (ChoralRoot sends its own clock); reverted with Octo-Vave's Install on Stock V15 (FM-1 reports FM-1_015)",
+      "notes": "MIDI port 'ChoralRoot FM-1'. A chord instrument, not a stock-like synth: several generic MIDI tests have no stock-style mapping, as with 0.25.1. The file matches the release SHA256SUMS and the hash on ChoralRoot's installer page. Installing over stock needs 'Skip the backup' (stock cannot be backed up)."
+    },
+    {
       "id": "felucca",
       "version": "v1.6.1",
       "file": "felucca-1.6.1.fwsc",
@@ -95,6 +110,66 @@
       "notes": "Its installer has no return to stock: reverted to stock V15 with the FM-1 Open Workbench."
     },
     {
+      "id": "fomni",
+      "version": "v0.4",
+      "file": "omni-0.4.fwsc",
+      "sha256": "71fa8304b91bff89078bfd27e981ed28ca4f0d3c5f406e8fdb5a2ab240fbdbb5",
+      "date": "2026-10-27",
+      "steps": {
+        "install": true,
+        "run": true,
+        "revert": true
+      },
+      "result": "clean",
+      "checks": "installed with FoMni's web installer over stock (FM-1 reports FM-1_8000400); played and checked by hand on the device by the user: loaded correctly, 'cool little chord synth' (Sound check not run); reverted with Octo-Vave's Install on Stock V15",
+      "notes": "The library file matches the file FoMni's installer serves. FoMni is a beta. Its installer's own 'Back to the stock firmware' asks for M-VAVE's FM-1.fwsc file; not used here."
+    },
+    {
+      "id": "ghoulbox",
+      "version": "ghoulbox-v2.4",
+      "file": "ghoulbox-2.4.fwsc",
+      "sha256": "92630ae278d4a0b4233ff2512b62ad9b5dbe976a4c9083046222d9293a8df749",
+      "date": "2026-10-27",
+      "steps": {
+        "install": true,
+        "run": true,
+        "revert": true
+      },
+      "result": "clean",
+      "checks": "installed with GHOULBOX's web installer over stock (FM-1 reports FM-1_900); played on the device by the user: 'amazing synth, sounds great' (Sound check not run); reverted with Octo-Vave's Install on Stock V15",
+      "notes": "The file matches GitHub's release digest. The installer makes no backup and its page asks for one from the Editor first (stock has nothing to back up)."
+    },
+    {
+      "id": "hortator",
+      "version": "drum-v0.25.0",
+      "file": "hortator-0.25.0.fwsc",
+      "sha256": "fa5fab0ece3a2c5f626edcbda7a359dad2ddcc28bec7c3669a9c2fd8802c5d26",
+      "date": "2026-10-27",
+      "steps": {
+        "install": true,
+        "run": true,
+        "revert": true
+      },
+      "result": "clean",
+      "checks": "installed with Hortator's web installer over stock, plain build (not Bluetooth) (FM-1 reports FM-1_900); played and checked by hand on the device by the user (Sound check not run); reverted with Octo-Vave's Install on Stock V15 (FM-1 reports FM-1_015)",
+      "notes": "MIDI port 'Hortator'. The file matches GitHub's release digest and the file Hortator's installer serves. The Bluetooth MIDI build (experimental) was not tested. The installer has no return to stock (its page points to M-UPGRADE); Octo-Vave's Stock V15 Install works once it recognises the 'Hortator' port."
+    },
+    {
+      "id": "melodee",
+      "version": "v1.5.1",
+      "file": "melodee-1.5.1.fwsc",
+      "sha256": "172afb5b000f093bbe060922e76e11cd9334b12895a7e659bd20da515fb2d640",
+      "date": "2026-10-27",
+      "steps": {
+        "install": true,
+        "run": true,
+        "revert": true
+      },
+      "result": "clean",
+      "checks": "installed with Melodee's web installer over stock (Standard build, m-bootloader not installed); played on the device; generic sound check 10/11 (run all): notes, channels, velocity, sustain, mod wheel, pitch bend, aftertouch, program change, all notes off, CC 74 probe heard; clock sync not heard; reverted with Octo-Vave's Install on Stock V15 (FM-1 reports FM-1_015)",
+      "notes": "MIDI port 'Melodee FM-1'. The file matches the release SHA256SUMS and the file Melodee's installer serves. The installer also offers 1.6.0-rc and nightly builds and an optional m-bootloader (replaces M-VAVE's bootloader); none were tested here."
+    },
+    {
       "id": "official",
       "version": "V15",
       "file": "FM-1.fwsc",
@@ -111,6 +186,21 @@
       "supersededBy": "V16"
     },
     {
+      "id": "skiff",
+      "version": "v2.0.2",
+      "file": "skiff-2.0.2.fwsc",
+      "sha256": "e3592e5ce04823df8ac72b90f69c3a4d575cb13449cc3bb9e845cf1bfa3d546a",
+      "date": "2026-10-27",
+      "steps": {
+        "install": true,
+        "run": true,
+        "revert": true
+      },
+      "result": "clean",
+      "checks": "installed with Skiff's web installer over stock (FM-1 reports FM-1_720); played and checked by hand on the device by the user (Sound check not run); reverted with Octo-Vave's Install on Stock V15 (FM-1 reports FM-1_015)",
+      "notes": "The file matches GitHub's release digest. The installer's MIDI permission prompt can sit unseen in a background window: the install waits at 0% until it is allowed."
+    },
+    {
       "id": "sloop",
       "version": "v2.7.1",
       "file": "sloop-2.7.1.fwsc",
@@ -125,6 +215,21 @@
       "checks": "played on the device; generic sound check 1-2 heard; stock sound check 8/8 after revert (run all)",
       "notes": "Under SLOOP the FM-1's MIDI port is named 'Felucca' (USB 1209:0001, like Felucca and AMB-1). Generic step 1's notes started a looping take that kept playing until stopped: SLOOP is a live looper, so this looks like design. Return to the official firmware (V15) asks for the unmodified FM-1.fwsc; worked first time.",
       "supersededBy": "v2.8.1"
+    },
+    {
+      "id": "sloop",
+      "version": "v2.8.1",
+      "file": "sloop-2.8.1.fwsc",
+      "sha256": "64c9dfa7e75312debeae01a7c96e4ad3801eaffff9c81cb76ece9c48daf0501d",
+      "date": "2026-10-27",
+      "steps": {
+        "install": true,
+        "run": true,
+        "revert": true
+      },
+      "result": "clean",
+      "checks": "installed with SLOOP's web installer (FM-1_015 -> FM-1_900); played on the device; generic sound check 10/11 (run all): notes, channels, velocity, sustain, mod wheel, pitch bend, aftertouch, program change, all notes off, CC 74 probe heard; clock sync not heard (SLOOP follows external clock only with GLO > SYSTEM > SYNC = USB, per its README); reverted with Octo-Vave's Install on Stock V15; stock sound check 8/8 after revert (run all)",
+      "notes": "MIDI port 'Felucca' (as 2.7.1). The file matches GitHub's release digest and the file the SLOOP installer serves. SLOOP 2.8 removed its in-browser return to stock (use M-UPGRADE or Octo-Vave's Stock V15 Install); Octo-Vave's Install brought stock V15 back first time."
     },
     {
       "id": "x0x",

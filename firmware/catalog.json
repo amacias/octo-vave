@@ -544,6 +544,44 @@
       }
     },
     {
+      "id": "hortator",
+      "name": "Hortator",
+      "author": "DEADACTIVE",
+      "kind": "community",
+      "tagline": "Eight-track drum machine",
+      "tags": [
+        "808 + 909",
+        "Plaits drums",
+        "Grids"
+      ],
+      "art": {
+        "hue": 0
+      },
+      "links": {
+        "install": "https://deadactive.github.io/hortator/webapp/installer/",
+        "repo": "https://github.com/DeadActive/hortator"
+      },
+      "summary": "Drum machine on Felucca with 808, 909 and Plaits drum models, samples, Mutable Instruments Grids, a pumping compressor and resonators; optional Bluetooth MIDI build. GPL-3.0.",
+      "install": "Web installer on the project site (Chrome/Edge, USB): plain or Bluetooth MIDI build.",
+      "source": {
+        "type": "github",
+        "repo": "DeadActive/hortator",
+        "assetPatterns": [
+          "^hortator-[0-9.]+\\.fwsc$"
+        ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": false,
+        "revertNote": "The installer has no return to stock: use M-UPGRADE with stock V15, or Octo-Vave's Stock V15 Install.",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web"
+        ]
+      }
+    },
+    {
       "id": "fm1va",
       "name": "FM-1+VA",
       "author": "Baud Girl",
