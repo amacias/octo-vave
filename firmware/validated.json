@@ -61,7 +61,8 @@
       },
       "result": "clean",
       "checks": "sounds, keys and knobs work; generic sound check 1-4 heard (notes, channels, velocity, sustain); stock steps 1-4 also heard (notes, program change, reverb, distortion); keys sent as MIDI notes on ch 1; stock sound check passed after revert",
-      "notes": "Under Felucca the FM-1 shows up as MIDI port 'Felucca' (USB 1209:0001, shared with AMB-1) and ignores MIDI identity requests. Return to official V15 asks for the unmodified FM-1.fwsc and saves a full backup first; worked first time. Arpeggiator not figured out during the test."
+      "notes": "Under Felucca the FM-1 shows up as MIDI port 'Felucca' (USB 1209:0001, shared with AMB-1) and ignores MIDI identity requests. Return to official V15 asks for the unmodified FM-1.fwsc and saves a full backup first; worked first time. Arpeggiator not figured out during the test.",
+      "supersededBy": "v1.7.0"
     },
     {
       "id": "fm1open",
@@ -152,7 +153,8 @@
       },
       "result": "clean",
       "checks": "installed with Hortator's web installer over stock, plain build (not Bluetooth) (FM-1 reports FM-1_900); played and checked by hand on the device by the user (Sound check not run); reverted with Octo-Vave's Install on Stock V15 (FM-1 reports FM-1_015)",
-      "notes": "MIDI port 'Hortator'. The file matches GitHub's release digest and the file Hortator's installer serves. The Bluetooth MIDI build (experimental) was not tested. The installer has no return to stock (its page points to M-UPGRADE); Octo-Vave's Stock V15 Install works once it recognises the 'Hortator' port."
+      "notes": "MIDI port 'Hortator'. The file matches GitHub's release digest and the file Hortator's installer serves. The Bluetooth MIDI build (experimental) was not tested. The installer has no return to stock (its page points to M-UPGRADE); Octo-Vave's Stock V15 Install works once it recognises the 'Hortator' port.",
+      "supersededBy": "drum-v0.26.0"
     },
     {
       "id": "melodee",
@@ -214,7 +216,7 @@
       "result": "clean",
       "checks": "played on the device; generic sound check 1-2 heard; stock sound check 8/8 after revert (run all)",
       "notes": "Under SLOOP the FM-1's MIDI port is named 'Felucca' (USB 1209:0001, like Felucca and AMB-1). Generic step 1's notes started a looping take that kept playing until stopped: SLOOP is a live looper, so this looks like design. Return to the official firmware (V15) asks for the unmodified FM-1.fwsc; worked first time.",
-      "supersededBy": "v2.8.1"
+      "supersededBy": "v2.8.3"
     },
     {
       "id": "sloop",
@@ -229,7 +231,8 @@
       },
       "result": "clean",
       "checks": "installed with SLOOP's web installer (FM-1_015 -> FM-1_900); played on the device; generic sound check 10/11 (run all): notes, channels, velocity, sustain, mod wheel, pitch bend, aftertouch, program change, all notes off, CC 74 probe heard; clock sync not heard (SLOOP follows external clock only with GLO > SYSTEM > SYNC = USB, per its README); reverted with Octo-Vave's Install on Stock V15; stock sound check 8/8 after revert (run all)",
-      "notes": "MIDI port 'Felucca' (as 2.7.1). The file matches GitHub's release digest and the file the SLOOP installer serves. SLOOP 2.8 removed its in-browser return to stock (use M-UPGRADE or Octo-Vave's Stock V15 Install); Octo-Vave's Install brought stock V15 back first time."
+      "notes": "MIDI port 'Felucca' (as 2.7.1). The file matches GitHub's release digest and the file the SLOOP installer serves. SLOOP 2.8 removed its in-browser return to stock (use M-UPGRADE or Octo-Vave's Stock V15 Install); Octo-Vave's Install brought stock V15 back first time.",
+      "supersededBy": "v2.8.3"
     },
     {
       "id": "x0x",
