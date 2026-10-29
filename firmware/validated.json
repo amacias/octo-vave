@@ -200,7 +200,8 @@
       },
       "result": "clean",
       "checks": "installed with Skiff's web installer over stock (FM-1 reports FM-1_720); played and checked by hand on the device by the user (Sound check not run); reverted with Octo-Vave's Install on Stock V15 (FM-1 reports FM-1_015)",
-      "notes": "The file matches GitHub's release digest. The installer's MIDI permission prompt can sit unseen in a background window: the install waits at 0% until it is allowed."
+      "notes": "The file matches GitHub's release digest. The installer's MIDI permission prompt can sit unseen in a background window: the install waits at 0% until it is allowed.",
+      "supersededBy": "v2.0.3"
     },
     {
       "id": "sloop",
