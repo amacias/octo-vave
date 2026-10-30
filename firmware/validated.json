@@ -217,7 +217,7 @@
       "result": "clean",
       "checks": "played on the device; generic sound check 1-2 heard; stock sound check 8/8 after revert (run all)",
       "notes": "Under SLOOP the FM-1's MIDI port is named 'Felucca' (USB 1209:0001, like Felucca and AMB-1). Generic step 1's notes started a looping take that kept playing until stopped: SLOOP is a live looper, so this looks like design. Return to the official firmware (V15) asks for the unmodified FM-1.fwsc; worked first time.",
-      "supersededBy": "v2.8.3"
+      "supersededBy": "v2.8.4"
     },
     {
       "id": "sloop",
@@ -233,7 +233,7 @@
       "result": "clean",
       "checks": "installed with SLOOP's web installer (FM-1_015 -> FM-1_900); played on the device; generic sound check 10/11 (run all): notes, channels, velocity, sustain, mod wheel, pitch bend, aftertouch, program change, all notes off, CC 74 probe heard; clock sync not heard (SLOOP follows external clock only with GLO > SYSTEM > SYNC = USB, per its README); reverted with Octo-Vave's Install on Stock V15; stock sound check 8/8 after revert (run all)",
       "notes": "MIDI port 'Felucca' (as 2.7.1). The file matches GitHub's release digest and the file the SLOOP installer serves. SLOOP 2.8 removed its in-browser return to stock (use M-UPGRADE or Octo-Vave's Stock V15 Install); Octo-Vave's Install brought stock V15 back first time.",
-      "supersededBy": "v2.8.3"
+      "supersededBy": "v2.8.4"
     },
     {
       "id": "x0x",
