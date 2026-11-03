@@ -31,7 +31,7 @@
       "result": "clean",
       "checks": "boots to ChoralRoot, keys play; generic sound check: heard notes, channel scan, velocity, program change, all notes off; unsure sustain, mod wheel; not heard pitch bend, aftertouch, clock sync, CC probe; sends MIDI clock and notes on ch 1-2; stock sound check 8/8 after revert (run all)",
       "notes": "MIDI port 'ChoralRoot FM-1' (USB 1209:0001). It sends its own MIDI clock, so it leads rather than follows external clock. Installed over stock with 'Skip the backup' (stock cannot be backed up); Back up and return to official V15 asks for the unmodified FM-1.fwsc, saves a backup first and worked first time.",
-      "supersededBy": "v0.29"
+      "supersededBy": "v0.29.2"
     },
     {
       "id": "choralroot",
@@ -47,7 +47,7 @@
       "result": "clean",
       "checks": "installed with ChoralRoot's web installer over stock (Skip the backup), FM-1 answered as FM-1_920; played on the device; generic sound check (run all): heard notes, velocity, sustain, program change, all notes off; unsure channel scan, mod wheel, pitch bend, aftertouch, CC 74 probe; clock sync not heard (ChoralRoot sends its own clock); reverted with Octo-Vave's Install on Stock V15 (FM-1 reports FM-1_015)",
       "notes": "MIDI port 'ChoralRoot FM-1'. A chord instrument, not a stock-like synth: several generic MIDI tests have no stock-style mapping, as with 0.25.1. The file matches the release SHA256SUMS and the hash on ChoralRoot's installer page. Installing over stock needs 'Skip the backup' (stock cannot be backed up).",
-      "supersededBy": "v0.29"
+      "supersededBy": "v0.29.2"
     },
     {
       "id": "felucca",
@@ -170,7 +170,8 @@
       },
       "result": "clean",
       "checks": "installed with Melodee's web installer over stock (Standard build, m-bootloader not installed); played on the device; generic sound check 10/11 (run all): notes, channels, velocity, sustain, mod wheel, pitch bend, aftertouch, program change, all notes off, CC 74 probe heard; clock sync not heard; reverted with Octo-Vave's Install on Stock V15 (FM-1 reports FM-1_015)",
-      "notes": "MIDI port 'Melodee FM-1'. The file matches the release SHA256SUMS and the file Melodee's installer serves. The installer also offers 1.6.0-rc and nightly builds and an optional m-bootloader (replaces M-VAVE's bootloader); none were tested here."
+      "notes": "MIDI port 'Melodee FM-1'. The file matches the release SHA256SUMS and the file Melodee's installer serves. The installer also offers 1.6.0-rc and nightly builds and an optional m-bootloader (replaces M-VAVE's bootloader); none were tested here.",
+      "supersededBy": "v1.6.1"
     },
     {
       "id": "official",
