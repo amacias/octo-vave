@@ -15,7 +15,8 @@
       },
       "result": "clean",
       "checks": "re-test: install, play and revert all clean; boots and plays; presets and the 4 knobs work; MIDI out notes (ch 1-3, 10) and clock seen; generic sound check 1-2 silent by design (ch 1 notes edit the scale); stock sound check 8/8 after revert (run all)",
-      "notes": "MIDI port 'AMB-1 FM-1' (USB 1209:0001). Re-test: 'Back to the stock firmware' worked first time. In the first session the revert once left a black screen in USB update mode (generic USB-Midi 4D4A:4155); running it again restored stock V15."
+      "notes": "MIDI port 'AMB-1 FM-1' (USB 1209:0001). Re-test: 'Back to the stock firmware' worked first time. In the first session the revert once left a black screen in USB update mode (generic USB-Midi 4D4A:4155); running it again restored stock V15.",
+      "supersededBy": "v1.3.2"
     },
     {
       "id": "choralroot",
@@ -124,7 +125,8 @@
       },
       "result": "clean",
       "checks": "installed with FoMni's web installer over stock (FM-1 reports FM-1_8000400); played and checked by hand on the device by the user: loaded correctly, 'cool little chord synth' (Sound check not run); reverted with Octo-Vave's Install on Stock V15",
-      "notes": "The library file matches the file FoMni's installer serves. FoMni is a beta. Its installer's own 'Back to the stock firmware' asks for M-VAVE's FM-1.fwsc file; not used here."
+      "notes": "The library file matches the file FoMni's installer serves. FoMni is a beta. Its installer's own 'Back to the stock firmware' asks for M-VAVE's FM-1.fwsc file; not used here.",
+      "supersededBy": "v0.4.1"
     },
     {
       "id": "ghoulbox",
@@ -251,7 +253,7 @@
       "result": "clean",
       "checks": "installed, run and reverted to stock V15 by the owner on a real FM-1; stock sound check 8/8 passed after the revert",
       "notes": "",
-      "supersededBy": "v1.2.0"
+      "supersededBy": "v1.2.1"
     }
   ]
 }
