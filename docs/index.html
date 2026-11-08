@@ -39,9 +39,9 @@
   .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 10px; font-weight: 600; text-decoration: none; border: 1px solid var(--line); color: var(--ink); background: var(--panel); }
   .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
   .shot { display: block; width: 100%; border-radius: 14px; border: 1px solid var(--line); box-shadow: 0 10px 40px rgba(0,0,0,.18); }
-  section { padding: 36px 0; }
-  h2 { font-size: 26px; margin: 0 0 14px; display: flex; align-items: center; gap: 10px; }
-  h2 img { width: 28px; height: auto; }
+  section.wrap { padding-top: 52px; padding-bottom: 4px; }  /* room above each octopus heading (beats .wrap's padding) */
+  h2 { font-size: 22px; margin: 0 0 14px; display: flex; align-items: center; gap: 9px; }  /* every octopus heading: the app's page-title size */
+  h2 img { width: 24px; height: auto; }
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 16px; }
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
   .card h3 { margin: 0 0 6px; font-size: 17px; }
@@ -69,10 +69,9 @@
   @media (max-width: 560px) { .links a:not(.gh-link) { display: none; } }
   footer img { width: 40px; }
   /* firmware sections: the app's cards and lists (css/firmware.css) on this page's controls */
-  .fwsec { padding-top: 22px; }
-  .fwsec .fw-head { margin-bottom: 4px; }
-  .fwsec .fw-title { font-size: 22px; margin: 0; gap: 8px; }  /* the app's page title size */
-  .fwsec .fw-title img { width: 22px; }
+  section.wrap.fwsec { padding-top: 32px; }
+  .fwsec .lb-head { margin-bottom: 4px; }
+  .fwsec .lb-head h2 { margin: 0; }
   .fwsec .fw-status { font-size: 13px; }
   .fwsec .intro { color: var(--muted); font-size: 14px; margin: 0 0 4px; max-width: 80ch; }
   .fwsec .card { padding: 16px; border-radius: var(--radius); }  /* the app's card */
@@ -94,7 +93,7 @@
   .fwsec .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 6px 0; }
   .fwsec .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
   .fwsec .card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0; }
-  .fwsec .fw-legend-row { margin: 14px 0 -4px; }
+  .fwsec .fw-legend-row { margin: 12px 0 0; }
 </style>
 </head>
 <body>
@@ -120,8 +119,8 @@
 </header>
 
 <section class="wrap wide fwsec" id="leaderboard">
-  <div class="section-head fw-head">
-    <h2 class="fw-title"><img src="img/octo.svg" alt="">Firmware Leaderboard</h2>
+  <div class="section-head lb-head">
+    <h2><img src="img/octo.svg" alt="">Firmware Leaderboard</h2>
     <span class="muted fw-status" id="fwStatus">Loading the firmware list…</span>
   </div>
   <p class="intro">Stock, FM-1 Open and the top community projects. An orange octopus <img class="inline-octo" src="img/octo.svg" alt="orange octopus">
@@ -130,7 +129,7 @@
   <div class="live" id="fwMore"></div>
 </section>
 
-<section class="wrap" id="install">
+<section class="wrap wide" id="install">
   <h2><img src="img/octo.svg" alt="">Install the Full Featured App</h2>
   <ol class="steps">
       <li>Install <b>Python 3</b>. Nothing else: standard library only.</li>
@@ -254,7 +253,7 @@ ${v.sha256}` });
 
   loadSnapshot().then((fw) => {
     $("fwStatus").textContent = `Updated nightly from GitHub and awesome-fm-1 · ${relTime(fw.generated_at)}`;
-    $("fwLive").replaceChildren(...fwSections(fw, null, { merged: true }).nodes);
+    $("fwLive").replaceChildren(...fwSections(fw, null, { merged: true, boxed: true }).nodes);
     // the app's cards below the leaderboard: Also Popular (from #13: the homepage shows 12 cards), then All Validated
     const dir = fwDirectory(fw, { from: 12 });
     if (dir) dir.id = "popular";

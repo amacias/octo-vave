@@ -495,7 +495,7 @@ const CLOSED_TIP = "Free firmware without public source. Not ranked: there are n
  * top 12 open source, then up to 3 closed source. Returns { nodes, carded } so the caller can
  * list files without a card.
  */
-export function fwSections(fw, app = null, { merged = false } = {}) {
+export function fwSections(fw, app = null, { merged = false, boxed = false } = {}) {
   // Community cards = the live top 10 (server-ranked by ln(1+stars) + ln(1+downloads)).
   const byId = new Map(fw.catalog.map((f) => [f.id, f]));
   const official = fw.catalog.filter((f) => f.kind !== "community");
@@ -505,25 +505,23 @@ export function fwSections(fw, app = null, { merged = false } = {}) {
   const carded = new Set([...official, ...closed].map((f) => f.id).concat(top.map((p) => p.id)));
   const topCards = top.map((p) => fwCard(byId.get(p.id), fw, p.rank, app));
   const closedCards = closed.map((f) => fwCard(f, fw, null, app));
+  // A group of cards under its heading; `boxed` (the homepage) puts each group in a card box
+  // with a small heading, like Also Popular and All Validated Firmware below it.
+  const group = (title, cards) => boxed
+    ? h("section", { class: "card fw-group" }, h("div", { class: "section-head" }, h("h3", {}, ...title)), h("div", { class: "fw-cards" }, cards))
+    : [h("h2", { class: "fw-section" }, ...title), h("div", { class: "fw-cards" }, cards)];
+  const info = (title) => h("span", { class: "info", title, text: "ⓘ" });
   const nodes = [
     h("div", { class: "fw-legend-row" }, octoLegend(), h("span", { class: "legend-sep" }), traitLegend()),
-    h("h2", { class: "fw-section" }, "Official"),
-    h("div", { class: "fw-cards" }, official.map((f) => fwCard(f, fw, null, app))),
+    group(["Official"], official.map((f) => fwCard(f, fw, null, app))),
   ];
   if (merged) {
-    nodes.push(
-      h("h2", { class: "fw-section" }, `Community · top ${top.length} free firmware `,
-        h("span", { class: "info", title: `${fw.ranking || ""}\nClosed source, at the end: ${CLOSED_TIP}`, text: "ⓘ" })),
-      h("div", { class: "fw-cards" }, topCards, closedCards));
-    return { nodes, carded };
+    nodes.push(group([`Community · top ${top.length} free firmware `, info(`${fw.ranking || ""}
+Closed source, at the end: ${CLOSED_TIP}`)],
+      [...topCards, ...closedCards]));
+    return { nodes: nodes.flat(), carded };
   }
-  nodes.push(
-    h("h2", { class: "fw-section" }, "Community · top 10 free & open source ",
-      h("span", { class: "info", title: fw.ranking || "", text: "ⓘ" })),
-    h("div", { class: "fw-cards" }, topCards));
-  if (closed.length) {
-    nodes.push(h("h2", { class: "fw-section" }, "Community · free, closed source ", h("span", { class: "info", title: CLOSED_TIP, text: "ⓘ" })),
-      h("div", { class: "fw-cards" }, closedCards));
-  }
-  return { nodes, carded };
+  nodes.push(group(["Community · top 10 free & open source ", info(fw.ranking || "")], topCards));
+  if (closed.length) nodes.push(group(["Community · free, closed source ", info(CLOSED_TIP)], closedCards));
+  return { nodes: nodes.flat(), carded };
 }
