@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-07T13:19:43Z",
+ "generated_at": "2026-11-08T00:42:13Z",
  "catalog": [
   {
    "id": "official",
@@ -658,22 +658,36 @@
    "name": "OberVave",
    "author": "zvenson",
    "kind": "community",
-   "curated": false,
-   "tagline": "Single eight-voice analog-style polysynth after the classic American poly synths of 1979-84, with hard sync, cross-modulation, SEM-style filter morph…",
-   "tags": [],
+   "tagline": "Eight-voice analog-style polysynth",
+   "tags": [
+    "8-voice poly",
+    "Hard sync",
+    "SEM filter"
+   ],
    "art": {
     "hue": 7
    },
    "links": {
     "repo": "https://github.com/zvenson/obervave"
    },
-   "summary": "Single eight-voice analog-style polysynth after the classic American poly synths of 1979-84, with hard sync, cross-modulation, SEM-style filter morph…",
-   "install": "Use the project's own installer (see its page or README). Not curated yet: this card is built from GitHub metadata.",
+   "summary": "Single eight-voice analog-style polysynth after the classic American poly synths of 1979-84, with hard sync, cross-modulation, SEM-style filter morph. GPL-3.0.",
+   "install": "Python installer from the repo (tools/fm1_install.py) or M-UPGRADE; no web installer.",
    "source": {
     "type": "github",
     "repo": "zvenson/obervave",
     "assetPatterns": [
      "\\.fwsc$"
+    ]
+   },
+   "traits": {
+    "source": "open",
+    "revert": false,
+    "revertNote": "No return to stock in the project's tools: Octo-Vave's Stock V15 Install puts stock back (tested 2026-11-07).",
+    "requires_stock_version": null,
+    "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+    "install_method": [
+     "python",
+     "m-upgrade"
     ]
    }
   },
@@ -682,22 +696,36 @@
    "name": "LOOM-8",
    "author": "charlesvestal",
    "kind": "community",
-   "curated": false,
-   "tagline": "LOOM-8: a groovebox inspired by the OP-XY: eight tracks on nine engines, step tricks and locks, weave, a conductor and throws",
-   "tags": [],
+   "tagline": "OP-XY-inspired eight-track groovebox",
+   "tags": [
+    "8 tracks",
+    "64 steps",
+    "P-locks"
+   ],
    "art": {
     "hue": 45
    },
    "links": {
+    "install": "https://charlesvestal.github.io/fm1-loom/install/",
     "repo": "https://github.com/charlesvestal/fm1-loom"
    },
-   "summary": "OP-XY-inspired groovebox by Charles Vestal: eight colour-coded tracks, 85 factory presets, a 64-step sequencer with step tricks and parameter locks, weave…",
-   "install": "Use the project's own installer (see its page or README). Not curated yet: this card is built from GitHub metadata.",
+   "summary": "OP-XY-inspired groovebox by Charles Vestal: eight colour-coded tracks, 85 factory presets, a 64-step sequencer with step tricks and parameter locks, weave. MPL-2.0.",
+   "install": "Web installer on the project site (Chrome/Edge, USB).",
    "source": {
     "type": "github",
     "repo": "charlesvestal/fm1-loom",
     "assetPatterns": [
      "\\.fwsc$"
+    ]
+   },
+   "traits": {
+    "source": "open",
+    "revert": true,
+    "revertNote": "The installer can put M-VAVE's stock firmware back; Octo-Vave's Stock V15 Install works too (tested 2026-11-07).",
+    "requires_stock_version": null,
+    "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+    "install_method": [
+     "web"
     ]
    }
   },
@@ -706,23 +734,36 @@
    "name": "Clipper",
    "author": "isod89",
    "kind": "community",
-   "curated": false,
-   "tagline": "Clipper: an experimental synthesizer firmware for the M-VAVE FM-1 (from SLOOP, based on Felucca)",
-   "tags": [],
+   "tagline": "Experimental synth grown out of SLOOP",
+   "tags": [
+    "SLOOP-based",
+    "ENV2/ENV3",
+    "LFO2/LFO3"
+   ],
    "art": {
     "hue": 14
    },
    "links": {
-    "repo": "https://github.com/isod89/clipper-fm1",
-    "install": "https://isod89.github.io/clipper-fm1/webapp/installer/"
+    "install": "https://isod89.github.io/clipper-fm1/webapp/installer/",
+    "repo": "https://github.com/isod89/clipper-fm1"
    },
-   "summary": "Experimental synthesizer firmware that grew out of SLOOP, with per-voice ENV2/ENV3 and LFO2/LFO3 modulation",
-   "install": "Use the project's own installer (see its page or README). Not curated yet: this card is built from GitHub metadata.",
+   "summary": "Experimental synthesizer firmware that grew out of SLOOP, with per-voice ENV2/ENV3 and LFO2/LFO3 modulation. GPL-3.0.",
+   "install": "Web installer on the project site (Chrome/Edge, USB).",
    "source": {
     "type": "github",
     "repo": "isod89/clipper-fm1",
     "assetPatterns": [
      "\\.fwsc$"
+    ]
+   },
+   "traits": {
+    "source": "open",
+    "revert": true,
+    "revertNote": "The installer's return to the official firmware accepts V15 or V16; Octo-Vave's Stock V15 Install works too (tested 2026-11-07).",
+    "requires_stock_version": null,
+    "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+    "install_method": [
+     "web"
     ]
    }
   },
@@ -731,24 +772,36 @@
    "name": "ORBIT",
    "author": "dspaudio",
    "kind": "community",
-   "curated": false,
-   "tagline": "ORBIT groovebox firmware for FM-1: Event Tape, synths and drums. 1.0.0 standard; 1.0.1B Bluetooth MIDI and phone audio. Based on SLOOP.",
-   "tags": [],
+   "tagline": "SLOOP-based groovebox with OP-1-style screens",
+   "tags": [
+    "SLOOP-based",
+    "OP-1 screens",
+    "Event tape"
+   ],
    "art": {
     "hue": 114
    },
    "links": {
-    "repo": "https://github.com/dspaudio/orbit",
-    "try": "https://dspaudio.github.io/orbit-web-emu/",
-    "install": "https://dspaudio.github.io/orbit/"
+    "install": "https://dspaudio.github.io/orbit/",
+    "repo": "https://github.com/dspaudio/orbit"
    },
-   "summary": "SLOOP-based groovebox with OP-1-inspired screens, sample tools and an event tape for moving what the four tracks play",
-   "install": "Use the project's own installer (see its page or README). Not curated yet: this card is built from GitHub metadata.",
+   "summary": "SLOOP-based groovebox with OP-1-inspired screens, sample tools and an event tape for moving what the four tracks play. GPL-3.0.",
+   "install": "Install from the project page (see its README); the current release is the Bluetooth MIDI build.",
    "source": {
     "type": "github",
     "repo": "dspaudio/orbit",
     "assetPatterns": [
      "\\.fwsc$"
+    ]
+   },
+   "traits": {
+    "source": "open",
+    "revert": false,
+    "revertNote": "Return to stock not checked in the project's docs: Octo-Vave's Stock V15 Install puts stock back (tested 2026-11-07).",
+    "requires_stock_version": null,
+    "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+    "install_method": [
+     "web"
     ]
    }
   },
@@ -781,22 +834,36 @@
    "name": "Polly",
    "author": "charlesvestal",
    "kind": "community",
-   "curated": false,
-   "tagline": "Polly: a QY70-style pocket arranger firmware for the M-VAVE FM-1 (private)",
-   "tags": [],
+   "tagline": "QY70-style pocket arranger",
+   "tags": [
+    "Arranger",
+    "8-part band",
+    "General MIDI"
+   ],
    "art": {
     "hue": 85
    },
    "links": {
+    "install": "https://charlesvestal.github.io/fm1-polly/",
     "repo": "https://github.com/charlesvestal/fm1-polly"
    },
-   "summary": "QY70-style pocket arranger by Charles Vestal: a style plays a band of eight instruments steered by the chords you play, with General MIDI sounds from Sonivox…",
-   "install": "Use the project's own installer (see its page or README). Not curated yet: this card is built from GitHub metadata.",
+   "summary": "QY70-style pocket arranger by Charles Vestal: a style plays a band of eight instruments steered by the chords you play, with General MIDI sounds from Sonivox. GPL-3.0.",
+   "install": "Web installer on the project site (Chrome/Edge, USB).",
    "source": {
     "type": "github",
     "repo": "charlesvestal/fm1-polly",
     "assetPatterns": [
      "\\.fwsc$"
+    ]
+   },
+   "traits": {
+    "source": "open",
+    "revert": false,
+    "revertNote": "Return to stock not checked in the project's docs: Octo-Vave's Stock V15 Install puts stock back (tested 2026-11-07).",
+    "requires_stock_version": null,
+    "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+    "install_method": [
+     "web"
     ]
    }
   },
@@ -805,24 +872,36 @@
    "name": "DUB-1",
    "author": "sbegueria",
    "kind": "community",
-   "curated": false,
-   "tagline": "Alt firmware for the M-VAVE FM-1 mini synth",
-   "tags": [],
+   "tagline": "Generative dub techno machine",
+   "tags": [
+    "Generative",
+    "Dub techno",
+    "Tape echo"
+   ],
    "art": {
     "hue": 160
    },
    "links": {
-    "repo": "https://github.com/sbegueria/fm1-dub",
-    "try": "https://sbegueria.github.io/fm1-dub/emu/",
-    "install": "https://sbegueria.github.io/fm1-dub/install/"
+    "install": "https://sbegueria.github.io/fm1-dub/install/",
+    "repo": "https://github.com/sbegueria/fm1-dub"
    },
-   "summary": "Generative dub techno machine that plays itself from power-on: chord stabs into a tape echo, FM pings, sub bass, kick, shaker and hat on an eight-bar…",
-   "install": "Use the project's own installer (see its page or README). Not curated yet: this card is built from GitHub metadata.",
+   "summary": "Generative dub techno machine that plays itself from power-on: chord stabs into a tape echo, FM pings, sub bass, kick, shaker and hat on an eight-bar. GPL-3.0.",
+   "install": "Web installer on the project site (Chrome/Edge, USB).",
    "source": {
     "type": "github",
     "repo": "sbegueria/fm1-dub",
     "assetPatterns": [
      "\\.fwsc$"
+    ]
+   },
+   "traits": {
+    "source": "open",
+    "revert": true,
+    "revertNote": "The installer and M-UPGRADE can put stock back; Octo-Vave's Stock V15 Install works too (tested 2026-11-07).",
+    "requires_stock_version": null,
+    "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+    "install_method": [
+     "web"
     ]
    }
   },
@@ -831,24 +910,36 @@
    "name": "CoralFlower",
    "author": "FicusFicusov",
    "kind": "community",
-   "curated": false,
-   "tagline": "Chord-instrument firmware for the M-VAVE FM-1, after ChoralRoot FM-1 and Felucca (GPL-3.0)",
-   "tags": [],
+   "tagline": "Orchid-inspired chord instrument",
+   "tags": [
+    "Chord instrument",
+    "Auto bass",
+    "Pixel flower"
+   ],
    "art": {
     "hue": 309
    },
    "links": {
-    "repo": "https://github.com/FicusFicusov/CoralFlower",
-    "try": "https://ficusficusov.github.io/CoralFlower/play/",
-    "install": "https://ficusficusov.github.io/CoralFlower/"
+    "install": "https://ficusficusov.github.io/CoralFlower/",
+    "repo": "https://github.com/FicusFicusov/CoralFlower"
    },
-   "summary": "Chord instrument inspired by the Telepathic Instruments Orchid: every note becomes a chord with a bass underneath, while a pixel flower grows on screen",
-   "install": "Use the project's own installer (see its page or README). Not curated yet: this card is built from GitHub metadata.",
+   "summary": "Chord instrument inspired by the Telepathic Instruments Orchid: every note becomes a chord with a bass underneath, while a pixel flower grows on screen. GPL-3.0.",
+   "install": "Web installer on the project site (Chrome/Edge, USB).",
    "source": {
     "type": "github",
     "repo": "FicusFicusov/CoralFlower",
     "assetPatterns": [
      "\\.fwsc$"
+    ]
+   },
+   "traits": {
+    "source": "open",
+    "revert": false,
+    "revertNote": "The project's way back is M-UPGRADE with M-VAVE's FM-1.fwsc: Octo-Vave's Stock V15 Install puts stock back (tested 2026-11-07).",
+    "requires_stock_version": null,
+    "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+    "install_method": [
+     "web"
     ]
    }
   },
@@ -857,23 +948,36 @@
    "name": "CTL-1",
    "author": "charlesvestal",
    "kind": "community",
-   "curated": false,
-   "tagline": "CTL-1: a MIDI controller firmware for the M-VAVE FM-1, with General MIDI sounds of its own",
-   "tags": [],
+   "tagline": "MIDI controller with its own GM sounds",
+   "tags": [
+    "MIDI controller",
+    "Arp",
+    "Euclidean drums"
+   ],
    "art": {
     "hue": 269
    },
    "links": {
-    "repo": "https://github.com/charlesvestal/fm1-ctl",
-    "install": "https://charlesvestal.github.io/fm1-ctl/"
+    "install": "https://charlesvestal.github.io/fm1-ctl/install/",
+    "repo": "https://github.com/charlesvestal/fm1-ctl"
    },
-   "summary": "Turns the FM-1 into a MIDI controller, with General MIDI sounds of its own",
-   "install": "Use the project's own installer (see its page or README). Not curated yet: this card is built from GitHub metadata.",
+   "summary": "Turns the FM-1 into a MIDI controller, with General MIDI sounds of its own. MPL-2.0.",
+   "install": "Web installer on the project site (Chrome/Edge, USB): with or without Bluetooth MIDI.",
    "source": {
     "type": "github",
     "repo": "charlesvestal/fm1-ctl",
     "assetPatterns": [
      "\\.fwsc$"
+    ]
+   },
+   "traits": {
+    "source": "open",
+    "revert": true,
+    "revertNote": "The installer can put M-VAVE's stock firmware back; Octo-Vave's Stock V15 Install works too (tested 2026-11-07).",
+    "requires_stock_version": null,
+    "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+    "install_method": [
+     "web"
     ]
    }
   },
@@ -940,28 +1044,37 @@
    "name": "GR!MM",
    "author": "GRiMMBIENT",
    "kind": "community",
-   "curated": false,
-   "tagline": "Dark ambient, dungeon synth and deathdream firmware for the M-VAVE FM-1: 4 tracks, 7 sound sources, real recorded choirs, tracks that play by themselves, 64-step sequencer, long tape, granular and reverb effects. Free and open source (GPL-3.0). Install via the FM-1 Firmware Hub; try it in the web emulator or edit sounds in the web editor.",
+   "tagline": "Dark ambient and dungeon synth",
    "tags": [
-    "ambient",
-    "dark-ambient",
-    "dungeon-synth"
+    "Dark ambient",
+    "4 tracks",
+    "64 steps"
    ],
    "art": {
     "hue": 78
    },
    "links": {
-    "repo": "https://github.com/GRiMMBIENT/grimm",
-    "try": "https://grimmbient.github.io/grimm/",
-    "install": "https://grimmbient.github.io/grimm/hub.html"
+    "install": "https://grimmbient.github.io/grimm/hub.html",
+    "repo": "https://github.com/GRiMMBIENT/grimm"
    },
-   "summary": "Dark ambient, dungeon synth and deathdream firmware: four tracks, seven sound sources, long dark effects, a 64-step sequencer and one-key chords",
-   "install": "Use the project's own installer (see its page or README). Not curated yet: this card is built from GitHub metadata.",
+   "summary": "Dark ambient, dungeon synth and deathdream firmware: four tracks, seven sound sources, long dark effects, a 64-step sequencer and one-key chords. GPL-3.0.",
+   "install": "Install from the GR!MM hub (Chrome/Edge, USB) or with the repo's Python tool.",
    "source": {
     "type": "github",
     "repo": "GRiMMBIENT/grimm",
     "assetPatterns": [
      "\\.fwsc$"
+    ]
+   },
+   "traits": {
+    "source": "open",
+    "revert": false,
+    "revertNote": "Return to stock not checked in the project's docs: Octo-Vave's Stock V15 Install puts stock back (tested 2026-11-07).",
+    "requires_stock_version": null,
+    "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+    "install_method": [
+     "web",
+     "python"
     ]
    }
   },
@@ -970,23 +1083,36 @@
    "name": "FMini-1",
    "author": "ruppert",
    "kind": "community",
-   "curated": false,
-   "tagline": "Custom Firmware for M-vave FM1 implementing a Minimoog inspired synthesizer",
-   "tags": [],
+   "tagline": "Minimoog Model D emulation",
+   "tags": [
+    "Minimoog",
+    "Arp",
+    "Sequencer"
+   ],
    "art": {
     "hue": 115
    },
    "links": {
-    "repo": "https://github.com/ruppert/fmini-1",
-    "install": "https://ruppert.github.io/fmini-1/"
+    "install": "https://ruppert.github.io/fmini-1/",
+    "repo": "https://github.com/ruppert/fmini-1"
    },
-   "summary": "Minimoog Model D emulation by Guilherme Ruppert with effects, arpeggiator and sequencer",
-   "install": "Use the project's own installer (see its page or README). Not curated yet: this card is built from GitHub metadata.",
+   "summary": "Minimoog Model D emulation by Guilherme Ruppert with effects, arpeggiator and sequencer. GPL-3.0.",
+   "install": "Web installer on the project site (Chrome/Edge, USB).",
    "source": {
     "type": "github",
     "repo": "ruppert/fmini-1",
     "assetPatterns": [
      "\\.fwsc$"
+    ]
+   },
+   "traits": {
+    "source": "open",
+    "revert": false,
+    "revertNote": "Return to stock not checked in the project's docs: Octo-Vave's Stock V15 Install puts stock back (tested 2026-11-07).",
+    "requires_stock_version": null,
+    "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+    "install_method": [
+     "web"
     ]
    }
   },
@@ -1046,23 +1172,36 @@
    "name": "DUELL",
    "author": "oscillr",
    "kind": "community",
-   "curated": false,
-   "tagline": "MultiMorphing Bi-timbral Synthesizer · by OSCILL/R for M-VAVE FM-1",
-   "tags": [],
+   "tagline": "Bitimbral synthesizer with morph",
+   "tags": [
+    "Bitimbral",
+    "Morph",
+    "Web editor"
+   ],
    "art": {
     "hue": 291
    },
    "links": {
-    "repo": "https://github.com/oscillr/DUELL",
-    "try": "https://oscillr.github.io/DUELL/emu/"
+    "install": "https://oscillr.github.io/DUELL/install/",
+    "repo": "https://github.com/oscillr/DUELL"
    },
-   "summary": "Bitimbral synthesizer by OSCILL/R: two complete parts, three ways to play them together and a morph between two versions of every sound",
-   "install": "Use the project's own installer (see its page or README). Not curated yet: this card is built from GitHub metadata.",
+   "summary": "Bitimbral synthesizer by OSCILL/R: two complete parts, three ways to play them together and a morph between two versions of every sound. GPL-3.0.",
+   "install": "Web installer on the project site (Chrome/Edge, USB); save a backup first.",
    "source": {
     "type": "github",
     "repo": "oscillr/DUELL",
     "assetPatterns": [
      "\\.fwsc$"
+    ]
+   },
+   "traits": {
+    "source": "open",
+    "revert": true,
+    "revertNote": "The project documents the way back to V15 (docs/INSTALL.md); Octo-Vave's Stock V15 Install works too (tested 2026-11-07).",
+    "requires_stock_version": null,
+    "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+    "install_method": [
+     "web"
     ]
    }
   },
@@ -1071,24 +1210,37 @@
    "name": "Frodhes",
    "author": "leonardoMirabal",
    "kind": "community",
-   "curated": false,
-   "tagline": "Physically modelled Fender Rhodes, vibraphone and marimba for the M-VAVE FM-1. No samples. Effects, arpeggiator, sequencer, scales, presets, and a web emulator.",
-   "tags": [],
+   "tagline": "Modelled e-piano, vibraphone and marimba",
+   "tags": [
+    "E-piano",
+    "Vibes + marimba",
+    "Physical model"
+   ],
    "art": {
     "hue": 312
    },
    "links": {
-    "repo": "https://github.com/leonardoMirabal/frodhes",
-    "try": "https://leonardomirabal.github.io/frodhes/",
-    "install": "https://leonardomirabal.github.io/frodhes/"
+    "install": "https://leonardomirabal.github.io/frodhes/#install",
+    "repo": "https://github.com/leonardoMirabal/frodhes"
    },
-   "summary": "Physically modelled electric piano, vibraphone and marimba with no samples, plus effects, arpeggiator, sequencer, scales and a web emulator",
-   "install": "Use the project's own installer (see its page or README). Not curated yet: this card is built from GitHub metadata.",
+   "summary": "Physically modelled electric piano, vibraphone and marimba with no samples, plus effects, arpeggiator, sequencer, scales and a web emulator. GPL-3.0.",
+   "install": "Install from the project's emulator page (Chrome/Edge, USB) or with the repo's Python tool.",
    "source": {
     "type": "github",
     "repo": "leonardoMirabal/frodhes",
     "assetPatterns": [
      "\\.fwsc$"
+    ]
+   },
+   "traits": {
+    "source": "open",
+    "revert": false,
+    "revertNote": "Return to stock not checked in the project's docs: Octo-Vave's Stock V15 Install puts stock back (tested 2026-11-07).",
+    "requires_stock_version": null,
+    "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+    "install_method": [
+     "web",
+     "python"
     ]
    }
   },
@@ -1097,28 +1249,36 @@
    "name": "Ravel",
    "author": "De-Pattern",
    "kind": "community",
-   "curated": false,
-   "tagline": "Custom firmware that turns the M-VAVE FM-1 into an eight-track groovebox for sound design: synth, struck and drum-machine tracks that trigger, excite and modulate one another",
+   "tagline": "Eight-track sound-design groovebox",
    "tags": [
-    "audioproduction",
-    "customfirmware",
-    "m-vave-fm1"
+    "8 tracks",
+    "13 engines",
+    "Cross-trigger"
    ],
    "art": {
     "hue": 13
    },
    "links": {
-    "repo": "https://github.com/De-Pattern/Ravel_FM1",
-    "try": "https://de-pattern.github.io/Ravel_FM1/",
-    "install": "https://de-pattern.github.io/Ravel_FM1/install/"
+    "install": "https://de-pattern.github.io/Ravel_FM1/install/",
+    "repo": "https://github.com/De-Pattern/Ravel_FM1"
    },
-   "summary": "Eight-track groovebox for sound design where synth, struck and drum tracks trigger, excite and modulate one another, with thirteen synth engines, a graph…",
-   "install": "Use the project's own installer (see its page or README). Not curated yet: this card is built from GitHub metadata.",
+   "summary": "Eight-track groovebox for sound design where synth, struck and drum tracks trigger, excite and modulate one another, with thirteen synth engines, a graph. GPL-3.0.",
+   "install": "Web installer on the project site (Chrome/Edge, USB).",
    "source": {
     "type": "github",
     "repo": "De-Pattern/Ravel_FM1",
     "assetPatterns": [
      "\\.fwsc$"
+    ]
+   },
+   "traits": {
+    "source": "open",
+    "revert": true,
+    "revertNote": "The installer puts M-VAVE's firmware back; M-UPGRADE works too, and so does Octo-Vave's Stock V15 Install (tested 2026-11-07).",
+    "requires_stock_version": null,
+    "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+    "install_method": [
+     "web"
     ]
    }
   },
@@ -1127,22 +1287,36 @@
    "name": "Shine On",
    "author": "zvenson",
    "kind": "community",
-   "curated": false,
-   "tagline": "Seventies string machine on four tracks with six formant registers, BBD ensemble and phaser, mixer, step sequencer and 32 programs",
-   "tags": [],
+   "tagline": "Seventies string machine",
+   "tags": [
+    "String machine",
+    "BBD ensemble",
+    "Phaser"
+   ],
    "art": {
     "hue": 253
    },
    "links": {
     "repo": "https://github.com/zvenson/shineon"
    },
-   "summary": "Seventies string machine on four tracks with six formant registers, BBD ensemble and phaser, mixer, step sequencer and 32 programs",
-   "install": "Use the project's own installer (see its page or README). Not curated yet: this card is built from GitHub metadata.",
+   "summary": "Seventies string machine on four tracks with six formant registers, BBD ensemble and phaser, mixer, step sequencer and 32 programs. GPL-3.0.",
+   "install": "Python installer from the repo (tools/fm1_install.py) or M-UPGRADE; no web installer.",
    "source": {
     "type": "github",
     "repo": "zvenson/shineon",
     "assetPatterns": [
      "\\.fwsc$"
+    ]
+   },
+   "traits": {
+    "source": "open",
+    "revert": false,
+    "revertNote": "No return to stock in the project's tools: Octo-Vave's Stock V15 Install puts stock back (tested 2026-11-07).",
+    "requires_stock_version": null,
+    "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+    "install_method": [
+     "python",
+     "m-upgrade"
     ]
    }
   }
@@ -1273,7 +1447,7 @@
    "stars": 50,
    "downloads": 4005,
    "score": 12.227,
-   "curated": false,
+   "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
    "latest": {
@@ -1368,7 +1542,7 @@
    "stars": 67,
    "downloads": 1438,
    "score": 11.491,
-   "curated": false,
+   "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
    "latest": {
@@ -1387,7 +1561,7 @@
    "stars": 81,
    "downloads": 1127,
    "score": 11.435,
-   "curated": false,
+   "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
    "latest": {
@@ -1425,7 +1599,7 @@
    "stars": 39,
    "downloads": 1671,
    "score": 11.111,
-   "curated": false,
+   "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
    "latest": {
@@ -1463,7 +1637,7 @@
    "stars": 27,
    "downloads": 1576,
    "score": 10.695,
-   "curated": false,
+   "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
    "latest": {
@@ -1482,7 +1656,7 @@
    "stars": 36,
    "downloads": 1163,
    "score": 10.671,
-   "curated": false,
+   "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
    "latest": {
@@ -1501,7 +1675,7 @@
    "stars": 23,
    "downloads": 1671,
    "score": 10.6,
-   "curated": false,
+   "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
    "latest": {
@@ -1520,7 +1694,7 @@
    "stars": 23,
    "downloads": 1602,
    "score": 10.558,
-   "curated": false,
+   "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
    "latest": {
@@ -1577,7 +1751,7 @@
    "stars": 35,
    "downloads": 962,
    "score": 10.454,
-   "curated": false,
+   "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
    "latest": {
@@ -1596,7 +1770,7 @@
    "stars": 34,
    "downloads": 983,
    "score": 10.447,
-   "curated": false,
+   "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
    "latest": {
@@ -1653,7 +1827,7 @@
    "stars": 20,
    "downloads": 1350,
    "score": 10.253,
-   "curated": false,
+   "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
    "latest": {
@@ -1672,7 +1846,7 @@
    "stars": 12,
    "downloads": 2171,
    "score": 10.248,
-   "curated": false,
+   "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
    "latest": {
@@ -1691,7 +1865,7 @@
    "stars": 25,
    "downloads": 985,
    "score": 10.152,
-   "curated": false,
+   "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
    "latest": {
@@ -1710,7 +1884,7 @@
    "stars": 7,
    "downloads": 3078,
    "score": 10.112,
-   "curated": false,
+   "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
    "latest": {
@@ -1751,6 +1925,21 @@
    "supersededBy": "v1.3.2"
   },
   {
+   "id": "amb1",
+   "version": "v1.3.2",
+   "file": "amb-1.3.2.fwsc",
+   "sha256": "a949a6a2a1ced8b3857d156ad0409a55e6ba53bbdd4094d0a38f2779364064f3",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_701; the package header says FM-1_7010302); it starts playing on its own: USB audio running, MIDI out notes on ch 1, 2 and 10 plus clock; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'AMB-1 FM-1', USB audio 'Line (Felucca)'. Generative: incoming notes don't stand out from what it plays (ch 1 notes edit its scale, as in 1.3). Screen, knobs and keys not checked."
+  },
+  {
    "id": "choralroot",
    "version": "v0.25.1",
    "file": "choralroot-0.25.1.fwsc",
@@ -1783,6 +1972,81 @@
    "supersededBy": "v0.29.2-smk37"
   },
   {
+   "id": "clipper",
+   "version": "v1.3.1",
+   "file": "clipper-1.3.1.fwsc",
+   "sha256": "b29d53498a7bc40eb6d8409270b15b53576a6d116c2839217ac6210bf96e752a",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_900); notes on ch 1-3 and 10 sounded at the right pitch on the FM-1's USB audio; answers the MIDI identity request; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'Clipper', USB audio 'Line (Felucca)'. Screen, knobs and keys not checked."
+  },
+  {
+   "id": "coralflower",
+   "version": "v0.6.1",
+   "file": "coralflower-0.6.1.fwsc",
+   "sha256": "de41c96a0979927d921a99064aca1b43cb871a5ab10736342abf22cab2845a22",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_930); notes on ch 1-3 and 10 sounded (picked up from the FM-1's speaker by a microphone; no USB audio); sends notes out on ch 1; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'CoralFlower FM-1', no USB audio device. Screen, knobs and keys not checked."
+  },
+  {
+   "id": "ctl-1",
+   "version": "v1.0.3",
+   "file": "ctl-1.0.3.fwsc",
+   "sha256": "1ecf7e3c2af255c7f404fa6232e9a55cdbaaf3e60cc1c549e14ecd310f7d5104",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_601; the package header says FM-1_6010003); its own General MIDI sounds played notes on ch 1-3 at the right pitch on the FM-1's USB audio, ch 10 quieter; sends MIDI clock; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'CTL-1 FM-1', USB audio 'Line (Felucca)'. A MIDI controller firmware; the build with Bluetooth (ctl-1.0.3.fwsc) was tested, Bluetooth not tried. Screen, knobs and keys not checked."
+  },
+  {
+   "id": "dub-1",
+   "version": "v1.4.3",
+   "file": "dub-1.4.3.fwsc",
+   "sha256": "19cc9649583192d0634467e18e28532078d4d7889231c9e842da7fb4ff869c0a",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_8010403); it starts playing on its own: USB audio running, MIDI out notes on ch 1-3 and 10 plus clock; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'DUB-1 FM-1', USB audio 'Line (Felucca)'. A groovebox: incoming notes don't stand out from what it plays. Screen, knobs and keys not checked."
+  },
+  {
+   "id": "duell",
+   "version": "v1.1",
+   "file": "duell-1.1.fwsc",
+   "sha256": "f8f8cdee93bc72061c2ac1b82a4d3fa3704aa5a2247b498c6802f7c518c37dc3",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_901); notes on ch 1 sounded on the FM-1's USB audio (with a strong sub octave), ch 2-3 and 10 silent; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'DUELL', USB audio 'Line (Felucca)'. Bitimbral; how the second part takes MIDI was not looked into. Screen, knobs and keys not checked."
+  },
+  {
    "id": "felucca",
    "version": "v1.6.1",
    "file": "felucca-1.6.1.fwsc",
@@ -1797,6 +2061,21 @@
    "checks": "sounds, keys and knobs work; generic sound check 1-4 heard (notes, channels, velocity, sustain); stock steps 1-4 also heard (notes, program change, reverb, distortion); keys sent as MIDI notes on ch 1; stock sound check passed after revert",
    "notes": "Under Felucca the FM-1 shows up as MIDI port 'Felucca' (USB 1209:0001, shared with AMB-1) and ignores MIDI identity requests. Return to official V15 asks for the unmodified FM-1.fwsc and saves a full backup first; worked first time. Arpeggiator not figured out during the test.",
    "supersededBy": "v1.7.0"
+  },
+  {
+   "id": "felucca",
+   "version": "v1.7.0",
+   "file": "felucca-1.7.0.fwsc",
+   "sha256": "bff7c617cfb2c88e66b22aa691cb798dfa0d9cb12ff9a73deab51d404e82817c",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_917); notes on ch 1-3 sounded at the right pitch on the FM-1's USB audio, ch 10 quieter; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'Felucca', USB audio 'Line (Felucca)'. Screen, knobs and keys not checked."
   },
   {
    "id": "fm1open",
@@ -1845,6 +2124,21 @@
    "notes": "Its installer has no return to stock: reverted to stock V15 with the FM-1 Open Workbench."
   },
   {
+   "id": "fmini-1",
+   "version": "v2.2.0",
+   "file": "fmini-1-fm1-2.2.0.fwsc",
+   "sha256": "bb6073766c5b1116ffb13bebf8d73aecb74ae4b3f5caaf871eca9c91e32e69fd",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_900); notes on ch 1-3 and 10 sounded on the FM-1's USB audio, one octave below the note sent and mono (Minimoog-style patch); reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'FM-1 Midi' (same name as stock), USB audio 'Line (Felucca)'. Screen, knobs and keys not checked."
+  },
+  {
    "id": "fomni",
    "version": "v0.4",
    "file": "omni-0.4.fwsc",
@@ -1861,6 +2155,36 @@
    "supersededBy": "v0.4.1"
   },
   {
+   "id": "fomni",
+   "version": "v0.4.1",
+   "file": "omni-0.4.1.fwsc",
+   "sha256": "f937b807da1cfe13d43bef86c2469fa45d6a88b2b3a7f4b6f5b9741bdb0351ab",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_800; the package header says FM-1_8000401); notes on ch 1 sounded at the right pitch on the FM-1's USB audio, ch 2-3 and 10 silent; sends its notes out on ch 1; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'FoMni FM-1', USB audio 'Line (Felucca)'. FoMni is a beta. Screen, knobs and keys not checked."
+  },
+  {
+   "id": "frodhes",
+   "version": "v0.9.8",
+   "file": "frodhes-0.9.8.fwsc",
+   "sha256": "787eb06c52994642e31a56e2f4b3a93d4770e708e04f50b671a4b59529319a28",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_958); notes on ch 1-3 and 10 sounded at the right pitch on the FM-1's USB audio; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'Frodhes FM-1', USB audio 'Line (Frodhes FM-1)'. Plain frodhes-0.9.8.fwsc (not the smk37/mke builds). Screen, knobs and keys not checked."
+  },
+  {
    "id": "ghoulbox",
    "version": "ghoulbox-v2.4",
    "file": "ghoulbox-2.4.fwsc",
@@ -1874,6 +2198,21 @@
    "result": "clean",
    "checks": "installed with GHOULBOX's web installer over stock (FM-1 reports FM-1_900); played on the device by the user: 'amazing synth, sounds great' (Sound check not run); reverted with Octo-Vave's Install on Stock V15",
    "notes": "The file matches GitHub's release digest. The installer makes no backup and its page asks for one from the Editor first (stock has nothing to back up)."
+  },
+  {
+   "id": "gr-mm",
+   "version": "v2.0.2",
+   "file": "grimm.fwsc",
+   "sha256": "d85c0dd3d668f48157afad7b9a1eb2e49e376f931afd2349bebef9014eb1375d",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_966); notes on ch 1-3 sounded at the right pitch on the FM-1's USB audio, ch 10 quieter; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'Felucca', USB audio 'Line (Felucca)'. Screen, knobs and keys not checked."
   },
   {
    "id": "hortator",
@@ -1892,6 +2231,36 @@
    "supersededBy": "drum-v1.0.1"
   },
   {
+   "id": "hortator",
+   "version": "drum-v1.0.1",
+   "file": "hortator-1.0.1.fwsc",
+   "sha256": "ac81af292e035ee0c4b8b7ab3a78b942e4f03deee31ae213a2613c743cd9110f",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher, plain build (FM-1 reports FM-1_900); drum notes on ch 10 sounded on the FM-1's USB audio, notes on ch 1-3 silent (drum machine); reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'Hortator', USB audio 'Line (Felucca)'. Screen, knobs and keys not checked."
+  },
+  {
+   "id": "loom-8",
+   "version": "v0.14",
+   "file": "loom-0.14.fwsc",
+   "sha256": "362d04a31e75a3acacebf58f1c39faead5b98d3ee3c76f18d3b82495703f0d2c",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_100; the package header says FM-1_10001400); notes on ch 2 sounded on the FM-1's USB audio (bright, percussive), ch 3 faint, ch 1 and 10 silent; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'LOOM-8 FM-1', USB audio 'Line (Felucca)'. Screen, knobs and keys not checked."
+  },
+  {
    "id": "melodee",
    "version": "v1.5.1",
    "file": "melodee-1.5.1.fwsc",
@@ -1906,6 +2275,36 @@
    "checks": "installed with Melodee's web installer over stock (Standard build, m-bootloader not installed); played on the device; generic sound check 10/11 (run all): notes, channels, velocity, sustain, mod wheel, pitch bend, aftertouch, program change, all notes off, CC 74 probe heard; clock sync not heard; reverted with Octo-Vave's Install on Stock V15 (FM-1 reports FM-1_015)",
    "notes": "MIDI port 'Melodee FM-1'. The file matches the release SHA256SUMS and the file Melodee's installer serves. The installer also offers 1.6.0-rc and nightly builds and an optional m-bootloader (replaces M-VAVE's bootloader); none were tested here.",
    "supersededBy": "v1.6.1"
+  },
+  {
+   "id": "melodee",
+   "version": "v1.6.1",
+   "file": "melodee-1.6.1.fwsc",
+   "sha256": "8555dc54670a9e39b352e228cf5fb5ecc877fc2b702f19631f155dd85e58ba66",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_91061); notes on ch 1 sounded at the right pitch (picked up from the FM-1's speaker by a microphone; Melodee has no USB audio), ch 2-3 quieter, ch 10 silent; sends MIDI clock; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'Melodee FM-1', no USB audio device. Installed the plain .fwsc only (no m-bootloader). Screen, knobs and keys not checked."
+  },
+  {
+   "id": "obervave",
+   "version": "v3.3.2",
+   "file": "obervave-3.3.2.fwsc",
+   "sha256": "ba54723e1ec0d40d3552fb463a384d3b9a33290e57fdf8a615f7f22fa34644a2",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_9533); notes on ch 1-3 and 10 sounded on the FM-1's USB audio, pitch about 30-45 cents flat (analog-style tuning?); reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'Felucca', USB audio 'Line (Felucca)'. Plain obervave-3.3.2.fwsc (not the smk37/mke/elite builds). Screen, knobs and keys not checked."
   },
   {
    "id": "official",
@@ -1924,6 +2323,66 @@
    "supersededBy": "V16"
   },
   {
+   "id": "orbit",
+   "version": "v1.0.1B",
+   "file": "orbit-ble.fwsc",
+   "sha256": "7309faae591d43cc21490c5a465dc4143ac4e3939c4482c8a1214bc16d61e164",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher, BLE build (FM-1 reports FM-1_900); notes on ch 1-3 and 10 sounded at the right pitch on the FM-1's USB audio (loud, about -13 dBFS); reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'Felucca', USB audio 'Line (Felucca)'. orbit-ble.fwsc is the release's only build; Bluetooth MIDI not tested. Screen, knobs and keys not checked."
+  },
+  {
+   "id": "polly",
+   "version": "v0.6.2",
+   "file": "polly-0.6.2.fwsc",
+   "sha256": "77dce089612e1d68a35ee6d2374d5d0612a667952b8f2ef632a6c27fb7235d56",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_300; the package header says FM-1_3000602); notes on ch 1-3 sounded at the right pitch on the FM-1's USB audio, ch 10 quieter; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'Polly FM-1', USB audio 'Line (Felucca)'. Screen, knobs and keys not checked."
+  },
+  {
+   "id": "ravel",
+   "version": "v1.24.0",
+   "file": "Ravel-FM1.fwsc",
+   "sha256": "56d97a491446f9544fab9d505a8a2c29a8f1c58634ea54d842d3d27662bd5934",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_82012400); notes on ch 1-3 and 10 sounded at the right pitch on the FM-1's USB audio; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'Ravel FM-1', USB audio 'Line (Felucca)'. Screen, knobs and keys not checked."
+  },
+  {
+   "id": "shine-on",
+   "version": "v3.0.1",
+   "file": "shineon-3.0.1.fwsc",
+   "sha256": "72070fba5d9c27b67ae8d62d663d41c9adf0992556ea3c36f1762eeccee5d835",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_9630); notes on ch 1-3 and 10 sounded at the right pitch on the FM-1's USB audio; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'Felucca', USB audio 'Line (Felucca)'. Plain shineon-3.0.1.fwsc (not the smk37/mke/elite builds). Screen, knobs and keys not checked."
+  },
+  {
    "id": "skiff",
    "version": "v2.0.2",
    "file": "skiff-2.0.2.fwsc",
@@ -1938,6 +2397,21 @@
    "checks": "installed with Skiff's web installer over stock (FM-1 reports FM-1_720); played and checked by hand on the device by the user (Sound check not run); reverted with Octo-Vave's Install on Stock V15 (FM-1 reports FM-1_015)",
    "notes": "The file matches GitHub's release digest. The installer's MIDI permission prompt can sit unseen in a background window: the install waits at 0% until it is allowed.",
    "supersededBy": "v2.2"
+  },
+  {
+   "id": "skiff",
+   "version": "v2.2",
+   "file": "skiff-2.2.fwsc",
+   "sha256": "4412ecae63f69f5d288a6d78029272d3685488c4ad3e3be7cd484403429fc3d9",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_722); notes on ch 1-3 sounded at the right pitch on the FM-1's USB audio, ch 10 quieter; sends MIDI clock; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'Felucca', USB audio 'Line (Felucca)'. Plain skiff-2.2.fwsc (not the smk37/mke/elite builds, which are for other M-VAVE devices). Screen, knobs and keys not checked."
   },
   {
    "id": "sloop",
@@ -1972,6 +2446,21 @@
    "supersededBy": "v2.8.5"
   },
   {
+   "id": "sloop",
+   "version": "v2.8.5",
+   "file": "sloop-2.8.5.fwsc",
+   "sha256": "b0446effb840740a3aa5c386ce004e79334e4f833d48d82a9eb5edbfde92ae67",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_900); MIDI port and USB audio come up; it sounds on the FM-1's USB audio while notes play (ch 1-3, 10); no MIDI sent back; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'Felucca', USB audio 'Line (Felucca)'. As before, the first notes started a looping take that kept playing (live looper, by design). Screen, knobs and keys not checked."
+  },
+  {
    "id": "x0x",
    "version": "v1.1.0",
    "file": "x0x-1.1.0.fwsc",
@@ -1986,6 +2475,21 @@
    "checks": "installed, run and reverted to stock V15 by the owner on a real FM-1; stock sound check 8/8 passed after the revert",
    "notes": "",
    "supersededBy": "v1.2.1"
+  },
+  {
+   "id": "x0x",
+   "version": "v1.2.1",
+   "file": "x0x-1.2.1.fwsc",
+   "sha256": "b0039140d54459d678e27b4101895018d3e127f16ee9e1f1e432459d772b3827",
+   "date": "2026-11-07",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_901; the package header says FM-1_9010201); notes on ch 2-3 sounded at the right pitch on the FM-1's USB audio, ch 10 sounded, ch 1 notes silent; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+   "notes": "MIDI port 'X0X FM-1', USB audio 'Line (Felucca)'. Screen, knobs and keys not checked."
   }
  ],
  "releases": {
