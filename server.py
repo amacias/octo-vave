@@ -26,9 +26,15 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlencode, urljoin, urlparse
 
-ROOT = Path(__file__).resolve().parent
+# ROOT holds the app's own files (web/, firmware/catalog.json ...). HOME holds what the app
+# writes (data/, firmware/library/): the checkout itself when run with `python server.py`;
+# per user when installed from the MSI (packaging/), whose install folder isn't for writing.
+FROZEN = getattr(sys, "frozen", False)
+ROOT = Path(sys.executable).resolve().parent if FROZEN else Path(__file__).resolve().parent
+HOME = (Path(os.environ["OCTOVAVE_HOME"]) if os.environ.get("OCTOVAVE_HOME")  # tests of the installed app
+        else Path(os.environ.get("LOCALAPPDATA") or Path.home()) / "Octo-Vave" if FROZEN else ROOT)
 WEB = ROOT / "web"
-DATA = ROOT / "data"
+DATA = HOME / "data"
 PATCHES = DATA / "patches"
 SETTINGS = DATA / "settings.json"
 FW_STATE = DATA / "firmware-state.json"
@@ -37,7 +43,15 @@ DISCOVERY_CACHE = DATA / "discovery-cache.json"  # live community ranking + per-
 CATALOG = ROOT / "firmware" / "catalog.json"
 DIRECTORY = ROOT / "firmware" / "directory.json"
 VALIDATED = ROOT / "firmware" / "validated.json"  # written by validation sessions, read-only here
-FW_LIB = ROOT / "firmware" / "library"
+FW_LIB = HOME / "firmware" / "library"
+# The installed app fetches the repository's current firmware lists (validations, catalog,
+# offline ranking) at start and on Check for updates, so new validations reach it without a
+# new installer. The copies go in data/live/; the newer of the bundled and fetched copy is
+# used. A checkout reads its own files (OCTOVAVE_LIVE=1 makes it fetch too, for testing).
+REPO_RAW = "https://raw.githubusercontent.com/amacias/octo-vave/main/"
+LIVE = DATA / "live"
+FETCH_LIVE = FROZEN or os.environ.get("OCTOVAVE_LIVE") == "1"
+LIVE_LISTS = {CATALOG: "firmware", DIRECTORY: "projects", VALIDATED: "validations"}  # file: its list
 
 HOST = "127.0.0.1"
 PORT = int(os.environ.get("FM1_PORT", "8765"))
@@ -114,7 +128,7 @@ def sha256_file(path):
     return h.hexdigest()
 
 
-def http_get(url, accept=None, limit=64 * 1024 * 1024):
+def http_get(url, accept=None, limit=64 * 1024 * 1024, hosts=ALLOWED_DL_HOSTS, timeout=60):
     host = urlparse(url).hostname or ""
     headers = {"User-Agent": USER_AGENT}
     if accept:
@@ -122,9 +136,9 @@ def http_get(url, accept=None, limit=64 * 1024 * 1024):
     if host == "api.github.com" and github_token():
         headers["Authorization"] = f"Bearer {github_token()}"
     req = urllib.request.Request(url, headers=headers)
-    with urllib.request.urlopen(req, timeout=60) as r:
+    with urllib.request.urlopen(req, timeout=timeout) as r:
         final_host = urlparse(r.geturl()).hostname or ""
-        if host != "api.github.com" and final_host not in ALLOWED_DL_HOSTS:
+        if host != "api.github.com" and final_host not in hosts:
             raise ValueError(f"redirected to unexpected host {final_host}")
         data = r.read(limit + 1)
         if len(data) > limit:
@@ -132,8 +146,62 @@ def http_get(url, accept=None, limit=64 * 1024 * 1024):
         return data
 
 
+def shipped(path):
+    """Which copy of a bundled firmware list to read: the bundled one, or (installed app) the
+    copy fetched from the repository when that one is newer."""
+    live = LIVE / path.name
+    try:
+        if FETCH_LIVE and live.stat().st_mtime > (path.stat().st_mtime if path.is_file() else 0):
+            return live
+    except OSError:
+        pass
+    return path
+
+
+def fetch_live():
+    """Fetch the repository's current catalog.json, directory.json and validated.json into
+    data/live/. Each must parse, carry schema_version 1 (if the bundled one does) and its list;
+    anything else is skipped and the bundled copy stays in use. Returns what was fetched."""
+    got, errors = [], []
+    def one(path):
+        url = REPO_RAW + "firmware/" + path.name
+        try:
+            data = http_get(url, accept="application/json", limit=8 * 1024 * 1024,
+                            hosts={"raw.githubusercontent.com"}, timeout=10)
+            obj = json.loads(data)
+            want = read_json(path, {}).get("schema_version")
+            if not isinstance(obj, dict) or not isinstance(obj.get(LIVE_LISTS[path]), list):
+                raise ValueError(f"no {LIVE_LISTS[path]} list")
+            if want is not None and obj.get("schema_version") != want:
+                raise ValueError(f"schema_version {obj.get('schema_version')}, this app reads {want}")
+            LIVE.mkdir(parents=True, exist_ok=True)
+            tmp = LIVE / f"{path.name}.{threading.get_ident()}.tmp"
+            tmp.write_bytes(data)
+            tmp.replace(LIVE / path.name)
+            got.append(path.name)
+        except Exception as e:  # noqa: BLE001 - offline or a bad file: keep the bundled copy
+            errors.append(f"{path.name}: {e}")
+    threads = [threading.Thread(target=one, args=(p,), daemon=True) for p in LIVE_LISTS]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    status = {"fetched": sorted(got), "errors": errors, "at": time.strftime("%Y-%m-%dT%H:%M:%S")}
+    if got:
+        write_json(LIVE / "status.json", status)
+    return status
+
+
 def catalog():
-    return read_json(CATALOG, {"firmware": []})
+    path = shipped(CATALOG)
+    cat = read_json(path, {"firmware": []})
+    if path != CATALOG:
+        # art added after this app was built isn't in web/: show it from the repository
+        for fw in cat.get("firmware", []):
+            img = (fw.get("art") or {}).get("image")
+            if img and not img.startswith("https://") and not (WEB / img).is_file():
+                fw["art"]["image"] = REPO_RAW + "web/" + img
+    return cat
 
 
 def catalog_entry(fid):
@@ -387,7 +455,7 @@ def _slug(s):
 
 def fallback_directory():
     """firmware/directory.json: the last committed ranking, used until a live check succeeds."""
-    d = read_json(DIRECTORY, {"projects": []})
+    d = read_json(shipped(DIRECTORY), {"projects": []})
     out = {}
     for p in d.get("projects", []):
         k = repo_key(p.get("repo") or gh_repo(p.get("url")))
@@ -642,6 +710,8 @@ def refresh_releases():
     """Check for updates: rediscover and rank community firmware, refresh release info
     for every card, and cache the result (data/discovery-cache.json, releases-cache.json)."""
     with _refresh_lock:
+        if FETCH_LIVE:
+            fetch_live()
         disc = read_json(DISCOVERY_CACHE, {})
         gh = GitHub(disc.setdefault("rate", {}))
         notes = []
@@ -781,9 +851,9 @@ def public_firmware():
         "discovery": {
             "checked": disc.get("checked"), "auth": disc.get("auth"), "notes": disc.get("notes", []),
             "stats": disc.get("stats"), "source": discovery_config()["awesomePage"],
-            "fallback": read_json(DIRECTORY, {}).get("updated") if not disc.get("ranked") else None,
+            "fallback": read_json(shipped(DIRECTORY), {}).get("updated") if not disc.get("ranked") else None,
         },
-        "validated": read_json(VALIDATED, {"validations": []}).get("validations", []),
+        "validated": read_json(shipped(VALIDATED), {"validations": []}).get("validations", []),
         "releases": read_json(RELEASE_CACHE, {"checked": None, "sources": {}}),
     }
 
@@ -798,7 +868,7 @@ def local_library():
     files = state.get("files", {})
     out = {}
     for key, meta in list(files.items()):
-        p = ROOT / meta["path"]
+        p = HOME / meta["path"]
         if not p.exists():
             files.pop(key)
             continue
@@ -814,7 +884,7 @@ def record_file(fid, version, path, source_url, verified, sha):
     key = f"{fid}/{version}/{path.name}"
     state.setdefault("files", {})[key] = {
         "id": fid, "version": version, "name": path.name,
-        "path": str(path.relative_to(ROOT)).replace("\\", "/"),
+        "path": str(path.relative_to(HOME)).replace("\\", "/"),
         "size": path.stat().st_size, "sha256": sha, "verified": verified,
         "source": source_url, "added": time.strftime("%Y-%m-%dT%H:%M:%S"),
     }
@@ -876,7 +946,7 @@ def delete_file(key):
     meta = state.get("files", {}).pop(key, None)
     if not meta:
         raise ValueError("unknown file")
-    p = (ROOT / meta["path"]).resolve()
+    p = (HOME / meta["path"]).resolve()
     if FW_LIB.resolve() in p.parents and p.exists():
         p.unlink()
         try:
@@ -890,7 +960,7 @@ def library_file(key):
     meta = read_json(FW_STATE, {}).get("files", {}).get(key)
     if not meta:
         raise ValueError("unknown file")
-    p = (ROOT / meta["path"]).resolve()
+    p = (HOME / meta["path"]).resolve()
     if FW_LIB.resolve() not in p.parents or not p.is_file():
         raise ValueError("unknown file")
     return p.read_bytes()
@@ -1054,7 +1124,7 @@ class Handler(SimpleHTTPRequestHandler):
                 if fid and (not ID_RE.match(fid) or not known_entry(fid)):
                     raise ValueError("unknown firmware id")
                 # relative, so the local user name never reaches the browser
-                return self._send_json({"path": Path(reveal(fid)).relative_to(ROOT).as_posix()})
+                return self._send_json({"path": Path(reveal(fid)).relative_to(HOME).as_posix()})
 
         return self._error("not found", 404)
 
@@ -1365,13 +1435,73 @@ def rename_patch(h, src, dst):
     return h._send_json({"renamed": src, "to": dst})
 
 
+class Server(ThreadingHTTPServer):
+    # On Windows, SO_REUSEADDR lets a second server bind the same port and take requests at
+    # random; refuse instead, so a second start finds the first one (see main).
+    allow_reuse_address = sys.platform != "win32"
+
+
+def already_running():
+    """True when an Octo-Vave server already answers on this port."""
+    try:
+        with urllib.request.urlopen(f"http://{HOST}:{PORT}/api/health", timeout=1.5) as r:
+            return json.loads(r.read()).get("ok") is True
+    except (OSError, ValueError):
+        return False
+
+
+def selftest():
+    """--selftest: what a built app needs, checked without starting the server (tools/build_msi.py)."""
+    try:  # release checks and downloads are all HTTPS
+        import ssl
+        ssl.create_default_context()
+        https = True
+    except Exception:  # noqa: BLE001 - any failure here means no HTTPS
+        https = False
+    ok = {
+        "https": https,
+        "web": (WEB / "index.html").is_file() and (WEB / "fwcards.js").is_file(),
+        "catalog": len(read_json(CATALOG, {}).get("firmware", [])),
+        "validated": len(read_json(VALIDATED, {}).get("validations", [])),
+        "formats": FORMATS_DIR.is_dir(),
+    }
+    print(json.dumps({"frozen": bool(FROZEN), "root": str(ROOT), "home": str(HOME), **ok}))
+    return 0 if all(ok.values()) else 1
+
+
 def main():
+    if "--selftest" in sys.argv:
+        sys.exit(selftest())
+    url = f"http://{HOST}:{PORT}/"
+    browser = "--no-browser" not in sys.argv
+    if already_running():
+        print(f"Octo-Vave is already running at {url}; opening it.")
+        if browser:
+            webbrowser.open(url)
+        return
     for d in (DATA, PATCHES, FW_LIB):
         d.mkdir(parents=True, exist_ok=True)
-    srv = ThreadingHTTPServer((HOST, PORT), Handler)
-    url = f"http://{HOST}:{PORT}/"
-    print(f"Octo-Vave running at {url}  (Ctrl+C to stop)")
-    if "--no-browser" not in sys.argv:
+    try:
+        srv = Server((HOST, PORT), Handler)
+    except OSError as e:
+        print(f"Can't start Octo-Vave: port {PORT} is in use by another program ({e}).")
+        if FROZEN:
+            input("Press Enter to close.")
+        return
+    print(f"Octo-Vave running at {url}")
+    if FROZEN:
+        print(f"Your data: {HOME}")
+        print("Keep this window open while you use Octo-Vave; close it to stop.")
+    else:
+        print("(Ctrl+C to stop)")
+    if FETCH_LIVE:  # the latest firmware lists, before the page first asks for them
+        def fetch_and_say():
+            got = fetch_live()["fetched"]
+            print("Firmware lists: " + ("the latest from GitHub" if got else "the ones this version came with (offline?)"))
+        fetcher = threading.Thread(target=fetch_and_say, daemon=True)
+        fetcher.start()
+        fetcher.join(8)
+    if browser:
         webbrowser.open(url)
     try:
         srv.serve_forever()

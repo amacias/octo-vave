@@ -20,13 +20,20 @@
 
 ## <img src="docs/img/octo.svg" height="24" alt=""> Quick start
 
+**Windows:** [download the installer](https://github.com/amacias/octo-vave/releases/latest/download/Octo-Vave-win64.msi)
+([release notes and SHA256](https://github.com/amacias/octo-vave/releases/latest)), double-click it, then open
+**Octo-Vave** from the Start menu or the desktop. No Python, no administrator prompt. The installer isn't
+code-signed yet, so Windows may say *Windows protected your PC*: click **More info**, then **Run anyway**.
+Then continue at step 4.
+
+**From source (macOS, Linux, or Windows without the installer):**
+
 1. **Get Python 3.** That's all: Octo-Vave uses the standard library only. Nothing to `pip install`.
 2. **Get Octo-Vave.** `git clone` this repository, or use the green **Code** button → **Download ZIP** and unzip it.
 3. **Run it.**
    ```
    python server.py        # on Windows you can also double-click start.cmd
    ```
-   Your browser opens http://127.0.0.1:8765. Use **Chrome or Edge** (they have Web MIDI with SysEx).
 4. **Plug in the FM-1 over USB**, press **Connect** and allow MIDI + SysEx. The FM-1 is picked automatically.
 5. You land on the **Firmware** page. Browse the cards, read the tags, and look for the
    <img src="docs/img/octo.svg" height="16" alt="orange octopus"> orange octopus.
@@ -264,6 +271,19 @@ FX patch, and `midi-cc.json` captures CCs, SysEx and a program number for any fi
   `FM1_USE_GH=1` to use your GitHub CLI login, for a higher limit.
 - Developed and tested on Windows 11 with Chrome.
 
+### Windows installer (MSI)
+
+`python tools/build_msi.py --test` builds `dist/Octo-Vave-<version>-win64.msi` and tests it
+(install, run, check, uninstall); `--publish` then puts it on a GitHub release as
+`Octo-Vave-win64.msi`, the name the README and homepage download links use. The MSI bundles Python,
+the server and the app, so nothing else needs installing: it installs per user without an
+administrator prompt, adds Start menu and desktop shortcuts, and runs the app at the same address,
+http://127.0.0.1:8765/. The installed app keeps its data in `%LOCALAPPDATA%\Octo-Vave`. At start
+and on **Check for updates** it fetches this repository's current `validated.json`, `catalog.json`
+and `directory.json` (into `data/live/`), so new validations reach it without a new installer; offline,
+it uses the copies it was built with. The recipe is `packaging/setup_msi.py` (cx_Freeze, Python 3.12);
+in Claude Code, the `build-msi` skill runs the whole procedure.
+
 ## <img src="docs/img/octo.svg" height="24" alt=""> Layout
 
 ```
@@ -284,6 +304,9 @@ tools/fm1_validate.py   record firmware validations (firmware/validated.json)
 tools/fm1_discover.py   run firmware discovery from the command line
 tools/fm1_watch.py      grey out validations superseded by new releases (nightly Action)
 tools/fm1_site.py       publish the Firmware page's data and card code to the homepage (nightly Action)
+tools/build_msi.py      build and test the Windows installer (dist/, build/ not committed)
+packaging/              installer recipe (setup_msi.py) and app icon (octo.ico, from make_icon.py)
+.claude/skills/         Claude Code skills for this project (build-msi)
 ```
 
 ## <img src="docs/img/octo.svg" height="24" alt=""> Notes

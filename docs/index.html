@@ -48,6 +48,8 @@
   .card p { margin: 0; color: var(--muted); }
   ol.steps { padding-left: 22px; margin: 0; }
   ol.steps li { margin: 6px 0; }
+  #install .dl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 0 0 14px; }
+  #install .alt { margin: 14px 0 0; }
   code, pre { font: 14px ui-monospace, SFMono-Regular, Consolas, monospace; background: var(--code); border-radius: 6px; }
   code { padding: 1px 6px; }
   pre { padding: 12px 14px; overflow-x: auto; }
@@ -131,13 +133,18 @@
 
 <section class="wrap wide" id="install">
   <h2><img src="img/octo.svg" alt="">Install the Full Featured App</h2>
+  <p class="dl"><a class="btn primary" href="https://github.com/amacias/octo-vave/releases/latest/download/Octo-Vave-win64.msi">Download for Windows</a>
+    <span class="muted">Windows 10 or 11, 64-bit · <a href="https://github.com/amacias/octo-vave/releases/latest">release notes and SHA256</a></span></p>
   <ol class="steps">
-      <li>Install <b>Python 3</b>. Nothing else: standard library only.</li>
-      <li><a href="https://github.com/amacias/octo-vave/archive/refs/heads/main.zip">Download the ZIP</a> and unzip it, or <code>git clone</code> the repository.</li>
-      <li>Run <code>python server.py</code> (Windows: double-click <code>start.cmd</code>).</li>
+      <li>Double-click <code>Octo-Vave-win64.msi</code>. It installs for you alone: no administrator prompt, no Python.
+        The installer isn't code-signed yet, so Windows may say <i>Windows protected your PC</i>: click <b>More info</b>, then <b>Run anyway</b>.</li>
+      <li>Open <b>Octo-Vave</b> from the Start menu or the desktop. A small window keeps it running (close it to stop) and the app opens in your browser.</li>
       <li>In <b>Chrome or Edge</b> at <code>http://127.0.0.1:8765</code>, plug in the FM-1, press <b>Connect</b> and allow MIDI + SysEx.</li>
       <li>Browse the Firmware page and look for the orange octopus.</li>
   </ol>
+  <p class="muted alt">On macOS or Linux, or to run from source: install <b>Python 3</b> (standard library only),
+    <a href="https://github.com/amacias/octo-vave/archive/refs/heads/main.zip">download the ZIP</a> or <code>git clone</code> the repository,
+    and run <code>python server.py</code>.</p>
 </section>
 
 <section class="wrap" id="about">
@@ -148,7 +155,7 @@
     <div class="card"><h3>Checks every download</h3><p>Files land in a local library, verified against the SHA256 each project publishes.</p></div>
     <div class="card"><h3>Validated on a real FM-1</h3><p>Installed, played, Sound-checked and reverted to stock. The exact file tested is pinned by its SHA256.</p></div>
     <div class="card"><h3>Plays the FM-1</h3><p>A key bed modeled on the device, perform and FX controls, a DX7-style voice editor, a patch library and MIDI tools.</p></div>
-    <div class="card"><h3>Runs on your computer</h3><p>A small Python server on 127.0.0.1 and a page in Chrome or Edge. No account, no cloud, nothing to install but Python.</p></div>
+    <div class="card"><h3>Runs on your computer</h3><p>A small local server on 127.0.0.1 and a page in Chrome or Edge. No account, no cloud. Windows gets an installer; elsewhere it runs on Python.</p></div>
   </div>
 </section>
 

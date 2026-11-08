@@ -13,6 +13,11 @@ firmware/library/*
 *.tmp
 *.bak
 
+# Windows installer builds (tools/build_msi.py): build venv, freeze output, MSIs
+build/
+dist/
+*.egg-info/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -36,5 +41,6 @@ $RECYCLE.BIN/
 .vscode/
 .idea/
 
-# Claude Code local files (agent worktrees, local settings)
-.claude/
+# Claude Code local files (agent worktrees, local settings); project skills stay tracked
+.claude/*
+!.claude/skills/
