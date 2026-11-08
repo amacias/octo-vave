@@ -1,6 +1,8 @@
 # Nightly: look for new firmware releases and grey out validations they supersede
 # (adds "supersededBy" to firmware/validated.json; see tools/fm1_watch.py), then publish
 # the Firmware page's data for the homepage (docs/data/firmware.json; see tools/fm1_site.py).
+# After a complete scan, the same ranking also becomes firmware/directory.json, the leaderboard
+# a fresh install shows before its first Check for updates.
 name: Watch firmware releases
 
 on:
@@ -35,16 +37,16 @@ jobs:
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python -I tools/fm1_site.py --refresh --write && python -I tools/fm1_site.py --check
+        run: python -I tools/fm1_site.py --refresh --write --directory && python -I tools/fm1_site.py --check
       - name: Commit changes
         run: |
-          if git diff --quiet -- firmware/validated.json docs/ && [ -z "$(git ls-files --others --exclude-standard -- docs/)" ]; then
+          if git diff --quiet -- firmware/validated.json firmware/directory.json docs/ && [ -z "$(git ls-files --others --exclude-standard -- docs/)" ]; then
             echo "Nothing changed."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- firmware/validated.json docs/
+          git add -- firmware/validated.json firmware/directory.json docs/
           if git diff --cached --quiet -- firmware/validated.json; then msg="Homepage: nightly firmware list"
           else msg="Grey out validations superseded by new releases; refresh the homepage firmware list"; fi
           git commit -m "$msg"

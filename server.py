@@ -43,6 +43,10 @@ DISCOVERY_CACHE = DATA / "discovery-cache.json"  # live community ranking + per-
 CATALOG = ROOT / "firmware" / "catalog.json"
 DIRECTORY = ROOT / "firmware" / "directory.json"
 VALIDATED = ROOT / "firmware" / "validated.json"  # written by validation sessions, read-only here
+# Validations recorded in the app ("Validate newest" on a card): same records as validated.json
+# plus "method": "manual". They stay on this computer until someone moves them into
+# validated.json with a pull request; a repo record for the same firmware and version wins.
+LOCAL_VALIDATED = DATA / "validated-local.json"
 FW_LIB = HOME / "firmware" / "library"
 # The installed app fetches the repository's current firmware lists (validations, catalog,
 # offline ranking) at start and on Check for updates, so new validations reach it without a
@@ -464,6 +468,33 @@ def fallback_directory():
     return d, out
 
 
+DIRECTORY_FIELDS = ("rank", "id", "repo", "name", "url", "desc", "license", "stars", "downloads", "score", "curated")
+
+
+def write_directory(ranked):
+    """Store a ranking as firmware/directory.json, written by the nightly job after a complete scan
+    (tools/fm1_site.py --refresh --directory) and by tools/fm1_discover.py --write. Left alone when
+    only the date would change. CRLF on every platform, as committed, so a run on Linux doesn't
+    rewrite every line. True if the file changed."""
+    doc = directory_doc(ranked)
+    old = read_json(DIRECTORY, {})
+    if old.get("projects") == doc["projects"] and old.get("note") == doc["note"]:
+        return False
+    DIRECTORY.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8", newline="\r\n")
+    return True
+
+
+def directory_doc(ranked):
+    return {
+        "source": discovery_config()["awesomePage"],
+        "updated": time.strftime("%Y-%m-%d"),
+        "note": "Offline fallback for the Firmware tab: the 30 most popular free, open-source FM-1 firmwares "
+                "(cards #1-10, list #11-30) by ln(1+stars) + ln(1+.fwsc downloads). Refreshed nightly by "
+                ".github/workflows/watch-releases.yml after a complete scan; by hand: python tools/fm1_discover.py --write.",
+        "projects": [{k: p[k] for k in DIRECTORY_FIELDS} for p in ranked],
+    }
+
+
 def build_ranking(disc=None):
     """Live ranking (cards #1-10, list #11-30) from the discovery cache; directory.json
     fills in projects not fetched yet. Returns (ranked, entries) where entries are
@@ -582,36 +613,34 @@ def build_ranking(disc=None):
     return ranked, entries, ids
 
 
-def _fetch_repo(gh, key, rec, need_meta):
-    """Refresh one repo snapshot in place (conditional requests)."""
+def _fetch_repo(gh, key, rec, need_meta, releases=True):
+    """Refresh one repo snapshot in place (conditional requests). releases=False only
+    refreshes the metadata (stars, license), for repos whose releases were just checked."""
     repo = (rec.get("meta") or {}).get("repo") or rec.get("repo") or key
-    got = False
+    got = not releases
     try:
         # releases first: they decide installability and downloads, the scarcer data
-        st, data, etag = gh.get(f"https://api.github.com/repos/{repo}/releases?per_page=100",
-                                rec.get("relEtag") if rec.get("rel") else None)
-        if st == 200:
-            rec["rel"], rec["relEtag"] = _trim_releases(data), etag
-        got = True
-        if need_meta == "always" or (need_meta and rec["rel"]["installable"]):
+        if releases:
+            st, data, etag = gh.get(f"https://api.github.com/repos/{repo}/releases?per_page=100",
+                                    rec.get("relEtag") if rec.get("rel") else None)
+            if st == 200:
+                rec["rel"], rec["relEtag"] = _trim_releases(data), etag
+            got = True
+            rec["checked"] = time.time()
+            rec.pop("error", None)
+            rec.pop("stale", None)
+        if need_meta == "always" or (need_meta and (rec.get("rel") or {}).get("installable")):
             st, data, etag = gh.get(f"https://api.github.com/repos/{repo}", rec.get("metaEtag") if rec.get("meta") else None)
             if st == 200:
                 rec["meta"], rec["metaEtag"] = _trim_meta(data), etag
             rec["metaChecked"] = time.time()
-        rec["checked"] = time.time()
-        rec.pop("error", None)
-        rec.pop("stale", None)
     except RateLimited:
-        if got:
-            rec["checked"] = time.time()
-            rec.pop("error", None)
-            rec.pop("stale", None)
-        else:
+        if not got:
             rec["stale"] = "rate limited, showing the last known data"
             rec["error"] = "rate limited (set GITHUB_TOKEN or FM1_USE_GH=1)"
     except urllib.error.HTTPError as e:
         rec["error"] = f"HTTP {e.code} ({e.reason})"
-        if e.code == 404:
+        if e.code == 404 and releases:
             rec["rel"] = {"count": 0, "downloads": 0, "installable": False, "releases": []}
             rec["checked"] = time.time()
     except Exception as e:  # network trouble: keep the old snapshot
@@ -662,16 +691,20 @@ def discover(disc, gh, notes):
             if now - q.get("checked", 0) < 3600:
                 fresh_meta.add(k)
 
-    # 3. which repos to (re)check, most important first
+    # 3. which repos to (re)check. The GitHub budget (60 requests/hour anonymous) can't cover
+    # every candidate, so the current leaderboard comes first: the top 30 of the last ranking
+    # plus the curated catalog (Official and validated cards) get their releases checked on
+    # every scan, before any of their metadata and before the wider scan of the awesome list
+    # and the search results, which waits a day between checks of the same repo.
     cat = catalog()
     lists = aw.get("lists") or {"open": [], "other": {}}
-    want = {}  # key -> priority (0 = always)
-    for f in cat["firmware"]:
-        if f.get("source", {}).get("type") == "github":
-            want[repo_key(f["source"]["repo"])] = 0
+    want = {}  # key -> priority (0 = top 10 + catalog, 1 = #11-30, 2 = awesome list, 3 = search)
     for p in disc.get("ranked", [])[:TOP_CARDS]:
         want.setdefault(repo_key(p["repo"]), 0)
-    for p in disc.get("ranked", [])[TOP_CARDS:]:
+    for f in cat["firmware"]:
+        if f.get("source", {}).get("type") == "github":
+            want.setdefault(repo_key(f["source"]["repo"]), 0)
+    for p in disc.get("ranked", [])[TOP_CARDS:TOP_LIST]:
         want.setdefault(repo_key(p["repo"]), 1)
     for e in lists["open"]:
         if e.get("repo"):
@@ -683,27 +716,47 @@ def discover(disc, gh, notes):
                 want.setdefault(k, 3)
     exclude = {repo_key(k) for k in cfg.get("exclude", {})}
     ttl = 900 if gh.auth else 24 * 3600
-    jobs = []
+    top_ttl = 600  # back-to-back scans (start-up check, then a click) don't pay twice
+    top, wider = [], []
     for k, prio in want.items():
         if k in exclude or lists["other"].get(k) in ("closed", "other"):
             continue
         rec = repos.setdefault(k, {"repo": k})
-        if prio > 0 and rec.get("rel") is not None and now - rec.get("checked", 0) < ttl:
+        age = now - rec.get("checked", 0)
+        if rec.get("rel") is not None and age < (top_ttl if prio <= 1 else ttl):
             continue
-        jobs.append((prio, 0 if rec.get("rel") is None else 1, -(rec.get("meta") or {}).get("stars", 0),
-                     rec.get("checked", 0), k))
-    jobs.sort()
-    with ThreadPoolExecutor(max_workers=6) as pool:
-        for _, _, _, _, k in jobs:
-            rec = repos[k]
-            need_meta = k not in fresh_meta and (not rec.get("meta") or now - rec.get("metaChecked", 0) > (ttl if gh.auth else 6 * 3600))
-            pool.submit(_fetch_repo, gh, k, rec, "always" if need_meta and want[k] == 0 else need_meta)
-    skipped = sum(1 for *_, k in jobs if repos[k].get("stale"))
-    if skipped:
-        reset = (gh.rate.get("core") or {}).get("reset")
-        when = time.strftime(" until %H:%M", time.localtime(reset)) if reset else ""
-        notes.append(f"GitHub rate limit reached{when}: {skipped} of {len(jobs)} projects kept their last known numbers")
-    return len(jobs), skipped
+        job = (prio, 0 if rec.get("rel") is None else 1, -(rec.get("meta") or {}).get("stars", 0), rec.get("checked", 0), k)
+        (top if prio <= 1 else wider).append(job)
+    top.sort()
+    wider.sort()
+
+    def meta_due(k):
+        rec = repos[k]
+        return k not in fresh_meta and (not rec.get("meta") or now - rec.get("metaChecked", 0) > (ttl if gh.auth else 6 * 3600))
+
+    def run(jobs, releases, meta):
+        # each pass finishes before the next starts, so a later pass only gets the budget left over
+        with ThreadPoolExecutor(max_workers=6) as pool:
+            for *_, k in jobs:
+                pool.submit(_fetch_repo, gh, k, repos[k], meta(k), releases)
+
+    # pass 1: releases of the leaderboard (what "updates" means); pass 2: their stars and
+    # license when the search results didn't bring them; pass 3: the wider scan (metadata
+    # only for installable candidates)
+    run(top, True, lambda k: False)
+    run([j for j in top if meta_due(j[-1])], False, lambda k: "always")
+    run(wider, True, meta_due)
+    top_skipped = sum(1 for *_, k in top if repos[k].get("stale"))
+    wider_skipped = sum(1 for *_, k in wider if repos[k].get("stale"))
+    reset = (gh.rate.get("core") or {}).get("reset")
+    when = time.strftime(" until %H:%M", time.localtime(reset)) if reset else ""
+    if top_skipped:
+        notes.append(f"GitHub rate limit reached{when}: {top_skipped} of {len(top)} leaderboard projects "
+                     "kept their last known releases")
+    if wider_skipped:
+        notes.append(f"Leaderboard checked. The wider scan paused at the GitHub rate limit{when}: "
+                     f"{wider_skipped} of {len(wider)} other projects wait for the next check")
+    return {"top": len(top), "topSkipped": top_skipped, "wider": len(wider), "widerSkipped": wider_skipped}
 
 
 def refresh_releases():
@@ -715,11 +768,12 @@ def refresh_releases():
         disc = read_json(DISCOVERY_CACHE, {})
         gh = GitHub(disc.setdefault("rate", {}))
         notes = []
-        scanned, skipped = discover(disc, gh, notes)
+        scan = discover(disc, gh, notes)
         ranked, entries, ids = build_ranking(disc)
         disc.update(checked=time.strftime("%Y-%m-%dT%H:%M:%S"), ranked=ranked, ids=ids, notes=notes,
                     auth="token" if os.environ.get("GITHUB_TOKEN") else "gh" if gh.auth else "anonymous",
-                    stats={"scanned": scanned, "skipped": skipped, "requests": gh.calls, "notModified": gh.not_modified,
+                    stats={"scanned": scan["top"] + scan["wider"], "skipped": scan["topSkipped"] + scan["widerSkipped"],
+                           **scan, "requests": gh.calls, "notModified": gh.not_modified,
                            "candidates": len(disc.get("repos", {}))})
         write_json(DISCOVERY_CACHE, disc)
 
@@ -736,7 +790,7 @@ def refresh_releases():
             elif src.get("type") == "web":
                 cache["sources"][fw["id"]] = web_release(src)
         write_json(RELEASE_CACHE, cache)
-        return {"checked": disc["checked"], "notes": notes, "stats": disc["stats"],
+        return {"checked": disc["checked"], "notes": notes, "stats": disc["stats"], "partial": bool(scan["topSkipped"]),
                 "top": [p["id"] for p in ranked[:TOP_CARDS]]}
 
 
@@ -858,8 +912,89 @@ def public_firmware():
     }
 
 
+# ---------------------------------------------------------------- published firmware data
+# The app doesn't scan GitHub itself: the nightly job (.github/workflows/watch-releases.yml)
+# runs the full scan with its own token and publishes the result as docs/data/firmware.json
+# (tools/fm1_site.py, the homepage's data). "Check for updates" downloads that one file from
+# raw.githubusercontent.com (no GitHub API, no rate limit) into data/live/firmware.json. The
+# copy the app came with (the repository's docs/data/firmware.json) stands in until then.
+# Only tools run the scan (refresh_releases): fm1_site.py, fm1_discover.py.
+
+PUBLISHED = ROOT / "docs" / "data" / "firmware.json"
+PUBLISHED_LIVE = LIVE / "firmware.json"
+PUBLISHED_URL = REPO_RAW + "docs/data/firmware.json"
+PUBLISHED_SCHEMA = 1
+
+
+def _published_ok(d):
+    return (isinstance(d, dict) and d.get("schema_version") == PUBLISHED_SCHEMA and isinstance(d.get("generated_at"), str)
+            and isinstance(d.get("ranked"), list) and isinstance(d.get("catalog"), list)
+            and isinstance(d.get("releases"), dict) and isinstance(d.get("discovery"), dict))
+
+
+def published():
+    """The newest readable published Firmware data (pulled or bundled), or None."""
+    best = None
+    for p in (PUBLISHED_LIVE, PUBLISHED):
+        d = read_json(p, None)
+        if _published_ok(d) and (best is None or d["generated_at"] > best["generated_at"]):
+            best = d
+    return best
+
+
+def pull_published():
+    """Check for updates: the latest firmware lists (fetch_live, installed app) and last night's
+    published ranking and releases, all plain files from the repository."""
+    with _refresh_lock:
+        if FETCH_LIVE:
+            fetch_live()
+        before = (published() or {}).get("generated_at")
+        data = http_get(PUBLISHED_URL, accept="application/json", limit=32 * 1024 * 1024,
+                        hosts={"raw.githubusercontent.com"}, timeout=20)
+        try:
+            obj = json.loads(data)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"the published firmware list isn't valid JSON ({e.msg})")
+        if not _published_ok(obj):
+            raise ValueError("the published firmware list has a format this version doesn't read; update Octo-Vave")
+        LIVE.mkdir(parents=True, exist_ok=True)
+        tmp = LIVE / f"firmware.json.{threading.get_ident()}.tmp"
+        tmp.write_bytes(data)
+        tmp.replace(PUBLISHED_LIVE)
+        d = published()
+        return {"published": d["generated_at"], "changed": d["generated_at"] != before,
+                "top": [p["id"] for p in d["ranked"][:TOP_CARDS]], "notes": d["discovery"].get("notes", [])}
+
+
+def firmware_view():
+    """What the Firmware tab shows: the curated catalog as this app has it (bundled or fetched)
+    plus the published ranking, cards for new entrants and release lists. Falls back to the
+    local scan caches and directory.json if no published data is readable."""
+    d = published()
+    if d is None:
+        return public_firmware()
+    cat = catalog()
+    curated = cat["firmware"]
+    ids = {f["id"] for f in curated}
+    repos = {repo_key(f.get("source", {}).get("repo")) for f in curated if f.get("source", {}).get("repo")}
+    extra = [e for e in d["catalog"] if e.get("id") not in ids
+             and repo_key((e.get("source") or {}).get("repo")) not in repos]
+    pulled = PUBLISHED_LIVE.stat().st_mtime if PUBLISHED_LIVE.is_file() else None
+    disc = d["discovery"]
+    return {
+        "catalog": curated + extra,
+        "ranking": cat.get("ranking"),
+        "ranked": d["ranked"],
+        "discovery": {"checked": disc.get("checked"), "notes": disc.get("notes", []), "stats": disc.get("stats"),
+                      "source": disc.get("source"), "published": d["generated_at"], "fallback": None,
+                      "pulled": time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(pulled)) if pulled else None},
+        "validated": read_json(shipped(VALIDATED), {"validations": []}).get("validations", []),
+        "releases": d["releases"],
+    }
+
+
 def known_entry(fid):
-    return catalog_entry(fid) or next((e for e in firmware_entries()[0] if e["id"] == fid), None)
+    return catalog_entry(fid) or next((e for e in firmware_view()["catalog"] if e["id"] == fid), None)
 
 
 def local_library():
@@ -893,10 +1028,10 @@ def record_file(fid, version, path, source_url, verified, sha):
 
 
 def download_asset(fid, version, asset_name):
-    cache = read_json(RELEASE_CACHE, {}).get("sources", {})
+    cache = firmware_view()["releases"].get("sources", {})
     rel = next((r for r in cache.get(fid, {}).get("releases", []) if r["version"] == version), None)
     if not rel:
-        raise ValueError("release not in cache, press Check for updates first")
+        raise ValueError("release not in the firmware list, press Check for updates first")
     asset = next((a for a in rel["assets"] if a["name"] == asset_name), None)
     if not asset:
         raise ValueError("asset not found in release")
@@ -982,12 +1117,150 @@ def set_installed(body):
     return rec
 
 
+# ---------------------------------------------------------------- manual validation
+# "Validate newest": a downloaded release that no record pins yet can be installed for a
+# hands-on test (the Install dialog sends exactly the library file, by sha256), then reverted
+# to stock and recorded here. The steps done so far are kept per firmware in
+# firmware-state.json "trials", so the test can span a reload or a Sound check run.
+
+STEPS = ("install", "run", "revert")
+RESULTS = ("clean", "issues", "failed")
+# same rule as tools/fm1_validate.py: records get published, so no local paths, device IDs or emails
+PRIVATE = re.compile(r"[A-Za-z]:\\|/Users/|/home/|\d&[0-9A-Fa-f]{6,}|USB\\|VID_[0-9A-F]{4}&PID|\S+@\S+\.\w+")
+
+
+def _norm_ver(v):
+    return str(v).strip().lower().lstrip("v")
+
+
+def all_validations():
+    """validated.json plus this computer's manual records (marked "local") not in it yet."""
+    repo = read_json(shipped(VALIDATED), {"validations": []}).get("validations", [])
+    have = {(v.get("id"), _norm_ver(v.get("version", ""))) for v in repo}
+    local = [{**v, "local": True} for v in read_json(LOCAL_VALIDATED, {"validations": []}).get("validations", [])
+             if (v.get("id"), _norm_ver(v.get("version", ""))) not in have]
+    return repo + local
+
+
+def _trial_file(fid, key):
+    meta = read_json(FW_STATE, {}).get("files", {}).get(key)
+    if not meta or meta.get("id") != fid or not str(meta.get("name", "")).lower().endswith(".fwsc"):
+        raise ValueError("pick a downloaded .fwsc file of this firmware")
+    return meta
+
+
+@state_writer
+def set_trial(body):
+    """Start, update or drop the hands-on test of one downloaded file."""
+    fid = str(body.get("id", ""))
+    if not ID_RE.match(fid) or not known_entry(fid):
+        raise ValueError("unknown firmware id")
+    state = read_json(FW_STATE, {})
+    trials = state.setdefault("trials", {})
+    if body.get("drop"):
+        trials.pop(fid, None)
+    else:
+        meta = _trial_file(fid, str(body.get("key", "")))
+        t = trials.get(fid)
+        if not t or t.get("key") != body["key"]:
+            t = {"key": body["key"], "version": meta["version"], "file": meta["name"], "sha256": meta["sha256"],
+                 "started": time.strftime("%Y-%m-%dT%H:%M:%S"), "steps": {k: False for k in STEPS}}
+        for k, val in (body.get("steps") or {}).items():
+            if k in STEPS:
+                t["steps"][k] = bool(val)
+        for k in ("checks", "notes", "result"):  # the form as typed so far
+            if isinstance(body.get(k), str):
+                t[k] = body[k][:2000]
+        trials[fid] = t
+    write_json(FW_STATE, state)
+    return trials.get(fid)
+
+
+@state_writer
+def save_manual_validation(body):
+    """Record a hands-on test from the app in data/validated-local.json (same rules as fm1_validate.py add)."""
+    fid = str(body.get("id", ""))
+    if not ID_RE.match(fid) or not known_entry(fid):
+        raise ValueError("unknown firmware id")
+    meta = _trial_file(fid, str(body.get("key", "")))
+    result = body.get("result")
+    if result not in RESULTS:
+        raise ValueError("pick a result: clean, issues or failed")
+    steps = {k: bool((body.get("steps") or {}).get(k)) for k in STEPS}
+    checks, notes = str(body.get("checks") or "").strip()[:2000], str(body.get("notes") or "").strip()[:2000]
+    if result in ("clean", "issues") and not all(steps.values()):
+        raise ValueError(f"{result} needs all three steps (installed, ran, reverted); otherwise it's failed")
+    if result in ("issues", "failed") and not notes:
+        raise ValueError("say in Notes what went wrong" + (" and how you worked around it" if result == "issues" else ""))
+    for name, text in (("Checks", checks), ("Notes", notes)):
+        hit = PRIVATE.search(text)
+        if hit:
+            raise ValueError(f"{name} contains {hit.group(0)!r}, which looks like a local path, device ID or email; "
+                             "records get published, so leave it out")
+    if not (HOME / meta["path"]).is_file() or sha256_file(HOME / meta["path"]) != meta["sha256"]:
+        raise ValueError(f"{meta['name']} changed or is gone from the library; download it again")
+    rec = {"id": fid, "version": meta["version"], "file": meta["name"], "sha256": meta["sha256"],
+           "date": time.strftime("%Y-%m-%d"), "steps": steps, "result": result,
+           "checks": checks, "notes": notes, "method": "manual"}
+    doc = read_json(LOCAL_VALIDATED, {})
+    doc = {"schema_version": 1,
+           "about": "Validations recorded in the Octo-Vave app (Validate newest), not yet in firmware/validated.json. "
+                    "Move a record there with a pull request.",
+           "validations": [v for v in doc.get("validations", [])
+                           if not (v.get("id") == fid and _norm_ver(v.get("version", "")) == _norm_ver(rec["version"]))] + [rec]}
+    write_json(LOCAL_VALIDATED, doc)
+    state = read_json(FW_STATE, {})
+    state.get("trials", {}).pop(fid, None)
+    write_json(FW_STATE, state)
+    return rec
+
+
 def reveal(fid):
     folder = FW_LIB / fid if fid else FW_LIB
     folder.mkdir(parents=True, exist_ok=True)
     if sys.platform == "win32":
         os.startfile(folder)  # noqa: S606 - opens Explorer on a folder we own
+        threading.Thread(target=bring_to_front, args=(folder.name,), daemon=True).start()
     return str(folder)
+
+
+def bring_to_front(name, wait=3.0):
+    """Windows opens the Explorer window behind the browser: the request comes from this
+    background console process, which may not take the foreground. Find the newest Explorer
+    window titled after the folder and raise it (a synthetic key tap lets this process do so)."""
+    import ctypes
+    from ctypes import wintypes
+    user32 = ctypes.windll.user32
+
+    def text(fn, h):
+        buf = ctypes.create_unicode_buffer(260)
+        fn(h, buf, 260)
+        return buf.value
+
+    deadline = time.time() + wait
+    while time.time() < deadline:
+        found = []
+
+        @ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+        def each(h, _):
+            # EnumWindows goes front to back, so the first match is the newest window
+            if (user32.IsWindowVisible(h) and text(user32.GetClassNameW, h) == "CabinetWClass"
+                    and text(user32.GetWindowTextW, h).split(" - ")[0] == name):
+                found.append(h)
+                return False
+            return True
+
+        user32.EnumWindows(each, 0)
+        if found:
+            h = found[0]
+            if user32.IsIconic(h):
+                user32.ShowWindow(h, 9)  # SW_RESTORE
+            user32.keybd_event(0x87, 0, 0, 0)  # F24 down: no app uses it (Alt would focus
+            user32.keybd_event(0x87, 0, 2, 0)  # Chrome's menu button); F24 up (KEYEVENTF_KEYUP)
+            user32.SetForegroundWindow(h)
+            return True
+        time.sleep(0.15)
+    return False
 
 
 # ---------------------------------------------------------------- HTTP
@@ -1086,14 +1359,16 @@ class Handler(SimpleHTTPRequestHandler):
             if sub == "" and method == "GET":
                 state = read_json(FW_STATE, {})
                 return self._send_json({
-                    **public_firmware(),
+                    **firmware_view(),
+                    "validated": all_validations(),  # the homepage snapshot never has the local ones
+                    "trials": state.get("trials", {}),
                     "library": local_library(),
                     "installed": state.get("installed"),
                     "history": state.get("history", []),
                     "libraryPath": "firmware/library",
                 })
             if sub == "refresh" and method == "POST":
-                return self._send_json(refresh_releases())
+                return self._send_json(pull_published())
             if sub == "download" and method == "POST":
                 b = self._json_body()
                 return self._send_json(download_asset(b["id"], b["version"], b["asset"]))
@@ -1119,12 +1394,18 @@ class Handler(SimpleHTTPRequestHandler):
                 return None
             if sub == "installed" and method == "POST":
                 return self._send_json(set_installed(self._json_body()))
+            if sub == "trial" and method == "POST":
+                return self._send_json({"trial": set_trial(self._json_body())})
+            if sub == "validate" and method == "POST":
+                return self._send_json(save_manual_validation(self._json_body()))
             if sub == "reveal" and method == "POST":
                 fid = self._json_body().get("id", "")
                 if fid and (not ID_RE.match(fid) or not known_entry(fid)):
                     raise ValueError("unknown firmware id")
                 # relative, so the local user name never reaches the browser
-                return self._send_json({"path": Path(reveal(fid)).relative_to(HOME).as_posix()})
+                rel = Path(reveal(fid)).relative_to(HOME)
+                where = (os.path.join("%LOCALAPPDATA%", "Octo-Vave", "") if FROZEN and not os.environ.get("OCTOVAVE_HOME") else "") + str(rel)
+                return self._send_json({"path": rel.as_posix(), "where": where})
 
         return self._error("not found", 404)
 
@@ -1464,6 +1745,7 @@ def selftest():
         "catalog": len(read_json(CATALOG, {}).get("firmware", [])),
         "validated": len(read_json(VALIDATED, {}).get("validations", [])),
         "formats": FORMATS_DIR.is_dir(),
+        "published": _published_ok(read_json(PUBLISHED, None)),
     }
     print(json.dumps({"frozen": bool(FROZEN), "root": str(ROOT), "home": str(HOME), **ok}))
     return 0 if all(ok.values()) else 1
@@ -1494,10 +1776,14 @@ def main():
         print("Keep this window open while you use Octo-Vave; close it to stop.")
     else:
         print("(Ctrl+C to stop)")
-    if FETCH_LIVE:  # the latest firmware lists, before the page first asks for them
+    if FETCH_LIVE:  # the latest firmware lists and ranking, before the page first asks for them
         def fetch_and_say():
-            got = fetch_live()["fetched"]
-            print("Firmware lists: " + ("the latest from GitHub" if got else "the ones this version came with (offline?)"))
+            try:
+                pull_published()
+                ok = True
+            except Exception:  # noqa: BLE001 - offline: the lists this version came with stay in use
+                ok = False
+            print("Firmware lists: " + ("the latest from GitHub" if ok else "the ones this version came with (offline?)"))
         fetcher = threading.Thread(target=fetch_and_say, daemon=True)
         fetcher.start()
         fetcher.join(8)

@@ -1,7 +1,7 @@
 import * as DX from "./dx7.js";
 import { mountFm1Keys, fm1LowNote } from "./fm1keys.js";
 import { h, fmtBytes, normVer, fwDirectory, fwSections, octo, outcome,
-  verKey, shortVer, relTime, icon, installableState, validatedSection } from "./fwcards.js";
+  verKey, shortVer, relTime, icon, installableState, validatedSection, newerFirst } from "./fwcards.js";
 import { installAction, openInstall, BASELINE } from "./fm1flash.js";
 
 // ================================================================ helpers
@@ -24,6 +24,12 @@ function toast(msg, err = false) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.add("hidden"), err ? 6000 : 2600);
 }
+
+// Opens a library folder (id "" = the whole library) in File Explorer, and says which one,
+// in case Explorer still lands behind the browser.
+const revealFolder = (id) => api("firmware/reveal", { method: "POST", body: JSON.stringify({ id }) })
+  .then((r) => toast(`Opened ${r.where || r.path} in File Explorer`))
+  .catch((e) => toast(e.message, true));
 
 const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
 const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -1386,12 +1392,16 @@ async function importPatchFile(file) {
 
 async function loadFirmware({ autoRefresh = false } = {}) {
   try { S.fw = await api("firmware"); } catch (e) { toast("Firmware: " + e.message, true); return; }
-  const checked = S.fw.discovery?.checked || S.fw.releases?.checked;
-  if (autoRefresh && (!checked || Date.now() - Date.parse(checked) > 12 * 3600e3)) return refreshFirmware();
+  // pulling the published list is one small download: do it when this app hasn't for 12 hours
+  const pulled = S.fw.discovery?.pulled;
+  if (autoRefresh && (!pulled || Date.now() - Date.parse(pulled) > 12 * 3600e3)) return refreshFirmware();
   renderFirmware();
 }
 
-/** "Check for updates": the server rescans awesome-fm-1 + GitHub, re-ranks and refreshes releases. */
+/**
+ * "Check for updates": the server downloads the firmware lists and the ranking + release lists the
+ * repository's nightly job publishes (docs/data/firmware.json). The app itself never scans GitHub.
+ */
 async function refreshFirmware() {
   const btn = $("#fwRefresh");
   btn.disabled = true; btn.textContent = "Checking…";
@@ -1400,8 +1410,10 @@ async function refreshFirmware() {
     const r = await api("firmware/refresh", { method: "POST", body: "{}" });
     S.fw = await api("firmware"); renderFirmware();
     const entered = before.size ? (r.top || []).filter((id) => !before.has(id)).map(fwName) : [];
-    toast(r.notes?.length ? r.notes[r.notes.length - 1]
-      : entered.length ? `New in the top 10: ${entered.join(", ")}` : "Firmware ranking updated", !!r.notes?.length);
+    const when = relTime(r.published);
+    toast(entered.length ? `New in the top 10: ${entered.join(", ")}`
+      : r.changed ? `Firmware list updated (published ${when})`
+      : `Already up to date: the firmware list was published ${when}; the repository refreshes it every night`);
   }
   catch (e) { toast("Update check failed: " + e.message, true); }
   finally { btn.disabled = false; btn.textContent = "Check for updates"; }
@@ -1414,18 +1426,21 @@ function fwNameVer(id, version) {
   return !v || name.toLowerCase().endsWith(v.toLowerCase()) ? name : `${name} ${v}`;
 }
 
-/** Header status: when the ranking was checked, and whether it is partial or the offline snapshot. */
+/** Header status: when the published list was made, from how complete a scan, and when it was pulled. */
 function fwStatus(fw) {
   const d = fw.discovery || {};
   const el = $("#fwChecked");
   const st = d.stats;
-  el.textContent = d.checked ? "checked " + relTime(d.checked) : d.fallback ? `ranking from ${d.fallback} snapshot` : "not checked yet";
+  el.textContent = d.published ? `list published ${relTime(d.published)}`
+    : d.checked ? "checked " + relTime(d.checked) : d.fallback ? `ranking from ${d.fallback} snapshot` : "not checked yet";
   el.title = [
-    d.checked && `Ranking: awesome-fm-1 + GitHub search${st ? `, ${st.scanned} projects checked, ${st.requests} GitHub requests (${st.notModified} unchanged)` : ""}`,
-    d.auth && `GitHub API: ${d.auth === "anonymous" ? "anonymous (60/h); set GITHUB_TOKEN or FM1_USE_GH=1 for more" : d.auth === "gh" ? "GitHub CLI login" : "GITHUB_TOKEN"}`,
+    d.published && `Ranking and release lists published by the repository's nightly scan on ${d.published.slice(0, 16).replace("T", " ")} UTC`,
+    st && `That scan: awesome-fm-1 + GitHub search, ${st.scanned} projects checked${st.skipped ? `, ${st.skipped} skipped` : ""}`,
+    d.published && (d.pulled ? `Downloaded by this app ${relTime(d.pulled)} (Check for updates gets the latest)`
+      : "The copy this app came with: Check for updates gets the latest"),
     ...(d.notes || []),
   ].filter(Boolean).join("\n");
-  if (d.notes?.length) el.append(" ", h("span", { class: "fw-partial", text: "partial" }));
+  if (st?.topSkipped) el.append(" ", h("span", { class: "fw-partial", text: "partial" }));
 }
 
 function renderFirmware() {
@@ -1470,8 +1485,34 @@ function appValidatedSection(fw) {
       action = h("button", { class: "ghost", text: "Download" });
       action.onclick = () => downloadAsset(f, rel, asset, action);
     } else action = h("span", { class: "muted", text: "not downloaded" });
-    return [action, f && installAction(v, installOpts(f, v))];
-  }, { empty: "Nothing validated yet. Validation happens in hands-on Claude Code sessions: flash, run, revert to stock (see VALIDATION.md)." });
+    return [action, v.local && submitLink(fw, v), f && installAction(v, installOpts(f, v))];
+  }, { empty: "Nothing validated yet. Validation is hands-on: flash, run, revert to stock (see VALIDATION.md), or Validate newest on a card after downloading its release." });
+}
+
+/**
+ * Submit for a manual validation kept on this computer: opens the repository's validation
+ * report form with it filled in (the person signs in to GitHub there and presses Create; the
+ * app itself never talks to GitHub as anyone). A link can't fill the form's Firmware and
+ * Result lists or its step boxes, so the record also goes in as JSON in its last field.
+ * After a maintainer accepts the report, a workflow prepares the pull request (fm1_issue.py).
+ * Only M-VAVE's own firmware and firmware on the top 30 leaderboard can be submitted (the
+ * workflow refuses the rest).
+ */
+const REPORT_FORM = "https://github.com/amacias/octo-vave/issues/new";
+function submitLink(fw, v) {
+  const mvave = fw.catalog.some((c) => c.id === v.id && c.kind !== "community");
+  if (!mvave && !(fw.ranked || []).slice(0, 30).some((p) => p.id === v.id))
+    return h("span", { class: "muted", text: "not in top 30",
+      title: "Only firmware on the top 30 leaderboard can be submitted to the repository. This validation stays on this computer." });
+  const rec = { id: v.id, version: v.version, file: v.file, sha256: v.sha256, date: v.date, result: v.result, steps: v.steps, method: "manual" };
+  const q = new URLSearchParams({
+    template: "validation-report.yml", title: `Validation: ${v.id} ${v.version}`,
+    version: v.version, file: v.file, sha256: v.sha256, checks: v.checks || "", notes: v.notes || "", stock: "V15",
+    record: JSON.stringify(rec, null, 1),
+  });
+  return h("a", { class: "btn ghost", href: `${REPORT_FORM}?${q}`, target: "_blank", rel: "noopener", text: "Submit",
+    title: "Send this validation to the repository: opens GitHub's report form filled in (needs a GitHub account). "
+      + "Tick Privacy and press Create; a maintainer reviews it before it's published." });
 }
 
 /** The release and file a validation record pinned, when the release list has them. */
@@ -1537,7 +1578,7 @@ function installOpts(f, v) {
 function cardInstall(f) {
   const st = installableState(S.fw, f);
   if (!st) {
-    return h("button", { class: "fw-inst", disabled: true, title: "Not validated yet: Install unlocks once a hands-on validation pins a tested file" },
+    return h("button", { class: "fw-inst", disabled: true, title: "Not validated yet: Install unlocks once a hands-on validation pins a tested file (download the release, then Validate newest)" },
       icon("flash"), "Install");
   }
   if (!/\.fwsc$/i.test(st.v.file || "") || !st.v.sha256) return null;   // FM-1 Open: its Workbench installs it (the Installer link)
@@ -1549,6 +1590,126 @@ Newer release ${shortVer(st.newer.version)} hasn't been validated yet.`) },
     icon("flash"), st.current ? "Install" : `Install ${ver}`);
   b.onclick = () => openInstall(st.v, installOpts(f, st.v));
   return b;
+}
+
+// ---------------------------------------------------------------- Validate newest
+// A downloaded release newer than every record (or of a firmware never validated) can be
+// installed for a hands-on test: install, play, back to stock V15, record the result. The
+// record goes in data/validated-local.json marked "method": "manual" (the server keeps it apart
+// from validated.json until a pull request moves it there); the steps done so far are kept by
+// the server, so the test can span a reload or a Sound check run.
+
+const OTHER_DEVICE = /[-_.](smk-?\d+|mke|elite)(?=[-_.])/i;   // builds for M-VAVE's other synths (server.OTHER_DEVICE_RE)
+
+/** The downloaded file Validate newest offers for firmware f: its newest .fwsc that no record pins and no record is newer than. */
+function trialCandidate(fw, f) {
+  const recs = (fw.validated || []).filter((v) => v.id === f.id);
+  const pinned = (l) => recs.some((v) => (v.sha256 ? v.sha256 === l.sha256 : verKey(v.version) === verKey(l.version)));
+  const t = fw.trials?.[f.id];
+  const lib = (fw.library?.[f.id] || []).filter((l) => /\.fwsc$/i.test(l.name) && !OTHER_DEVICE.test(l.name));
+  const going = t && lib.find((l) => l.key === t.key && !pinned(l));
+  if (going) return going;   // a test already under way
+  const newest = lib.filter((l) => !pinned(l)).sort(newerFirst)[0];
+  const tested = recs.filter((v) => outcome(v)).sort(newerFirst)[0];
+  return newest && (!tested || newerFirst(newest, tested) < 0) ? newest : null;
+}
+
+/** A card's Validate newest button, when there's a downloaded file to test. */
+function cardValidate(f) {
+  if (f.id === BASELINE.id) return null;
+  const l = trialCandidate(S.fw, f);
+  if (!l) return null;
+  const going = S.fw.trials?.[f.id]?.key === l.key;
+  const b = h("button", { class: "ghost fw-validate", title: `${going ? "Carry on with" : "Start"} the hands-on test of the downloaded ${l.name} (${shortVer(l.version)}): install it, play it, go back to stock V15 and record the result` },
+    icon("check"), going ? `Validating ${shortVer(l.version)}` : "Validate newest");
+  b.onclick = () => openValidate(f, l);
+  return b;
+}
+
+/** The Validate dialog: the three steps (each with its action), the result and the record. */
+async function openValidate(f, l) {
+  let t;
+  try { t = (await api("firmware/trial", { method: "POST", body: JSON.stringify({ id: f.id, key: l.key }) })).trial; }
+  catch (e) { return toast(e.message, true); }
+  S.fw.trials = { ...(S.fw.trials || {}), [f.id]: t };
+  const label = `${f.name} ${shortVer(l.version)}`;
+  const rec = { id: f.id, version: l.version, file: l.name, sha256: l.sha256 };   // what Install pins: this exact file
+  const stockRec = (S.fw.validated || []).find((r) => r.id === BASELINE.id && verKey(r.version) === verKey(BASELINE.version)
+    && ["clean", "issues"].includes(outcome(r)) && r.sha256 && /\.fwsc$/i.test(r.file || ""));
+  const stockF = S.fw.catalog.find((c) => c.id === BASELINE.id);
+
+  const box = (k) => h("input", { type: "checkbox", "data-step": k, checked: !!t.steps[k] });
+  const boxes = { install: box("install"), run: box("run"), revert: box("revert") };
+  const instBtn = h("button", { type: "button", class: "ghost", text: `Install ${shortVer(l.version)}` });
+  const stockBtn = stockRec && stockF && h("button", { type: "button", class: "ghost", text: "Install Stock V15" });
+  const scBtn = h("button", { type: "button", class: "ghost", text: "Sound check" });
+  const radios = ["clean", "issues", "failed"].map((r) => h("label", { class: "fw-v-res " + r },
+    h("input", { type: "radio", name: "fwvres", value: r, checked: t.result === r }),
+    octo("", r), { clean: " Clean", issues: " With issues", failed: " Failed" }[r]));
+  const checks = h("textarea", { rows: 3, placeholder: "What you tried: boots, keys and knobs, presets, MIDI in/out, clock, Sound check…" });
+  const notes = h("textarea", { rows: 3, placeholder: "Anything odd, and the workaround (needed for With issues and Failed)" });
+  checks.value = t.checks || ""; notes.value = t.notes || "";
+  const msg = h("p", { class: "fw-i-msg", role: "status" });
+  const save = h("button", { type: "button", class: "primary", text: "Save validation" });
+  const drop = h("button", { type: "button", class: "ghost", text: "Discard test" });
+  const close = h("button", { type: "button", class: "ghost", text: "Close" });
+  const dlg = h("dialog", { class: "fw-flash fw-val" },
+    h("h3", { text: `Validate ${label}` }),
+    h("p", { class: "muted", text: `A hands-on test of the downloaded ${l.name} (SHA256 ${l.sha256.slice(0, 12)}…), which no validation covers yet. `
+      + "Install it, play it, go back to stock V15, then record what happened. The record stays on this computer, marked as a manual validation, until a pull request adds it to the repository." }),
+    h("ol", { class: "fw-v-steps" },
+      h("li", {}, h("label", {}, boxes.install, " Installed"), instBtn),
+      h("li", {}, h("label", {}, boxes.run, " Ran: it boots and plays as its docs describe"), scBtn),
+      h("li", {}, h("label", {}, boxes.revert, " Reverted to stock V15"), stockBtn || h("span", { class: "muted", text: "with the project's own installer" }))),
+    h("div", { class: "fw-v-result" }, h("b", { text: "Result" }), radios),
+    h("label", { class: "stack" }, "Checks", checks),
+    h("label", { class: "stack" }, "Notes", notes),
+    msg,
+    h("div", { class: "fw-i-actions" }, drop, h("span", { class: "grow" }), close, save));
+  document.body.append(dlg);
+  dlg.addEventListener("close", () => { dlg.remove(); renderFirmware(); });
+
+  const form = () => ({ id: f.id, key: l.key, steps: Object.fromEntries(Object.entries(boxes).map(([k, b]) => [k, b.checked])),
+    result: dlg.querySelector('input[name="fwvres"]:checked')?.value || "", checks: checks.value, notes: notes.value });
+  const keep = debounce(() => api("firmware/trial", { method: "POST", body: JSON.stringify(form()) })
+    .then((r) => { S.fw.trials[f.id] = r.trial; }).catch(() => {}), 400);
+  dlg.addEventListener("input", keep);
+  const tick = (k) => { boxes[k].checked = true; keep(); };
+
+  // the steps' own actions: the Install dialog opens on top of this one
+  instBtn.onclick = () => {
+    const o = installOpts(f, rec);
+    const after = o.after;
+    o.trial = true;
+    o.after = async (r) => { await after(r); if (r) tick("install"); };
+    openInstall(rec, o);
+  };
+  if (stockBtn) stockBtn.onclick = () => {
+    const o = installOpts(stockF, stockRec);
+    const after = o.after;
+    o.after = async (r) => { await after(r); if (r?.identity === BASELINE.identity) tick("revert"); };
+    openInstall(stockRec, o);
+  };
+  scBtn.onclick = () => { keep(); dlg.close(); switchTab("check"); };
+
+  drop.onclick = () => confirmClick(drop, "Discard?", async () => {
+    await api("firmware/trial", { method: "POST", body: JSON.stringify({ id: f.id, drop: true }) }).catch(() => {});
+    delete S.fw.trials[f.id];
+    dlg.close();
+  });
+  close.onclick = () => { keep(); dlg.close(); };
+  save.onclick = async () => {
+    const body = form();
+    if (!body.result) { msg.className = "fw-i-msg bad"; msg.textContent = "Pick a result: Clean, With issues or Failed."; return; }
+    save.disabled = true;
+    try {
+      const saved = await api("firmware/validate", { method: "POST", body: JSON.stringify(body) });
+      S.fw = await api("firmware");
+      toast(`Recorded ${label}: ${{ clean: "validated", issues: "validated with issues", failed: "failed" }[saved.result]} (manual, on this computer)`);
+      dlg.close();
+    } catch (e) { msg.className = "fw-i-msg bad"; msg.textContent = e.message; save.disabled = false; }
+  };
+  dlg.showModal();
 }
 
 async function downloadAsset(f, rel, a, btn) {
@@ -1585,6 +1746,7 @@ async function markInstalled(id, version, note = "") {
 const FW_APP = {
   download: downloadAsset,
   install: cardInstall,
+  validate: cardValidate,
   fileRow: libFileRow,
   toast,
   async importFile(f, version, file) {
@@ -1594,7 +1756,7 @@ const FW_APP = {
       toast(`Imported ${file.name}`); S.fw = await api("firmware"); renderFirmware();
     } catch (e) { toast(e.message, true); }
   },
-  reveal: (f) => api("firmware/reveal", { method: "POST", body: JSON.stringify({ id: f.id }) }).catch((e) => toast(e.message, true)),
+  reveal: (f) => revealFolder(f.id),
 };
 
 function updateStockWarn() {
@@ -2381,7 +2543,7 @@ function wire() {
 
   // firmware
   $("#fwRefresh").onclick = refreshFirmware;
-  $("#fwReveal").onclick = () => api("firmware/reveal", { method: "POST", body: JSON.stringify({ id: "" }) }).catch((e) => toast(e.message, true));
+  $("#fwReveal").onclick = () => revealFolder("");
   $("#fwMarkInstalled").onclick = () => {
     const ver = $("#fwInstalledVer").value.trim();
     if (!ver) return toast("Enter the version that's on the device", true);

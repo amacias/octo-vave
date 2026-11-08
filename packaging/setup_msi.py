@@ -33,6 +33,7 @@ include_files = [
     ("firmware/directory.json", "firmware/directory.json"),
     ("firmware/validated.json", "firmware/validated.json"),
     ("firmware/formats", "firmware/formats"),
+    ("docs/data/firmware.json", "docs/data/firmware.json"),  # published ranking + releases until the first Check for updates
     ("LICENSE", "LICENSE.txt"),
 ]
 

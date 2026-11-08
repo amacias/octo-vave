@@ -117,19 +117,35 @@ def main():
     ap.add_argument("--refresh", action="store_true", help="run Check for updates first (network; caches in a temp folder)")
     ap.add_argument("--write", action="store_true", help="write the snapshot and sync the copies into docs/")
     ap.add_argument("--check", action="store_true", help="verify the copies and the snapshot; exit 1 on problems")
+    ap.add_argument("--directory", action="store_true",
+                    help="with --refresh --write: also store the ranking as firmware/directory.json, after a complete scan only")
     a = ap.parse_args()
     if a.check:
         sys.exit(0 if check() else 1)
+    if a.directory and not (a.refresh and a.write):
+        ap.error("--directory needs --refresh --write")
 
     previous = server.read_json(SNAPSHOT, None)
+    complete = False
     if a.refresh:
         tmp = Path(tempfile.mkdtemp(prefix="fm1-site-"))
         server.DISCOVERY_CACHE, server.RELEASE_CACHE = tmp / "discovery-cache.json", tmp / "releases-cache.json"
         r = server.refresh_releases()
-        print(f"Checked: {r['stats'].get('scanned')} projects, {r['stats'].get('requests')} GitHub requests")
+        st = r["stats"]
+        print(f"Checked: {st.get('scanned')} projects, {st.get('requests')} GitHub requests")
         for n in r["notes"]:
             print("  note: " + n)
+        complete = not st.get("topSkipped") and not st.get("widerSkipped") and not st.get("skipped")
     snap, kept = build(previous)
+    if a.directory:
+        ranked = snap["ranked"]
+        if not complete:
+            print(f"{server.DIRECTORY.relative_to(ROOT).as_posix()}: the scan wasn't complete, left as is")
+        elif len(ranked) < server.TOP_LIST or not all(p.get("live") for p in ranked):
+            print(f"{server.DIRECTORY.relative_to(ROOT).as_posix()}: ranking not fully live ({len(ranked)} ranked), left as is")
+        else:
+            changed = server.write_directory(ranked)
+            print(f"{'wrote' if changed else 'unchanged:'} {server.DIRECTORY.relative_to(ROOT).as_posix()}")
     for fid in kept:
         print(f"  {fid}: not checked, kept the last published releases")
     print(f"Snapshot: {len(snap['catalog'])} firmware, {len(snap['ranked'])} ranked, "

@@ -12,8 +12,9 @@
 //   3. The FM-1 restarts and reports the installed identity, which the package names in its header.
 // If step 2 is cut off, the FM-1 stays in update mode: installing again finishes the write.
 //
-// Only the exact validated file is ever sent: the caller's record pins its sha256, and the
-// dialog refuses any other file. Nothing starts without the Install click in the dialog.
+// Only the exact pinned file is ever sent: the caller's record pins its sha256 (a validation,
+// or in the app the downloaded file under a hands-on test), and the dialog refuses any other
+// file. Nothing starts without the Install click in the dialog.
 //
 // Every route goes through stock V15 (planRoute): off stock, one click installs stock first,
 // checks that the FM-1 reports it, then installs the firmware asked for.
@@ -311,6 +312,8 @@ export function installAction(v, opts) {
  * installed (the logged firmware, { id, version, label }), before(), after(result | null), mount,
  * and stock: the first leg when the FM-1 isn't on stock, { v, name, getFile(), log(result) }.
  * Without stock (the homepage) the dialog installs over stock only and asks for stock first.
+ * trial: v isn't a validation but a downloaded file under test (the app's "Validate newest"):
+ * the same pinning by sha256, worded as the downloaded file, with a warning.
  */
 export function openInstall(v, o) {
   let file = null, stockFile = null, running = false, lastLeg = null;
@@ -319,7 +322,7 @@ export function openInstall(v, o) {
   const label = o.name.includes(shortVer(v.version)) ? o.name : `${o.name} ${shortVer(v.version)}`;   // "Stock V15" names its version
   const title = o.isStock ? `Back to ${label}` : `Install ${label}`;
   const inst = o.installed;
-  const fileMsg = h("p", { class: "fw-i-file", text: "Getting the validated file…" });
+  const fileMsg = h("p", { class: "fw-i-file", text: o.trial ? "Getting the downloaded file…" : "Getting the validated file…" });
   const stockMsg = two && h("p", { class: "fw-i-file", text: `Getting the validated ${stockName}…` });
   const picker = h("input", { type: "file", accept: ".fwsc", hidden: true });
   const pick = h("div", { class: "fw-i-pick", hidden: true },
@@ -345,6 +348,7 @@ export function openInstall(v, o) {
       ? `Off stock V15, the FM-1 goes back to stock first and then gets ${label}: 4 restarts, about 5 minutes. On stock it's one install, 2 to 3 minutes. Keep it plugged in and this page open until it says Done.`
       : "The FM-1 restarts twice and the whole update takes 2 to 3 minutes. Keep it plugged in and this page open until it says Done." }),
     h("ul", { class: "fw-i-notes" },
+      o.trial && h("li", { class: "warn", text: `Not validated yet: this installs ${v.file} for your hands-on test. Nobody has recorded it working on an FM-1.` }),
       outcome(v) === "issues" && h("li", { class: "warn", text: `Validated with issues: ${v.notes || v.checks || "see its record"}` }),
       inst?.id === "fm1open" && h("li", { class: "warn", text: "The log says FM-1 Open is on the FM-1. It doesn't answer this update protocol: go back to stock with its Workbench (Restore original V15) first." }),
       h("li", { text: "Some firmware resets voices, patterns or projects: save what you want to keep first." }),
@@ -365,9 +369,10 @@ export function openInstall(v, o) {
   const check = async (bytes, rec, el, who) => {
     const sum = await sha256Hex(bytes);
     const ok = sum === rec.sha256.toLowerCase();
+    const kind = o.trial && rec === v ? "downloaded" : "validated";
     el.className = "fw-i-file " + (ok ? "ok" : "bad");
-    el.textContent = ok ? `✓ ${who}: ${rec.file}, the validated file (SHA256 ${rec.sha256.slice(0, 12)}…)`
-      : `That file isn't the validated ${rec.file}: its SHA256 is ${sum.slice(0, 12)}…, the validated one ${rec.sha256.slice(0, 12)}…`;
+    el.textContent = ok ? `✓ ${who}: ${rec.file}, the ${kind} file (SHA256 ${rec.sha256.slice(0, 12)}…)`
+      : `That file isn't the ${kind} ${rec.file}: its SHA256 is ${sum.slice(0, 12)}…, the ${kind} one ${rec.sha256.slice(0, 12)}…`;
     return ok;
   };
   const accept = async (bytes) => {

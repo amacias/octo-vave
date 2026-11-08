@@ -1,0 +1,72 @@
+# A maintainer accepts a validation report by adding the "accepted" label to its issue (only
+# people with triage or write access can label). This job checks the reported file against
+# the firmware's release, writes the record on the branch validation/issue-<N> and comments a
+# link that opens the pull request. The maintainer opens it, reviews it and merges it: this job
+# never pushes to main, never opens or approves a pull request and never merges anything.
+# Pull requests opened by the maintainer run "Check firmware records" like any other.
+name: Prepare validation record
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write   # push the validation/issue-<N> branch
+  issues: write     # comment on the report
+
+concurrency:
+  group: validation-record-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  record:
+    if: github.event.label.name == 'accepted' && contains(github.event.issue.labels.*.name, 'validation')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build the record from the report
+        id: rec
+        # the report is untrusted text: it reaches the script through the environment only
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python -I tools/fm1_issue.py --message-file "$RUNNER_TEMP/message.md"
+      - name: Validate records
+        run: python -I tools/fm1_validate.py check
+      - name: Push the branch and comment the pull request link
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          N: ${{ github.event.issue.number }}
+          TITLE: ${{ steps.rec.outputs.title }}
+        run: |
+          branch="validation/issue-$N"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add -- firmware/validated.json
+          git commit -m "$TITLE"
+          git push --force origin "HEAD:refs/heads/$branch"
+          gh issue comment "$N" --body-file "$RUNNER_TEMP/message.md"
+      - name: Say what went wrong on the issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          N: ${{ github.event.issue.number }}
+        run: |
+          {
+            echo "Couldn't prepare the validation record:"
+            echo
+            if [ -s "$RUNNER_TEMP/message.md" ] && ! grep -q "Open the pull request" "$RUNNER_TEMP/message.md"; then
+              cat "$RUNNER_TEMP/message.md"
+            else
+              echo "Something failed in the workflow."
+            fi
+            echo
+            echo "Details: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Fix the report, then remove and add the \`accepted\` label to try again."
+          } > "$RUNNER_TEMP/failed.md"
+          gh issue comment "$N" --body-file "$RUNNER_TEMP/failed.md"

@@ -7,18 +7,20 @@ body:
     attributes:
       value: |
         Thanks for testing! A validation is a hands-on session on a real FM-1: **install → play → Sound check → revert to stock V15**.
-        The full procedure is in [VALIDATION.md](../blob/main/VALIDATION.md). A maintainer (or you, in a pull request) turns this report
-        into a record in `firmware/validated.json` with `tools/fm1_validate.py`.
+        The full procedure is in [VALIDATION.md](../blob/main/VALIDATION.md). Once a maintainer accepts the report, a workflow checks
+        the file against the release and prepares the record for `firmware/validated.json`; the maintainer reviews and merges it.
+        Reports are accepted for M-VAVE's own firmware (stock and official) and for firmware on the **top 30 leaderboard** (the homepage ranking).
+
+        **From Octo-Vave:** *Submit* on a manual validation fills in this form. Firmware, Result and the step boxes can't be filled in
+        from a link: leave them, the record at the bottom has them. Look it over, tick Privacy and press Create.
 
         **Everything here is public.** Leave out serial numbers, USB instance IDs, local file paths and email addresses.
   - type: dropdown
     id: firmware
     attributes:
       label: Firmware
-      description: The catalog id. Not listed? Pick "other" and name it below.
-      options: [official, fm1open, felucca, sloop, x0x, melodee, choralroot, fomni, ghoulbox, amb1, jangada, skiff, fm1va, aprilos, other]
-    validations:
-      required: true
+      description: The catalog id (sent from Octo-Vave? leave it at None). Not listed? Pick "other" and name it in Notes.
+      options: [official, fm1open, felucca, sloop, x0x, melodee, choralroot, fomni, ghoulbox, amb1, jangada, skiff, hortator, fm1va, aprilos, obervave, loom-8, clipper, orbit, polly, dub-1, coralflower, ctl-1, gr-mm, fmini-1, duell, frodhes, ravel, shine-on, other]
   - type: input
     id: version
     attributes:
@@ -50,14 +52,12 @@ body:
         - "clean (orange): install, play and revert all worked"
         - "issues (purple): all three done, but something needed a workaround"
         - "failed (red): a step failed"
-    validations:
-      required: true
   - type: checkboxes
     id: steps
     attributes:
       label: Steps completed
       options:
-        - label: Installed with the project's installer
+        - label: Installed (with the project's installer or Octo-Vave)
         - label: Ran and played it (screen, keys, knobs, sound)
         - label: Reverted to stock V15 and stock works again
   - type: textarea
@@ -86,3 +86,8 @@ body:
       options:
         - label: This report has no serial numbers, USB instance IDs, local paths or email addresses.
           required: true
+  - type: textarea
+    id: record
+    attributes:
+      label: Record from Octo-Vave
+      description: Filled in by the app's Submit button (firmware, result and steps as JSON). Leave it empty when reporting by hand.

@@ -89,6 +89,7 @@ export function validatedList(fw, extra = () => null) {
         !st.current && h("span", { class: "val-newer", text: `newer ${shortVer(st.newer.version)}` }),
         h("span", { class: "muted", text: v.date }),
         o !== "clean" && h("span", { class: "val-label " + o, text: o === "issues" ? "with issues" : "failed" }),
+        v.method === "manual" && h("span", { class: "val-label manual", title: MANUAL_TIP(v), text: v.local ? "manual · this computer" : "manual" }),
         h("span", { class: "val-steps " + o, text: stepsText(v) }),
         h("span", { class: "val-note", text: v.notes || "" }),
         extra(v));
@@ -228,7 +229,7 @@ function validationsFor(fw, id) {
 }
 
 /** Newer first: by test date, then by version number ("v2.8.5" before "v2.8.1"). */
-function newerFirst(a, b) {
+export function newerFirst(a, b) {
   const nums = (v) => (verKey(v).match(/\d+/g) || []).map(Number);
   const x = nums(a.version), y = nums(b.version);
   for (let i = 0; i < Math.max(x.length, y.length); i++) if ((y[i] || 0) !== (x[i] || 0)) return (y[i] || 0) - (x[i] || 0);
@@ -299,8 +300,11 @@ export function stepsText(v) {
 
 export function validationTip(v) {
   return `${OUTCOME_LABEL[outcome(v)]}: ${v.version} on ${v.date}. ${stepsText(v)}${v.checks ? `\nChecks: ${v.checks}` : ""}`
-    + (v.notes ? `\n${v.notes}` : "");
+    + (v.notes ? `\n${v.notes}` : "") + (v.method === "manual" ? `\n${MANUAL_TIP(v)}` : "");
 }
+/** Records made with the app's Validate newest ("method": "manual"); "local" = not in validated.json yet. */
+const MANUAL_TIP = (v) => "Manual validation: tested by hand and recorded with Validate newest in the app"
+  + (v.local ? ". Only on this computer (data/validated-local.json) until a pull request adds it to the repository." : ".");
 
 // Each firmware is shown by a real screen capture from its own repo or docs
 // (stored in web/img/fw/, source linked in catalog art.credit).
@@ -328,7 +332,8 @@ export function relTime(d) {
 
 /**
  * One firmware card. `app` holds the local library actions:
- * { download(f, rel, asset, btn), install(f) → Install button, fileRow(id, file), importFile(f, version, file), reveal(f), toast(msg, err) }.
+ * { download(f, rel, asset, btn), install(f) → Install button, validate(f) → Validate newest button or null,
+ *   fileRow(id, file), importFile(f, version, file), reveal(f), toast(msg, err) }.
  * Without it (the homepage) downloads are plain links to the release files and the library block is left out.
  */
 export function fwCard(f, fw, rank, app = null) {
@@ -439,6 +444,7 @@ export function fwCard(f, fw, rank, app = null) {
       h("div", { class: "fw-actions" },
         dlBtn,
         app?.install?.(f),
+        app?.validate?.(f),
         linkBtn(L.install, "ext", f.kind === "stock" ? "Updater" : "Installer", "Open the project's own installer"),
         linkBtn(L.try, "play", "Try", "Play it in the browser, no FM-1 needed")),
       // every card icon in one row: links, then traits, then install requirements and methods

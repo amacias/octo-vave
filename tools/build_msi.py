@@ -192,6 +192,9 @@ def install_test(msi):
                 status = home / "data" / "live" / "status.json"
                 fetched = json.loads(status.read_text(encoding="utf-8")).get("fetched", []) if status.is_file() else []
                 check("fetches the latest firmware lists from GitHub", len(fetched) == 3, ", ".join(fetched) or "nothing fetched")
+                pulled = home / "data" / "live" / "firmware.json"
+                check("pulls the nightly published ranking", pulled.is_file() and bool(fw.get("discovery", {}).get("published")),
+                      fw.get("discovery", {}).get("published") or "not pulled")
     finally:
         if proc:
             proc.terminate()

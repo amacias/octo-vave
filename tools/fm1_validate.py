@@ -93,7 +93,13 @@ def cmd_add(doc, args):
         sys.exit("--result issues needs --notes saying what went wrong and how it was worked around")
     if args.result == "failed" and not args.notes:
         sys.exit("--result failed needs --notes saying what failed")
-    lib = library_file(args.id, args.version, args.file)
+    if args.sha256:
+        # a file checked elsewhere (tools/fm1_issue.py downloads the release file and compares)
+        if not SHA_RE.match(args.sha256) or not args.file:
+            sys.exit("--sha256 needs 64 lowercase hex digits and --file naming the tested file")
+        lib = {"name": args.file, "sha256": args.sha256}
+    else:
+        lib = library_file(args.id, args.version, args.file)
     if not lib and not args.no_library:
         sys.exit("no matching file in the dashboard library; download it there first, or pass --no-library")
     rec = {
@@ -106,6 +112,7 @@ def cmd_add(doc, args):
         **({"result": args.result} if args.result else {}),
         "checks": args.checks,
         "notes": args.notes,
+        **({"method": args.method} if args.method else {}),
     }
     rows = [v for v in doc.setdefault("validations", [])
             if not (v["id"] == args.id and norm(v["version"]) == norm(args.version))]
@@ -130,6 +137,7 @@ SCHEMA_VERSION = 1
 INSTALL_METHODS = {"web", "python", "m-upgrade"}
 DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}$")
 SHA_RE = re.compile(r"[0-9a-f]{64}$")
+METHODS = ("manual",)  # "manual": recorded with Validate newest in the app (data/validated-local.json)
 
 
 def problems(doc, cat):
@@ -180,6 +188,8 @@ def problems(doc, cat):
             out.append(f"{where}: sha256 of the tested file is required (64 lowercase hex digits)")
         if "supersededBy" in v and not isinstance(v["supersededBy"], str):
             out.append(f"{where}: supersededBy must be a version string")
+        if "method" in v and v["method"] not in METHODS:
+            out.append(f"{where}: method must be one of {', '.join(METHODS)} (or left out)")
         for field in ("checks", "notes"):
             hit = PRIVATE.search(v.get(field) or "")
             if hit:
@@ -187,8 +197,25 @@ def problems(doc, cat):
     return out
 
 
+REPORT_FORM = ROOT / ".github" / "ISSUE_TEMPLATE" / "validation-report.yml"
+
+
+def form_problems(cat):
+    """The validation report form lists every catalog id (plus "other") in its Firmware list."""
+    if not REPORT_FORM.exists():
+        return []
+    m = re.search(r"id: firmware\n(?:.*\n)*?\s+options: \[([^\]]*)\]", REPORT_FORM.read_text(encoding="utf-8"))
+    listed = [o.strip() for o in m.group(1).split(",")] if m else []
+    ids = [f.get("id") for f in cat.get("firmware", [])] + ["other"]
+    if listed != ids:
+        return [f"{REPORT_FORM.relative_to(ROOT).as_posix()}: the Firmware options should be the catalog ids in order plus other: "
+                f"[{', '.join(ids)}]"]
+    return []
+
+
 def cmd_check(doc, _args):
-    found = problems(doc, load(CATALOG, {}))
+    cat = load(CATALOG, {})
+    found = problems(doc, cat) + form_problems(cat)
     for p in found:
         print("x", p)
     if found:
@@ -210,6 +237,8 @@ def main():
     a.add_argument("--notes", default="")
     a.add_argument("--date", help="YYYY-MM-DD (default today)")
     a.add_argument("--no-library", action="store_true", help="record without a library file / checksum")
+    a.add_argument("--sha256", help="pin this checksum for --file instead of looking in the library")
+    a.add_argument("--method", choices=METHODS, help="manual: tested by hand and reported from the app or a validation report")
     r = sub.add_parser("remove", help="delete a record")
     r.add_argument("id"); r.add_argument("version")
     sub.add_parser("check", help="validate validated.json and the catalog fields tools rely on")

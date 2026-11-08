@@ -73,22 +73,34 @@ where the app has no live release data, and removes it again if that changes.
 
 ## Contributing a validation
 
-Validations from other FM-1 owners are welcome. The flow:
+Validations from other FM-1 owners are welcome for M-VAVE's own firmware (stock and official) and
+for firmware on the **top 30 leaderboard** (the homepage ranking); reports for anything else are
+declined. The flow:
 
-1. **Run the session** above on your own FM-1: install with the project's installer, play it, run the
-   Sound check, revert to stock V15.
-2. **Open a [validation report](https://github.com/amacias/octo-vave/issues/new?template=validation-report.yml).**
-   It asks for the firmware, version, the file you flashed and its SHA256, the result, the steps that
-   worked, and what you checked. Everything in it is public: no serial numbers, USB instance IDs,
-   local paths or email addresses.
-3. **Pull request** (by you or a maintainer): download the same file in Octo-Vave (its SHA256 must
-   match the report), then
-   ```
-   python tools/fm1_validate.py add <id> <version> --result clean|issues|failed --checks "…" --notes "…"
-   python tools/fm1_validate.py check
-   ```
-   and open a pull request that changes `firmware/validated.json`, with `Closes #<issue>` in the
-   description. CI runs the same `check` on it.
-4. A maintainer reviews it and merges; the octopus shows up on the card and on the homepage.
+1. **Run the session** above on your own FM-1: install, play it, run the Sound check, revert to stock V15.
+   In Octo-Vave, **Validate newest** on a card walks through it for a downloaded release that hasn't
+   been validated yet, and saves the result on your computer as a manual validation
+   (`"method": "manual"`, in `data/validated-local.json`).
+2. **Send a [validation report](https://github.com/amacias/octo-vave/issues/new?template=validation-report.yml).**
+   From the app: **Submit** on the record (All Validated Firmware) opens the form filled in. GitHub
+   can't fill its Firmware and Result lists or the step boxes from a link, so the record also goes in
+   its last field; leave those as they are, tick Privacy and press Create. By hand: fill in the
+   firmware, version, the file you flashed and its SHA256, the result, the steps that worked, and what
+   you checked. Everything in it is public: no serial numbers, USB instance IDs, local paths or email
+   addresses.
+3. **A maintainer accepts it** by adding the `accepted` label. The *Prepare validation record*
+   workflow (`tools/fm1_issue.py`) downloads the reported file from the firmware's release, checks
+   that its SHA256 matches the report, writes the record with `fm1_validate.py add` on the branch
+   `validation/issue-<N>` and comments a link that opens the pull request. If something doesn't
+   match, it says so on the issue instead; fix the report, then remove and add the label.
+4. **The maintainer opens the pull request, reviews it and merges it**; the octopus shows up on the
+   card and on the homepage, and the app drops its local copy of the record. The workflow never
+   touches `main`, never opens or approves a pull request and never merges.
+
+Records can still be added by hand in a pull request:
+```
+python tools/fm1_validate.py add <id> <version> --result clean|issues|failed --checks "…" --notes "…"
+python tools/fm1_validate.py check
+```
 
 A report with `issues` or `failed` is just as useful: it warns the next person.
