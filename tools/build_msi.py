@@ -296,6 +296,7 @@ def main():
     p.add_argument("--dry-run", action="store_true", help="with --publish: show the release, publish nothing")
     p.add_argument("--untested", action="store_true", help="with --publish: allow an MSI whose --test didn't run")
     args = p.parse_args()
+    sys.stdout.reconfigure(errors="replace")  # a cp1252 console can't print every character
 
     if args.publish:
         return publish(Path(args.publish).resolve(), args.dry_run, args.untested)
