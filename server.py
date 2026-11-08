@@ -349,6 +349,11 @@ def _trim_releases(rels):
     }
 
 
+# Builds for M-VAVE's other synths that FM-1 forks publish next to the FM-1 file: their package
+# header names another product (choralroot-0.29.2-smk37.fwsc says "SMK-37 Elite_920").
+OTHER_DEVICE_RE = re.compile(r"[-_.](smk-?\d+|mke|elite)(?=[-_.])", re.I)
+
+
 def release_entry(rec, patterns):
     """releases-cache entry (stats + latest releases with matching assets) from a repo snapshot."""
     meta, rel = rec.get("meta") or {}, rec.get("rel")
@@ -360,11 +365,15 @@ def release_entry(rec, patterns):
     pats = [re.compile(p, re.I) for p in patterns or [r"\.fwsc$"]]
     entry["stats"] = {"stars": meta.get("stars", 0), "license": meta.get("license"), "pushed": meta.get("pushed", ""),
                       "releases": rel["count"], "downloads": rel["downloads"]}
-    for r in rel["releases"][:6]:
+    for r in rel["releases"]:
         allp = r["assets"]
+        fm1 = [a for a in allp if any(p.search(a["name"]) for p in pats) and not OTHER_DEVICE_RE.search(a["name"])]
+        # a release with firmware files for other synths only (ChoralRoot's v0.29.2-smk37) isn't an FM-1 release
+        if not fm1 and any(OTHER_DEVICE_RE.search(a["name"]) for a in allp) or len(entry["releases"]) >= 6:
+            continue
         entry["releases"].append({
             **{k: r[k] for k in ("version", "title", "date", "prerelease", "url")},
-            "assets": [a for a in allp if any(p.search(a["name"]) for p in pats)],
+            "assets": fm1,
             "sha256sums": next((a["url"] for a in allp if re.fullmatch(r"SHA256SUMS(-.*)?(\.txt)?", a["name"], re.I)), None),
             # per-file checksums such as foo.fwsc.sha256
             "sha256files": {a["name"][:-7]: a["url"] for a in allp if a["name"].lower().endswith(".sha256")},

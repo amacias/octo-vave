@@ -69,6 +69,18 @@ export function packageInfo(file) {
   return m ? { product, model: m[1], version: +m[2] } : null;
 }
 
+/**
+ * Whether the FM-1's answer matches the identity a package names. Several firmware answer with
+ * the first three digits only: X0X's package says FM-1_9010201 and the FM-1 reports FM-1_901
+ * (also AMB-1, FoMni, LOOM-8, Polly, CTL-1), so a 3+ digit start of the package's number counts.
+ */
+export function sameIdentity(reported, expected) {
+  if (!reported || !expected) return false;
+  if (reported === expected) return true;
+  const r = /^(.+)_(\d{3,})$/.exec(reported), e = /^(.+)_(\d+)$/.exec(expected);
+  return !!(r && e && r[1] === e[1] && e[2].length > r[2].length && e[2].startsWith(r[2]));
+}
+
 /** The image the device asks for: the header blocks without their markers, then the rest as it is. */
 export function logicalImage(file) {
   const out = new Uint8Array(file.length - HEADER_BLOCKS);
@@ -248,7 +260,7 @@ export async function installPackage(access, file, { prefer, dev, step = () => {
       dev.link.close();
       throw fail(s1.lost ? "lost" : "refused", s1.lost
         ? "The FM-1 disconnected while checking the package. Nothing was written: reconnect it and try again."
-        : `The FM-1 didn't accept the package. Nothing was written. It ignores an update to the version it already runs${dev.id.text === pkg.product ? ` (it reports ${dev.id.text})` : ""}.`);
+        : `The FM-1 didn't accept the package. Nothing was written. It ignores an update to the version it already runs${sameIdentity(dev.id.text, pkg.product) ? ` (it reports ${dev.id.text})` : ""}.`);
     }
     await wait(3000);   // let the last answer drain before the device restarts
     dev.link.close();
@@ -401,7 +413,7 @@ export function openInstall(v, o) {
       let dev = await locate(access, o.prefer?.());
       const id = dev.id, plan = planRoute(id, pkg, base, lastLeg);
       // same identity off stock: the log tells whether it's this firmware or another that shares it
-      const there = !plan.length || (plan[0] === "stock" && id.text === pkg.product && !id.ota
+      const there = !plan.length || (plan[0] === "stock" && sameIdentity(id.text, pkg.product) && !id.ota
         && inst?.id === v.id && verKey(inst.version) === verKey(v.version));
       if (there || (plan[0] === "stock" && !two)) {
         dev.link.close();
@@ -432,10 +444,11 @@ export function openInstall(v, o) {
       bar.value = 100;
       stepList.querySelectorAll("li").forEach((li) => { li.className = "done"; });
       const via = plan[0] === "stock" ? `back on ${stockName} first, then ${label}. ` : "";
-      msg.className = "fw-i-msg " + (result.identity === result.expected ? "ok" : "warn");
+      const same = sameIdentity(result.identity, result.expected);
+      msg.className = "fw-i-msg " + (same ? "ok" : "warn");
       msg.textContent = !result.identity
         ? `Written: ${via}The FM-1 restarted but didn't answer the check: look at its screen. It should run ${result.expected}.`
-        : result.identity === result.expected ? `Done: ${via}The FM-1 now reports ${result.identity}.`
+        : same ? `Done: ${via}The FM-1 now reports ${result.identity}${result.identity === result.expected ? "" : ` (short for ${result.expected})`}.`
           : `Written: ${via}But the FM-1 now reports ${result.identity} (the package says ${result.expected}).`;
       close.textContent = "Close"; go.hidden = true;
     } catch (e) {

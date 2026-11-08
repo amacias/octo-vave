@@ -1953,7 +1953,7 @@
    "result": "clean",
    "checks": "boots to ChoralRoot, keys play; generic sound check: heard notes, channel scan, velocity, program change, all notes off; unsure sustain, mod wheel; not heard pitch bend, aftertouch, clock sync, CC probe; sends MIDI clock and notes on ch 1-2; stock sound check 8/8 after revert (run all)",
    "notes": "MIDI port 'ChoralRoot FM-1' (USB 1209:0001). It sends its own MIDI clock, so it leads rather than follows external clock. Installed over stock with 'Skip the backup' (stock cannot be backed up); Back up and return to official V15 asks for the unmodified FM-1.fwsc, saves a backup first and worked first time.",
-   "supersededBy": "v0.29.2-smk37"
+   "supersededBy": "v0.29.2"
   },
   {
    "id": "choralroot",
@@ -1969,7 +1969,7 @@
    "result": "clean",
    "checks": "installed with ChoralRoot's web installer over stock (Skip the backup), FM-1 answered as FM-1_920; played on the device; generic sound check (run all): heard notes, velocity, sustain, program change, all notes off; unsure channel scan, mod wheel, pitch bend, aftertouch, CC 74 probe; clock sync not heard (ChoralRoot sends its own clock); reverted with Octo-Vave's Install on Stock V15 (FM-1 reports FM-1_015)",
    "notes": "MIDI port 'ChoralRoot FM-1'. A chord instrument, not a stock-like synth: several generic MIDI tests have no stock-style mapping, as with 0.25.1. The file matches the release SHA256SUMS and the hash on ChoralRoot's installer page. Installing over stock needs 'Skip the backup' (stock cannot be backed up).",
-   "supersededBy": "v0.29.2-smk37"
+   "supersededBy": "v0.29.2"
   },
   {
    "id": "clipper",
@@ -2182,7 +2182,8 @@
    },
    "result": "clean",
    "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_958); notes on ch 1-3 and 10 sounded at the right pitch on the FM-1's USB audio; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
-   "notes": "MIDI port 'Frodhes FM-1', USB audio 'Line (Frodhes FM-1)'. Plain frodhes-0.9.8.fwsc (not the smk37/mke builds). Screen, knobs and keys not checked."
+   "notes": "MIDI port 'Frodhes FM-1', USB audio 'Line (Frodhes FM-1)'. Plain frodhes-0.9.8.fwsc (not the smk37/mke builds). Screen, knobs and keys not checked.",
+   "supersededBy": "v0.9.9"
   },
   {
    "id": "ghoulbox",
@@ -3095,35 +3096,6 @@
    "choralroot": {
     "releases": [
      {
-      "version": "v0.29.2-smk37",
-      "title": "ChoralRoot 0.29.2-smk37 for the SMK-37",
-      "date": "2026-11-07",
-      "prerelease": false,
-      "url": "https://github.com/Quixotic7/ChoralRootFM1/releases/tag/v0.29.2-smk37",
-      "assets": [
-       {
-        "name": "choralroot-0.29.2-smk37-elite.fwsc",
-        "size": 651500,
-        "url": "https://github.com/Quixotic7/ChoralRootFM1/releases/download/v0.29.2-smk37/choralroot-0.29.2-smk37-elite.fwsc",
-        "downloads": 7
-       },
-       {
-        "name": "choralroot-0.29.2-smk37-mke.fwsc",
-        "size": 651492,
-        "url": "https://github.com/Quixotic7/ChoralRootFM1/releases/download/v0.29.2-smk37/choralroot-0.29.2-smk37-mke.fwsc",
-        "downloads": 7
-       },
-       {
-        "name": "choralroot-0.29.2-smk37.fwsc",
-        "size": 651496,
-        "url": "https://github.com/Quixotic7/ChoralRootFM1/releases/download/v0.29.2-smk37/choralroot-0.29.2-smk37.fwsc",
-        "downloads": 7
-       }
-      ],
-      "sha256sums": "https://github.com/Quixotic7/ChoralRootFM1/releases/download/v0.29.2-smk37/SHA256SUMS",
-      "sha256files": {}
-     },
-     {
       "version": "v0.29.2",
       "title": "ChoralRoot 0.29.2",
       "date": "2026-11-03",
@@ -3155,35 +3127,6 @@
        }
       ],
       "sha256sums": "https://github.com/Quixotic7/ChoralRootFM1/releases/download/v0.29.1/SHA256SUMS",
-      "sha256files": {}
-     },
-     {
-      "version": "v0.29-smk37",
-      "title": "ChoralRoot 0.29-smk37 for the SMK-37 (community test)",
-      "date": "2026-11-02",
-      "prerelease": true,
-      "url": "https://github.com/Quixotic7/ChoralRootFM1/releases/tag/v0.29-smk37",
-      "assets": [
-       {
-        "name": "choralroot-0.29-smk37-elite.fwsc",
-        "size": 651500,
-        "url": "https://github.com/Quixotic7/ChoralRootFM1/releases/download/v0.29-smk37/choralroot-0.29-smk37-elite.fwsc",
-        "downloads": 38
-       },
-       {
-        "name": "choralroot-0.29-smk37-mke.fwsc",
-        "size": 651492,
-        "url": "https://github.com/Quixotic7/ChoralRootFM1/releases/download/v0.29-smk37/choralroot-0.29-smk37-mke.fwsc",
-        "downloads": 38
-       },
-       {
-        "name": "choralroot-0.29-smk37.fwsc",
-        "size": 651496,
-        "url": "https://github.com/Quixotic7/ChoralRootFM1/releases/download/v0.29-smk37/choralroot-0.29-smk37.fwsc",
-        "downloads": 40
-       }
-      ],
-      "sha256sums": "https://github.com/Quixotic7/ChoralRootFM1/releases/download/v0.29-smk37/SHA256SUMS",
       "sha256files": {}
      },
      {
@@ -3738,24 +3681,6 @@
       "url": "https://github.com/illuminus5/skiff/releases/tag/v2.2",
       "assets": [
        {
-        "name": "skiff-2.2-smk37-elite.fwsc",
-        "size": 651975,
-        "url": "https://github.com/illuminus5/skiff/releases/download/v2.2/skiff-2.2-smk37-elite.fwsc",
-        "downloads": 64
-       },
-       {
-        "name": "skiff-2.2-smk37-mke.fwsc",
-        "size": 651971,
-        "url": "https://github.com/illuminus5/skiff/releases/download/v2.2/skiff-2.2-smk37-mke.fwsc",
-        "downloads": 46
-       },
-       {
-        "name": "skiff-2.2-smk37.fwsc",
-        "size": 651975,
-        "url": "https://github.com/illuminus5/skiff/releases/download/v2.2/skiff-2.2-smk37.fwsc",
-        "downloads": 55
-       },
-       {
         "name": "skiff-2.2.fwsc",
         "size": 610429,
         "url": "https://github.com/illuminus5/skiff/releases/download/v2.2/skiff-2.2.fwsc",
@@ -3772,24 +3697,6 @@
       "prerelease": false,
       "url": "https://github.com/illuminus5/skiff/releases/tag/v2.1.1",
       "assets": [
-       {
-        "name": "skiff-2.1.1-smk37-elite.fwsc",
-        "size": 651975,
-        "url": "https://github.com/illuminus5/skiff/releases/download/v2.1.1/skiff-2.1.1-smk37-elite.fwsc",
-        "downloads": 48
-       },
-       {
-        "name": "skiff-2.1.1-smk37-mke.fwsc",
-        "size": 651971,
-        "url": "https://github.com/illuminus5/skiff/releases/download/v2.1.1/skiff-2.1.1-smk37-mke.fwsc",
-        "downloads": 41
-       },
-       {
-        "name": "skiff-2.1.1-smk37.fwsc",
-        "size": 651975,
-        "url": "https://github.com/illuminus5/skiff/releases/download/v2.1.1/skiff-2.1.1-smk37.fwsc",
-        "downloads": 49
-       },
        {
         "name": "skiff-2.1.1.fwsc",
         "size": 610429,
@@ -3808,24 +3715,6 @@
       "url": "https://github.com/illuminus5/skiff/releases/tag/v2.1",
       "assets": [
        {
-        "name": "skiff-2.1-smk37-elite.fwsc",
-        "size": 651975,
-        "url": "https://github.com/illuminus5/skiff/releases/download/v2.1/skiff-2.1-smk37-elite.fwsc",
-        "downloads": 8
-       },
-       {
-        "name": "skiff-2.1-smk37-mke.fwsc",
-        "size": 651971,
-        "url": "https://github.com/illuminus5/skiff/releases/download/v2.1/skiff-2.1-smk37-mke.fwsc",
-        "downloads": 8
-       },
-       {
-        "name": "skiff-2.1-smk37.fwsc",
-        "size": 651975,
-        "url": "https://github.com/illuminus5/skiff/releases/download/v2.1/skiff-2.1-smk37.fwsc",
-        "downloads": 8
-       },
-       {
         "name": "skiff-2.1.fwsc",
         "size": 610429,
         "url": "https://github.com/illuminus5/skiff/releases/download/v2.1/skiff-2.1.fwsc",
@@ -3842,24 +3731,6 @@
       "prerelease": false,
       "url": "https://github.com/illuminus5/skiff/releases/tag/v2.0.3",
       "assets": [
-       {
-        "name": "skiff-2.0.3-smk37-elite.fwsc",
-        "size": 651975,
-        "url": "https://github.com/illuminus5/skiff/releases/download/v2.0.3/skiff-2.0.3-smk37-elite.fwsc",
-        "downloads": 22
-       },
-       {
-        "name": "skiff-2.0.3-smk37-mke.fwsc",
-        "size": 651971,
-        "url": "https://github.com/illuminus5/skiff/releases/download/v2.0.3/skiff-2.0.3-smk37-mke.fwsc",
-        "downloads": 16
-       },
-       {
-        "name": "skiff-2.0.3-smk37.fwsc",
-        "size": 651975,
-        "url": "https://github.com/illuminus5/skiff/releases/download/v2.0.3/skiff-2.0.3-smk37.fwsc",
-        "downloads": 24
-       },
        {
         "name": "skiff-2.0.3.fwsc",
         "size": 610429,
@@ -3878,24 +3749,6 @@
       "url": "https://github.com/illuminus5/skiff/releases/tag/v2.0.2",
       "assets": [
        {
-        "name": "skiff-2.0.2-smk37-elite.fwsc",
-        "size": 651975,
-        "url": "https://github.com/illuminus5/skiff/releases/download/v2.0.2/skiff-2.0.2-smk37-elite.fwsc",
-        "downloads": 27
-       },
-       {
-        "name": "skiff-2.0.2-smk37-mke.fwsc",
-        "size": 651971,
-        "url": "https://github.com/illuminus5/skiff/releases/download/v2.0.2/skiff-2.0.2-smk37-mke.fwsc",
-        "downloads": 20
-       },
-       {
-        "name": "skiff-2.0.2-smk37.fwsc",
-        "size": 651975,
-        "url": "https://github.com/illuminus5/skiff/releases/download/v2.0.2/skiff-2.0.2-smk37.fwsc",
-        "downloads": 23
-       },
-       {
         "name": "skiff-2.0.2.fwsc",
         "size": 610429,
         "url": "https://github.com/illuminus5/skiff/releases/download/v2.0.2/skiff-2.0.2.fwsc",
@@ -3912,24 +3765,6 @@
       "prerelease": false,
       "url": "https://github.com/illuminus5/skiff/releases/tag/v2.0.1",
       "assets": [
-       {
-        "name": "skiff-2.0.1-smk37-elite.fwsc",
-        "size": 651975,
-        "url": "https://github.com/illuminus5/skiff/releases/download/v2.0.1/skiff-2.0.1-smk37-elite.fwsc",
-        "downloads": 30
-       },
-       {
-        "name": "skiff-2.0.1-smk37-mke.fwsc",
-        "size": 651971,
-        "url": "https://github.com/illuminus5/skiff/releases/download/v2.0.1/skiff-2.0.1-smk37-mke.fwsc",
-        "downloads": 25
-       },
-       {
-        "name": "skiff-2.0.1-smk37.fwsc",
-        "size": 651975,
-        "url": "https://github.com/illuminus5/skiff/releases/download/v2.0.1/skiff-2.0.1-smk37.fwsc",
-        "downloads": 30
-       },
        {
         "name": "skiff-2.0.1.fwsc",
         "size": 610429,
@@ -4213,46 +4048,10 @@
       "url": "https://github.com/zvenson/obervave/releases/tag/v3.3.2",
       "assets": [
        {
-        "name": "obervave-3.3.2-smk37-elite.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.3.2/obervave-3.3.2-smk37-elite.fwsc",
-        "downloads": 97
-       },
-       {
-        "name": "obervave-3.3.2-smk37-mke.fwsc",
-        "size": 651323,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.3.2/obervave-3.3.2-smk37-mke.fwsc",
-        "downloads": 65
-       },
-       {
-        "name": "obervave-3.3.2-smk37.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.3.2/obervave-3.3.2-smk37.fwsc",
-        "downloads": 78
-       },
-       {
         "name": "obervave-3.3.2.fwsc",
         "size": 612223,
         "url": "https://github.com/zvenson/obervave/releases/download/v3.3.2/obervave-3.3.2.fwsc",
         "downloads": 146
-       },
-       {
-        "name": "obervave-smk37-elite.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.3.2/obervave-smk37-elite.fwsc",
-        "downloads": 63
-       },
-       {
-        "name": "obervave-smk37-mke.fwsc",
-        "size": 651323,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.3.2/obervave-smk37-mke.fwsc",
-        "downloads": 59
-       },
-       {
-        "name": "obervave-smk37.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.3.2/obervave-smk37.fwsc",
-        "downloads": 63
        }
       ],
       "sha256sums": "https://github.com/zvenson/obervave/releases/download/v3.3.2/SHA256SUMS",
@@ -4266,46 +4065,10 @@
       "url": "https://github.com/zvenson/obervave/releases/tag/v3.3.1",
       "assets": [
        {
-        "name": "obervave-3.3.1-smk37-elite.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.3.1/obervave-3.3.1-smk37-elite.fwsc",
-        "downloads": 7
-       },
-       {
-        "name": "obervave-3.3.1-smk37-mke.fwsc",
-        "size": 651323,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.3.1/obervave-3.3.1-smk37-mke.fwsc",
-        "downloads": 7
-       },
-       {
-        "name": "obervave-3.3.1-smk37.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.3.1/obervave-3.3.1-smk37.fwsc",
-        "downloads": 8
-       },
-       {
         "name": "obervave-3.3.1.fwsc",
         "size": 612223,
         "url": "https://github.com/zvenson/obervave/releases/download/v3.3.1/obervave-3.3.1.fwsc",
         "downloads": 15
-       },
-       {
-        "name": "obervave-smk37-elite.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.3.1/obervave-smk37-elite.fwsc",
-        "downloads": 8
-       },
-       {
-        "name": "obervave-smk37-mke.fwsc",
-        "size": 651323,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.3.1/obervave-smk37-mke.fwsc",
-        "downloads": 7
-       },
-       {
-        "name": "obervave-smk37.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.3.1/obervave-smk37.fwsc",
-        "downloads": 8
        }
       ],
       "sha256sums": "https://github.com/zvenson/obervave/releases/download/v3.3.1/SHA256SUMS",
@@ -4319,46 +4082,10 @@
       "url": "https://github.com/zvenson/obervave/releases/tag/v3.3",
       "assets": [
        {
-        "name": "obervave-3.3-smk37-elite.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.3/obervave-3.3-smk37-elite.fwsc",
-        "downloads": 47
-       },
-       {
-        "name": "obervave-3.3-smk37-mke.fwsc",
-        "size": 651323,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.3/obervave-3.3-smk37-mke.fwsc",
-        "downloads": 30
-       },
-       {
-        "name": "obervave-3.3-smk37.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.3/obervave-3.3-smk37.fwsc",
-        "downloads": 34
-       },
-       {
         "name": "obervave-3.3.fwsc",
         "size": 612196,
         "url": "https://github.com/zvenson/obervave/releases/download/v3.3/obervave-3.3.fwsc",
         "downloads": 53
-       },
-       {
-        "name": "obervave-smk37-elite.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.3/obervave-smk37-elite.fwsc",
-        "downloads": 31
-       },
-       {
-        "name": "obervave-smk37-mke.fwsc",
-        "size": 651323,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.3/obervave-smk37-mke.fwsc",
-        "downloads": 27
-       },
-       {
-        "name": "obervave-smk37.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.3/obervave-smk37.fwsc",
-        "downloads": 26
        }
       ],
       "sha256sums": "https://github.com/zvenson/obervave/releases/download/v3.3/SHA256SUMS",
@@ -4372,46 +4099,10 @@
       "url": "https://github.com/zvenson/obervave/releases/tag/v3.0.1",
       "assets": [
        {
-        "name": "obervave-3.0.1-smk37-elite.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.0.1/obervave-3.0.1-smk37-elite.fwsc",
-        "downloads": 92
-       },
-       {
-        "name": "obervave-3.0.1-smk37-mke.fwsc",
-        "size": 651323,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.0.1/obervave-3.0.1-smk37-mke.fwsc",
-        "downloads": 71
-       },
-       {
-        "name": "obervave-3.0.1-smk37.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.0.1/obervave-3.0.1-smk37.fwsc",
-        "downloads": 87
-       },
-       {
         "name": "obervave-3.0.1.fwsc",
         "size": 612196,
         "url": "https://github.com/zvenson/obervave/releases/download/v3.0.1/obervave-3.0.1.fwsc",
         "downloads": 211
-       },
-       {
-        "name": "obervave-smk37-elite.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.0.1/obervave-smk37-elite.fwsc",
-        "downloads": 73
-       },
-       {
-        "name": "obervave-smk37-mke.fwsc",
-        "size": 651323,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.0.1/obervave-smk37-mke.fwsc",
-        "downloads": 69
-       },
-       {
-        "name": "obervave-smk37.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.0.1/obervave-smk37.fwsc",
-        "downloads": 71
        }
       ],
       "sha256sums": "https://github.com/zvenson/obervave/releases/download/v3.0.1/SHA256SUMS",
@@ -4425,46 +4116,10 @@
       "url": "https://github.com/zvenson/obervave/releases/tag/v3.0",
       "assets": [
        {
-        "name": "obervave-3.0-smk37-elite.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.0/obervave-3.0-smk37-elite.fwsc",
-        "downloads": 55
-       },
-       {
-        "name": "obervave-3.0-smk37-mke.fwsc",
-        "size": 651323,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.0/obervave-3.0-smk37-mke.fwsc",
-        "downloads": 55
-       },
-       {
-        "name": "obervave-3.0-smk37.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.0/obervave-3.0-smk37.fwsc",
-        "downloads": 55
-       },
-       {
         "name": "obervave-3.0.fwsc",
         "size": 612196,
         "url": "https://github.com/zvenson/obervave/releases/download/v3.0/obervave-3.0.fwsc",
         "downloads": 63
-       },
-       {
-        "name": "obervave-smk37-elite.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.0/obervave-smk37-elite.fwsc",
-        "downloads": 51
-       },
-       {
-        "name": "obervave-smk37-mke.fwsc",
-        "size": 651323,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.0/obervave-smk37-mke.fwsc",
-        "downloads": 51
-       },
-       {
-        "name": "obervave-smk37.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v3.0/obervave-smk37.fwsc",
-        "downloads": 51
        }
       ],
       "sha256sums": "https://github.com/zvenson/obervave/releases/download/v3.0/SHA256SUMS",
@@ -4478,46 +4133,10 @@
       "url": "https://github.com/zvenson/obervave/releases/tag/v1.5.3",
       "assets": [
        {
-        "name": "obervave-1.5.3-smk37-elite.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v1.5.3/obervave-1.5.3-smk37-elite.fwsc",
-        "downloads": 113
-       },
-       {
-        "name": "obervave-1.5.3-smk37-mke.fwsc",
-        "size": 651323,
-        "url": "https://github.com/zvenson/obervave/releases/download/v1.5.3/obervave-1.5.3-smk37-mke.fwsc",
-        "downloads": 105
-       },
-       {
-        "name": "obervave-1.5.3-smk37.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v1.5.3/obervave-1.5.3-smk37.fwsc",
-        "downloads": 109
-       },
-       {
         "name": "obervave-1.5.3.fwsc",
         "size": 612196,
         "url": "https://github.com/zvenson/obervave/releases/download/v1.5.3/obervave-1.5.3.fwsc",
         "downloads": 149
-       },
-       {
-        "name": "obervave-smk37-elite.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v1.5.3/obervave-smk37-elite.fwsc",
-        "downloads": 99
-       },
-       {
-        "name": "obervave-smk37-mke.fwsc",
-        "size": 651323,
-        "url": "https://github.com/zvenson/obervave/releases/download/v1.5.3/obervave-smk37-mke.fwsc",
-        "downloads": 98
-       },
-       {
-        "name": "obervave-smk37.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/obervave/releases/download/v1.5.3/obervave-smk37.fwsc",
-        "downloads": 100
        }
       ],
       "sha256sums": "https://github.com/zvenson/obervave/releases/download/v1.5.3/SHA256SUMS",
@@ -6884,46 +6503,10 @@
       "url": "https://github.com/leonardoMirabal/frodhes/releases/tag/v0.9.8",
       "assets": [
        {
-        "name": "frodhes-0.9.8-mke-p37.fwsc",
-        "size": 651359,
-        "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.8/frodhes-0.9.8-mke-p37.fwsc",
-        "downloads": 75
-       },
-       {
-        "name": "frodhes-0.9.8-smk37-elite.fwsc",
-        "size": 651367,
-        "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.8/frodhes-0.9.8-smk37-elite.fwsc",
-        "downloads": 13
-       },
-       {
-        "name": "frodhes-0.9.8-smk37-pro.fwsc",
-        "size": 651363,
-        "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.8/frodhes-0.9.8-smk37-pro.fwsc",
-        "downloads": 13
-       },
-       {
         "name": "frodhes-0.9.8.fwsc",
         "size": 612196,
         "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.8/frodhes-0.9.8.fwsc",
         "downloads": 24
-       },
-       {
-        "name": "frodhes-mke-p37.fwsc",
-        "size": 651359,
-        "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.8/frodhes-mke-p37.fwsc",
-        "downloads": 13
-       },
-       {
-        "name": "frodhes-smk37-elite.fwsc",
-        "size": 651367,
-        "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.8/frodhes-smk37-elite.fwsc",
-        "downloads": 14
-       },
-       {
-        "name": "frodhes-smk37-pro.fwsc",
-        "size": 651363,
-        "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.8/frodhes-smk37-pro.fwsc",
-        "downloads": 12
        },
        {
         "name": "frodhes.fwsc",
@@ -6949,24 +6532,6 @@
         "downloads": 270
        },
        {
-        "name": "frodhes-smk37-elite-experimental.fwsc",
-        "size": 651367,
-        "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.7/frodhes-smk37-elite-experimental.fwsc",
-        "downloads": 83
-       },
-       {
-        "name": "frodhes-smk37-experimental.fwsc",
-        "size": 651363,
-        "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.7/frodhes-smk37-experimental.fwsc",
-        "downloads": 87
-       },
-       {
-        "name": "frodhes-smk37-mke-experimental.fwsc",
-        "size": 651359,
-        "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.7/frodhes-smk37-mke-experimental.fwsc",
-        "downloads": 79
-       },
-       {
         "name": "frodhes.fwsc",
         "size": 612196,
         "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.7/frodhes.fwsc",
@@ -6990,24 +6555,6 @@
         "downloads": 66
        },
        {
-        "name": "frodhes-smk37-elite-experimental.fwsc",
-        "size": 651367,
-        "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.6/frodhes-smk37-elite-experimental.fwsc",
-        "downloads": 20
-       },
-       {
-        "name": "frodhes-smk37-experimental.fwsc",
-        "size": 651363,
-        "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.6/frodhes-smk37-experimental.fwsc",
-        "downloads": 18
-       },
-       {
-        "name": "frodhes-smk37-mke-experimental.fwsc",
-        "size": 651359,
-        "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.6/frodhes-smk37-mke-experimental.fwsc",
-        "downloads": 19
-       },
-       {
         "name": "frodhes.fwsc",
         "size": 612196,
         "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.6/frodhes.fwsc",
@@ -7029,24 +6576,6 @@
         "size": 612197,
         "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.5/frodhes-0.9.5.fwsc",
         "downloads": 61
-       },
-       {
-        "name": "frodhes-smk37-elite-experimental.fwsc",
-        "size": 651308,
-        "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.5/frodhes-smk37-elite-experimental.fwsc",
-        "downloads": 20
-       },
-       {
-        "name": "frodhes-smk37-experimental.fwsc",
-        "size": 651304,
-        "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.5/frodhes-smk37-experimental.fwsc",
-        "downloads": 20
-       },
-       {
-        "name": "frodhes-smk37-mke-experimental.fwsc",
-        "size": 651300,
-        "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.5/frodhes-smk37-mke-experimental.fwsc",
-        "downloads": 19
        },
        {
         "name": "frodhes.fwsc",
@@ -7232,46 +6761,10 @@
       "url": "https://github.com/zvenson/shineon/releases/tag/v3.0.1",
       "assets": [
        {
-        "name": "shineon-3.0.1-smk37-elite.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/shineon/releases/download/v3.0.1/shineon-3.0.1-smk37-elite.fwsc",
-        "downloads": 115
-       },
-       {
-        "name": "shineon-3.0.1-smk37-mke.fwsc",
-        "size": 651323,
-        "url": "https://github.com/zvenson/shineon/releases/download/v3.0.1/shineon-3.0.1-smk37-mke.fwsc",
-        "downloads": 109
-       },
-       {
-        "name": "shineon-3.0.1-smk37.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/shineon/releases/download/v3.0.1/shineon-3.0.1-smk37.fwsc",
-        "downloads": 116
-       },
-       {
         "name": "shineon-3.0.1.fwsc",
         "size": 612204,
         "url": "https://github.com/zvenson/shineon/releases/download/v3.0.1/shineon-3.0.1.fwsc",
         "downloads": 198
-       },
-       {
-        "name": "shineon-smk37-elite.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/shineon/releases/download/v3.0.1/shineon-smk37-elite.fwsc",
-        "downloads": 107
-       },
-       {
-        "name": "shineon-smk37-mke.fwsc",
-        "size": 651323,
-        "url": "https://github.com/zvenson/shineon/releases/download/v3.0.1/shineon-smk37-mke.fwsc",
-        "downloads": 107
-       },
-       {
-        "name": "shineon-smk37.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/shineon/releases/download/v3.0.1/shineon-smk37.fwsc",
-        "downloads": 107
        }
       ],
       "sha256sums": "https://github.com/zvenson/shineon/releases/download/v3.0.1/SHA256SUMS",
@@ -7285,46 +6778,10 @@
       "url": "https://github.com/zvenson/shineon/releases/tag/v3.0",
       "assets": [
        {
-        "name": "shineon-3.0-smk37-elite.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/shineon/releases/download/v3.0/shineon-3.0-smk37-elite.fwsc",
-        "downloads": 52
-       },
-       {
-        "name": "shineon-3.0-smk37-mke.fwsc",
-        "size": 651323,
-        "url": "https://github.com/zvenson/shineon/releases/download/v3.0/shineon-3.0-smk37-mke.fwsc",
-        "downloads": 52
-       },
-       {
-        "name": "shineon-3.0-smk37.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/shineon/releases/download/v3.0/shineon-3.0-smk37.fwsc",
-        "downloads": 52
-       },
-       {
         "name": "shineon-3.0.fwsc",
         "size": 612204,
         "url": "https://github.com/zvenson/shineon/releases/download/v3.0/shineon-3.0.fwsc",
         "downloads": 54
-       },
-       {
-        "name": "shineon-smk37-elite.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/shineon/releases/download/v3.0/shineon-smk37-elite.fwsc",
-        "downloads": 49
-       },
-       {
-        "name": "shineon-smk37-mke.fwsc",
-        "size": 651323,
-        "url": "https://github.com/zvenson/shineon/releases/download/v3.0/shineon-smk37-mke.fwsc",
-        "downloads": 49
-       },
-       {
-        "name": "shineon-smk37.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/shineon/releases/download/v3.0/shineon-smk37.fwsc",
-        "downloads": 49
        }
       ],
       "sha256sums": "https://github.com/zvenson/shineon/releases/download/v3.0/SHA256SUMS",
@@ -7338,46 +6795,10 @@
       "url": "https://github.com/zvenson/shineon/releases/tag/v1.2.3",
       "assets": [
        {
-        "name": "shineon-1.2.3-smk37-elite.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/shineon/releases/download/v1.2.3/shineon-1.2.3-smk37-elite.fwsc",
-        "downloads": 92
-       },
-       {
-        "name": "shineon-1.2.3-smk37-mke.fwsc",
-        "size": 651323,
-        "url": "https://github.com/zvenson/shineon/releases/download/v1.2.3/shineon-1.2.3-smk37-mke.fwsc",
-        "downloads": 91
-       },
-       {
-        "name": "shineon-1.2.3-smk37.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/shineon/releases/download/v1.2.3/shineon-1.2.3-smk37.fwsc",
-        "downloads": 94
-       },
-       {
         "name": "shineon-1.2.3.fwsc",
         "size": 612204,
         "url": "https://github.com/zvenson/shineon/releases/download/v1.2.3/shineon-1.2.3.fwsc",
         "downloads": 113
-       },
-       {
-        "name": "shineon-smk37-elite.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/shineon/releases/download/v1.2.3/shineon-smk37-elite.fwsc",
-        "downloads": 86
-       },
-       {
-        "name": "shineon-smk37-mke.fwsc",
-        "size": 651323,
-        "url": "https://github.com/zvenson/shineon/releases/download/v1.2.3/shineon-smk37-mke.fwsc",
-        "downloads": 86
-       },
-       {
-        "name": "shineon-smk37.fwsc",
-        "size": 651327,
-        "url": "https://github.com/zvenson/shineon/releases/download/v1.2.3/shineon-smk37.fwsc",
-        "downloads": 87
        }
       ],
       "sha256sums": "https://github.com/zvenson/shineon/releases/download/v1.2.3/SHA256SUMS",
@@ -7391,46 +6812,10 @@
       "url": "https://github.com/zvenson/shineon/releases/tag/v1.2.2",
       "assets": [
        {
-        "name": "shineon-1.2.2-smk37-elite.fwsc",
-        "size": 651270,
-        "url": "https://github.com/zvenson/shineon/releases/download/v1.2.2/shineon-1.2.2-smk37-elite.fwsc",
-        "downloads": 87
-       },
-       {
-        "name": "shineon-1.2.2-smk37-mke.fwsc",
-        "size": 651266,
-        "url": "https://github.com/zvenson/shineon/releases/download/v1.2.2/shineon-1.2.2-smk37-mke.fwsc",
-        "downloads": 87
-       },
-       {
-        "name": "shineon-1.2.2-smk37.fwsc",
-        "size": 651270,
-        "url": "https://github.com/zvenson/shineon/releases/download/v1.2.2/shineon-1.2.2-smk37.fwsc",
-        "downloads": 87
-       },
-       {
         "name": "shineon-1.2.2.fwsc",
         "size": 610110,
         "url": "https://github.com/zvenson/shineon/releases/download/v1.2.2/shineon-1.2.2.fwsc",
         "downloads": 90
-       },
-       {
-        "name": "shineon-smk37-elite.fwsc",
-        "size": 651270,
-        "url": "https://github.com/zvenson/shineon/releases/download/v1.2.2/shineon-smk37-elite.fwsc",
-        "downloads": 84
-       },
-       {
-        "name": "shineon-smk37-mke.fwsc",
-        "size": 651266,
-        "url": "https://github.com/zvenson/shineon/releases/download/v1.2.2/shineon-smk37-mke.fwsc",
-        "downloads": 84
-       },
-       {
-        "name": "shineon-smk37.fwsc",
-        "size": 651270,
-        "url": "https://github.com/zvenson/shineon/releases/download/v1.2.2/shineon-smk37.fwsc",
-        "downloads": 84
        }
       ],
       "sha256sums": "https://github.com/zvenson/shineon/releases/download/v1.2.2/SHA256SUMS",
@@ -7444,46 +6829,10 @@
       "url": "https://github.com/zvenson/shineon/releases/tag/v1.2.1",
       "assets": [
        {
-        "name": "shineon-1.2.1-smk37-elite.fwsc",
-        "size": 651270,
-        "url": "https://github.com/zvenson/shineon/releases/download/v1.2.1/shineon-1.2.1-smk37-elite.fwsc",
-        "downloads": 87
-       },
-       {
-        "name": "shineon-1.2.1-smk37-mke.fwsc",
-        "size": 651266,
-        "url": "https://github.com/zvenson/shineon/releases/download/v1.2.1/shineon-1.2.1-smk37-mke.fwsc",
-        "downloads": 87
-       },
-       {
-        "name": "shineon-1.2.1-smk37.fwsc",
-        "size": 651270,
-        "url": "https://github.com/zvenson/shineon/releases/download/v1.2.1/shineon-1.2.1-smk37.fwsc",
-        "downloads": 88
-       },
-       {
         "name": "shineon-1.2.1.fwsc",
         "size": 610110,
         "url": "https://github.com/zvenson/shineon/releases/download/v1.2.1/shineon-1.2.1.fwsc",
         "downloads": 93
-       },
-       {
-        "name": "shineon-smk37-elite.fwsc",
-        "size": 651270,
-        "url": "https://github.com/zvenson/shineon/releases/download/v1.2.1/shineon-smk37-elite.fwsc",
-        "downloads": 85
-       },
-       {
-        "name": "shineon-smk37-mke.fwsc",
-        "size": 651266,
-        "url": "https://github.com/zvenson/shineon/releases/download/v1.2.1/shineon-smk37-mke.fwsc",
-        "downloads": 85
-       },
-       {
-        "name": "shineon-smk37.fwsc",
-        "size": 651270,
-        "url": "https://github.com/zvenson/shineon/releases/download/v1.2.1/shineon-smk37.fwsc",
-        "downloads": 85
        }
       ],
       "sha256sums": "https://github.com/zvenson/shineon/releases/download/v1.2.1/SHA256SUMS",
