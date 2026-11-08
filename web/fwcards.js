@@ -181,6 +181,29 @@ function validationsFor(fw, id) {
     .sort((a, b) => String(b.date).localeCompare(String(a.date)));
 }
 
+/** Newer first: by test date, then by version number ("v2.8.5" before "v2.8.1"). */
+function newerFirst(a, b) {
+  const nums = (v) => (verKey(v).match(/\d+/g) || []).map(Number);
+  const x = nums(a.version), y = nums(b.version);
+  for (let i = 0; i < Math.max(x.length, y.length); i++) if ((y[i] || 0) !== (x[i] || 0)) return (y[i] || 0) - (x[i] || 0);
+  return 0;
+}
+
+/**
+ * The validated-firmware list: once a newer version of a firmware has been tested, the older
+ * records drop out of the list (they stay in validated.json as history). If the newest test
+ * failed, the newest passing record stays too, so its Install button is still there.
+ */
+export function latestValidations(fw) {
+  const byId = new Map();
+  for (const v of (fw.validated || []).filter(isValidated)) (byId.get(v.id) || byId.set(v.id, []).get(v.id)).push(v);
+  return [...byId.values()].flatMap((vals) => {
+    vals.sort((a, b) => String(b.date).localeCompare(String(a.date)) || newerFirst(a, b));
+    const pass = vals.find((v) => outcome(v) !== "failed");
+    return pass && pass !== vals[0] ? [vals[0], pass] : [vals[0]];
+  });
+}
+
 /**
  * Comparable version: "ghoulbox-v2.3.2", "v2.3.2" and "2.3.2" are the same release,
  * "1.6" equals "1.6.0", "V15" → "15"; suffixes like "-rc1" stay significant.

@@ -1,7 +1,7 @@
 import * as DX from "./dx7.js";
 import { mountFm1Keys, fm1LowNote } from "./fm1keys.js";
-import { h, fmtBytes, normVer, fwDirectory, fwSections, octo, octoFor, outcome, isValidated,
-  validationTip, stepsText, verKey, shortVer, relTime, icon, installableState } from "./fwcards.js";
+import { h, fmtBytes, normVer, fwDirectory, fwSections, octo, octoFor, outcome,
+  validationTip, stepsText, verKey, shortVer, relTime, icon, installableState, latestValidations } from "./fwcards.js";
 import { installAction, openInstall, BASELINE } from "./fm1flash.js";
 
 // ================================================================ helpers
@@ -1459,9 +1459,9 @@ function validatedFile(fw, v) {
     v.sha256 ? l.sha256 === v.sha256 : verKey(l.version) === verKey(v.version) && (!v.file || l.name === v.file));
 }
 
-/** "Validated firmware": every validated firmware, and whether its exact file is kept. */
+/** "Validated firmware": the newest tested version of each firmware, and whether its exact file is kept. */
 function validatedSection(fw, orphans) {
-  const recs = (fw.validated || []).filter(isValidated)
+  const recs = latestValidations(fw)
     .sort((a, b) => fwName(a.id).localeCompare(fwName(b.id)) || String(b.date).localeCompare(String(a.date)));
   const rows = recs.map((v) => {
     const file = validatedFile(fw, v);

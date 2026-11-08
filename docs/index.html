@@ -201,7 +201,7 @@
   // The Firmware section renders with the app's own card code (js/fwcards.js, a copy of web/fwcards.js)
   // from the nightly snapshot docs/data/firmware.json (tools/fm1_site.py). Read from the repository
   // first, so a new snapshot shows before Pages republishes; this site's own copy is the fallback.
-  import { h, fwSections, octoFor, validationState, validationTip, stepsText, shortVer, relTime, copySha, isValidated, verKey }
+  import { h, fwSections, octoFor, validationState, validationTip, stepsText, shortVer, relTime, copySha, latestValidations, verKey }
     from "./js/fwcards.js";
   import { installAction } from "./js/fm1flash.js";
   const SNAPSHOTS = ["https://raw.githubusercontent.com/amacias/octo-vave/main/docs/data/firmware.json", "data/firmware.json"];
@@ -219,7 +219,7 @@
 
   function validatedRows(fw) {
     const name = (id) => fw.catalog.find((f) => f.id === id)?.name || id;
-    const recs = fw.validated.filter(isValidated)
+    const recs = latestValidations(fw)
       .sort((a, b) => name(a.id).localeCompare(name(b.id)) || String(b.date).localeCompare(String(a.date)));
     if (!recs.length) return [h("tr", {}, h("td", { colspan: 6, class: "muted", text: "Nothing validated yet." }))];
     return recs.map((v) => {
