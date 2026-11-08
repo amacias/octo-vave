@@ -1446,7 +1446,7 @@ function renderFirmware() {
     h("tr", {}, h("td", { text: r.date.replace("T", " ") }), h("td", { text: fwName(r.id) }), h("td", { text: r.version }), h("td", { class: "muted", text: r.note }))));
 
   // Leaderboard cards, then "Also popular" (#11–#30), then every validated firmware (same order as the homepage).
-  const { nodes } = fwSections(fw, FW_APP);
+  const { nodes } = fwSections(fw, FW_APP, { boxed: true });
   $("#fwCards").replaceChildren(...nodes, fwDirectory(fw) || "", appValidatedSection(fw));
   buildChecks();
   syncFirmwareFromPort();
