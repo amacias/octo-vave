@@ -28,6 +28,7 @@
   body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
   a { color: var(--accent); }
   .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+  .wrap.wide { max-width: 1272px; }  /* firmware sections: room for 4 cards a row, as in the app */
   html { scroll-behavior: smooth; scroll-padding-top: 70px; }  /* section links stop below the sticky top bar */
   header.hero { display: flex; align-items: center; gap: 16px; padding: 20px 0 4px; }
   .hero img.octo { width: 64px; height: auto; flex: none; filter: none; }  /* not the card octopus of css/firmware.css */
@@ -50,11 +51,6 @@
   code, pre { font: 14px ui-monospace, SFMono-Regular, Consolas, monospace; background: var(--code); border-radius: 6px; }
   code { padding: 1px 6px; }
   pre { padding: 12px 14px; overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
-  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 15px; }
-  th { color: var(--muted); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
-  td.sha code { font-size: 12.5px; word-break: break-all; }
-  td .octo { width: 22px; height: 22px; }
   .muted { color: var(--muted); }
   .inline-octo { width: 18px; vertical-align: -3px; }
   .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 20px; align-items: start; }
@@ -72,37 +68,39 @@
   .gh { width: 18px; height: 18px; }
   @media (max-width: 560px) { .links a:not(.gh-link) { display: none; } }
   footer img { width: 40px; }
-  .table-scroll { overflow-x: auto; }
-  /* live Firmware section: the app's cards (css/firmware.css) on this page's controls */
-  #leaderboard .fw-status { font-size: 14px; margin: -4px 0 4px; }
-  #fwLive { font-size: 14px; line-height: 1.45; }  /* the app's type size, so cards lay out as on the Firmware page */
-  #fwLive code { background: none; padding: 0; }
-  #leaderboard .btn { font-weight: 500; border-radius: 8px; gap: 6px; }
-  #leaderboard .btn.ghost { background: none; }
-  #leaderboard button { font: inherit; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); cursor: pointer; }
-  #leaderboard button.ghost { background: none; }
-  #leaderboard button:hover, #leaderboard .btn:hover { border-color: var(--muted); }
-  #leaderboard .mini-btn { padding: 1px 8px; font-size: 12px; }
-  #leaderboard .ic { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
-  #leaderboard .badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); }
-  #leaderboard .badge.ok { color: var(--ok); border-color: var(--ok); }
-  #leaderboard .badge.warn { color: var(--warn); border-color: var(--warn); }
-  #leaderboard .badge.bad { color: var(--bad); border-color: var(--bad); }
-  #leaderboard .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 6px 0; }
-  #leaderboard .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-  #leaderboard .card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0; }
-  #leaderboard .fw-section { font-size: 18px; margin: 28px 0 12px; }
-  #leaderboard .fw-legend-row { margin: 14px 0 -4px; }
-  #leaderboard h3.sub { font-size: 18px; margin: 32px 0 6px; display: flex; align-items: center; gap: 8px; }
-  #leaderboard td .copy { margin-left: 6px; }
+  /* firmware sections: the app's cards and lists (css/firmware.css) on this page's controls */
+  .fwsec .fw-status { font-size: 14px; margin: -4px 0 4px; }
+  .fwsec .live { font-size: 14px; line-height: 1.45; }  /* the app's type size, so they lay out as on the Firmware page */
+  .fwsec .live code { background: none; padding: 0; }
+  .fwsec .dir-head { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+  .fwsec .val-list { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 6px 16px; }
+  .fwsec .val-row:last-child { border-bottom: 0; }
+  .fwsec .btn { font-weight: 500; border-radius: 8px; gap: 6px; }
+  .fwsec .btn.ghost { background: none; }
+  .fwsec button { font: inherit; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); cursor: pointer; }
+  .fwsec button.ghost { background: none; }
+  .fwsec button:hover, .fwsec .btn:hover { border-color: var(--muted); }
+  .fwsec .mini-btn { padding: 1px 8px; font-size: 12px; }
+  .fwsec .ic { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .fwsec .badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); }
+  .fwsec .badge.ok { color: var(--ok); border-color: var(--ok); }
+  .fwsec .badge.warn { color: var(--warn); border-color: var(--warn); }
+  .fwsec .badge.bad { color: var(--bad); border-color: var(--bad); }
+  .fwsec .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 6px 0; }
+  .fwsec .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .fwsec .card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0; }
+  .fwsec .fw-section { font-size: 18px; margin: 28px 0 12px; }
+  .fwsec .fw-legend-row { margin: 14px 0 -4px; }
+  .fwsec h3.sub { font-size: 18px; margin: 32px 0 6px; display: flex; align-items: center; gap: 8px; }
 </style>
 </head>
 <body>
 <nav class="topbar">
-  <div class="wrap topbar-in">
+  <div class="wrap wide topbar-in">
     <a class="brand" href="#top"><img src="img/octo.svg" alt="">Octo-Vave</a>
     <div class="links">
       <a href="#leaderboard">Leaderboard</a>
+      <a href="#popular">Also popular</a>
       <a href="#validated">Validated</a>
       <a href="#install">Install App</a>
       <a href="https://github.com/amacias/octo-vave/issues/new?template=validation-report.yml">Report a validation</a>
@@ -110,7 +108,7 @@
     </div>
   </div>
 </nav>
-<header class="hero wrap" id="top">
+<header class="hero wrap wide" id="top">
   <img class="octo" src="img/octo-hero.svg" alt="Octo-Vave: an orange octopus">
   <div>
     <h1>Octo-Vave <span class="by">by Artificial Music</span></h1>
@@ -118,27 +116,28 @@
   </div>
 </header>
 
-<section class="wrap" id="leaderboard">
+<section class="wrap wide fwsec" id="leaderboard">
   <h2><img src="img/octo.svg" alt="">Firmware Leaderboard</h2>
   <p class="muted">Stock, FM-1 Open and the top community projects. An orange octopus <img class="inline-octo" src="img/octo.svg" alt="orange octopus">
     means that version was installed, played and reverted to stock on a real FM-1.</p>
   <p class="muted fw-status" id="fwStatus">Loading the firmware list…</p>
-  <div id="fwLive"></div>
+  <div class="live" id="fwLive"></div>
 </section>
 
-<section class="wrap" id="validated">
-  <h2><img src="img/octo.svg" alt="">Validated firmware</h2>
-  <p class="muted">From <a href="https://github.com/amacias/octo-vave/blob/main/firmware/validated.json"><code>firmware/validated.json</code></a>.
+<section class="wrap wide fwsec" id="popular">
+  <h2><img src="img/octo.svg" alt="">Also Popular</h2>
+  <p class="muted dir-head"><span>The next most popular projects, ranked by GitHub stars and downloads<span id="dirRange"></span>.
+    An octopus marks a validated one.</span> <span id="dirFull"></span></p>
+  <div class="live" id="dirLive"><p class="muted">Loading…</p></div>
+</section>
+
+<section class="wrap wide fwsec" id="validated">
+  <h2><img src="img/octo.svg" alt="">All Validated Firmware</h2>
+  <p class="muted">The newest tested version of each firmware, from <a href="https://github.com/amacias/octo-vave/blob/main/firmware/validated.json"><code>firmware/validated.json</code></a>.
     A grey octopus means the project has a newer release that hasn't been tested yet.
-    Got the file somewhere else? Compare its SHA256 with the one below.
     <b>Install</b> puts that exact file on your FM-1 from this page (Chrome or Edge, USB cable);
-    Install on the Stock V15 row takes it back to stock.</p>
-  <div class="table-scroll">
-    <table>
-      <thead><tr><th></th><th>Firmware</th><th>Version</th><th>Tested</th><th>File SHA256</th><th></th></tr></thead>
-      <tbody id="val"><tr><td colspan="6" class="muted">Loading…</td></tr></tbody>
-    </table>
-  </div>
+    Install on Stock V15 takes it back to stock. Got the file somewhere else? <b>SHA256</b> copies its checksum to compare.</p>
+  <div class="live val-list" id="val"><p class="muted">Loading…</p></div>
   <p class="muted">Tested one yourself? <a href="https://github.com/amacias/octo-vave/issues/new?template=validation-report.yml">Send a validation report</a>.</p>
 </section>
 
@@ -201,7 +200,7 @@
   // The Firmware section renders with the app's own card code (js/fwcards.js, a copy of web/fwcards.js)
   // from the nightly snapshot docs/data/firmware.json (tools/fm1_site.py). Read from the repository
   // first, so a new snapshot shows before Pages republishes; this site's own copy is the fallback.
-  import { h, fwSections, octoFor, validationState, validationTip, stepsText, shortVer, relTime, copySha, latestValidations, verKey }
+  import { h, fwSections, fwDirectory, validatedList, relTime, copySha, verKey }
     from "./js/fwcards.js";
   import { installAction } from "./js/fm1flash.js";
   const SNAPSHOTS = ["https://raw.githubusercontent.com/amacias/octo-vave/main/docs/data/firmware.json", "data/firmware.json"];
@@ -217,26 +216,15 @@
     throw new Error("no snapshot");
   }
 
+  // One line per firmware, as in the app; the homepage adds the SHA256 copy and Install.
   function validatedRows(fw) {
-    const name = (id) => fw.catalog.find((f) => f.id === id)?.name || id;
-    const recs = latestValidations(fw)
-      .sort((a, b) => name(a.id).localeCompare(name(b.id)) || String(b.date).localeCompare(String(a.date)));
-    if (!recs.length) return [h("tr", {}, h("td", { colspan: 6, class: "muted", text: "Nothing validated yet." }))];
-    return recs.map((v) => {
-      // grey when a newer stable release is out, judged for this record alone (as on its card)
-      const st = validationState({ ...fw, validated: [v] }, { id: v.id });
-      const tip = validationTip(v) + (st.current ? "" : `\nNewer release ${shortVer(st.newer.version)} hasn't been tested yet.`);
-      const copy = v.sha256 && h("button", { class: "ghost mini-btn copy", text: "Copy", title: "Copy the full SHA256" });
+    const rows = validatedList(fw, (v) => {
+      const copy = v.sha256 && h("button", { class: "ghost mini-btn copy", text: "SHA256", title: `Copy the full SHA256 of ${v.file || "the tested file"}:
+${v.sha256}` });
       if (copy) copy.onclick = () => copySha(v, copy);
-      return h("tr", { title: tip },
-        h("td", {}, octoFor(v, tip, st.current)),
-        h("td", {}, h("b", { text: name(v.id) }), h("div", { class: "muted", style: "font-size:12px", text: stepsText(v) })),
-        h("td", {}, h("code", { text: shortVer(v.version) }),
-          !st.current && h("div", { class: "muted", style: "font-size:12px", text: `newer: ${shortVer(st.newer.version)}` })),
-        h("td", { style: "white-space:nowrap", text: v.date }),
-        h("td", { class: "sha" }, v.sha256 ? [h("code", { title: v.file || "", text: v.sha256 }), copy] : h("span", { class: "muted", text: "not recorded" })),
-        h("td", {}, installAction(v, installOpts(fw, v))));
+      return [copy, installAction(v, installOpts(fw, v))];
     });
+    return rows.length ? rows : [h("p", { class: "muted", text: "Nothing validated yet." })];
   }
 
   // Install button: the browser flashes the validated file over Web MIDI (js/fm1flash.js). Most hosts
@@ -268,12 +256,16 @@
   loadSnapshot().then((fw) => {
     $("fwStatus").textContent = `Updated nightly from GitHub and awesome-fm-1 · this list: ${relTime(fw.generated_at)}.`;
     $("fwLive").replaceChildren(...fwSections(fw, null, { merged: true }).nodes);
+    // the cards show the top 12; the list goes on from #13
+    const dir = fwDirectory(fw, { from: 12, bare: true });
+    if (dir) { $("dirRange").textContent = ` (${dir.range})`; $("dirFull").replaceChildren(dir.full); $("dirLive").replaceChildren(dir.list); }
+    else $("dirLive").replaceChildren();
     $("val").replaceChildren(...validatedRows(fw));
   }).catch(() => {
     $("fwStatus").replaceChildren("Couldn't load the firmware list here; see ",
       h("a", { href: "https://github.com/amacias/octo-vave/blob/main/firmware/catalog.json", text: "catalog.json" }), " and ",
       h("a", { href: "https://github.com/amacias/octo-vave/blob/main/firmware/validated.json", text: "validated.json" }), ".");
-    $("val").replaceChildren();
+    $("val").replaceChildren(); $("dirLive").replaceChildren();
   });
 </script>
 </body>

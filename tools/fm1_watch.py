@@ -61,11 +61,24 @@ def releases_for(fw):
     return rels or None
 
 
+def ver_nums(v):
+    """Version numbers for ordering: "drum-v1.0.1" -> [1, 0, 1], "V16" -> [16]."""
+    return [int(x) for x in re.findall(r"\d+", ver_key(v))]
+
+
+def higher(a, b):
+    """True when version a has a higher number than version b."""
+    x, y = ver_nums(a), ver_nums(b)
+    n = max(len(x), len(y))
+    return x + [0] * (n - len(x)) > y + [0] * (n - len(y))
+
+
 def newer_stable(rels, version):
-    """The newest stable release listed before the validated version (releases are newest first)."""
+    """The newest stable release listed before the validated version (releases are newest first).
+    When the list doesn't have the validated version, only higher version numbers count."""
     keys = [ver_key(r["version"]) for r in rels]
-    idx = keys.index(ver_key(version)) if ver_key(version) in keys else len(rels)
-    return next((r for r in rels[:idx] if not r.get("prerelease")), None)
+    cand = rels[:keys.index(ver_key(version))] if ver_key(version) in keys else [r for r in rels if higher(r["version"], version)]
+    return next((r for r in cand if not r.get("prerelease")), None)
 
 
 def main():

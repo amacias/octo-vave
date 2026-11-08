@@ -95,6 +95,7 @@ button.fw-inst:disabled { color: var(--muted); border-color: var(--line); }
 .octo-wrap.clean { --octo: #F07A2B; }
 .octo-wrap.issues { --octo: #9B5DE5; }
 .octo-wrap.failed { --octo: #E03C31; }
+.val-newer { font-size: 11px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
 .val-label { font-size: 11px; padding: 1px 7px; border-radius: 999px; border: 1px solid; }
 .val-label.issues { color: #9B5DE5; }
 .val-label.failed { color: #E03C31; }

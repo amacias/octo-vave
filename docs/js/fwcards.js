@@ -26,16 +26,16 @@ export function h(tag, props = {}, ...kids) {
 export const fmtBytes = (n) => (n > 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.round(n / 1024)} KB`);
 export const normVer = (v) => String(v || "").trim().replace(/^v/i, "").toLowerCase();
 
-/** The next 20 most popular projects after the cards (#11–#30), one line each. */
-export function fwDirectory(fw) {
-  const dir = (fw.ranked || []).slice(10);
+/**
+ * "Also popular": the ranked projects after the cards (from #from+1 to #30), one line each.
+ * The app shows it as a card; with `bare` the caller (the homepage) gets { head, list } to place itself.
+ */
+export function fwDirectory(fw, { from = 10, bare = false } = {}) {
+  const dir = (fw.ranked || []).slice(from);
   if (!dir.length) return null;
-  const first = dir[0].rank;
-  return h("section", { class: "card dir" },
-    h("div", { class: "section-head" },
-      h("h3", { text: `Also popular · #${first}–#${dir[dir.length - 1].rank}` }),
-      h("a", { class: "muted", href: fw.discovery?.source || "https://github.com/cicloid/awesome-fm-1", target: "_blank", rel: "noopener", text: "full list ↗" })),
-    h("ol", { class: "dir-list" }, dir.map((p) => {
+  const range = `#${dir[0].rank}–#${dir[dir.length - 1].rank}`;
+  const full = h("a", { class: "muted", href: fw.discovery?.source || "https://github.com/cicloid/awesome-fm-1", target: "_blank", rel: "noopener", text: "full list ↗" });
+  const list = h("ol", { class: "dir-list" }, dir.map((p) => {
       const f = fw.catalog.find((c) => c.id === p.id);
       const val = f && validationState(fw, f);
       const lat = p.latest ? `\nLatest ${shortVer(p.latest.version)} · ${p.latest.date}` : "";
@@ -46,7 +46,38 @@ export function fwDirectory(fw) {
           val && octoFor(val.v, valTitle(val), val.current),
           p.desc && h("span", { class: "dir-desc", text: " · " + p.desc })),
         h("span", { class: "dir-stats", text: `★ ${fmtNum(p.stars)}  ⬇ ${fmtNum(p.downloads)}` }));
-    })));
+    }));
+  if (bare) return { range, full, list };
+  return h("section", { class: "card dir" },
+    h("div", { class: "section-head" }, h("h3", { text: `Also popular · ${range}` }), full),
+    list);
+}
+
+/**
+ * "All validated firmware": one line per firmware with its newest tested version
+ * (latestValidations), grey when a newer stable release hasn't been tested.
+ * `extra(v)` appends the page's own controls (the app: download state + Install;
+ * the homepage: SHA256 copy + Install).
+ */
+export function validatedList(fw, extra = () => null) {
+  const name = (id) => fw.catalog.find((f) => f.id === id)?.name || id;
+  return latestValidations(fw)
+    .sort((a, b) => name(a.id).localeCompare(name(b.id)) || String(b.date).localeCompare(String(a.date)))
+    .map((v) => {
+      const st = validationState({ ...fw, validated: [v] }, { id: v.id });
+      const o = outcome(v);
+      const tip = validationTip(v) + (st.current ? "" : `\nNewer release ${shortVer(st.newer.version)} hasn't been tested yet.`);
+      return h("div", { class: "val-row " + o, title: tip },
+        octoFor(v, tip, st.current),
+        h("b", { text: name(v.id) }),
+        h("span", { class: "mono", text: shortVer(v.version) }),
+        !st.current && h("span", { class: "val-newer", text: `newer ${shortVer(st.newer.version)}` }),
+        h("span", { class: "muted", text: v.date }),
+        o !== "clean" && h("span", { class: "val-label " + o, text: o === "issues" ? "with issues" : "failed" }),
+        h("span", { class: "val-steps " + o, text: stepsText(v) }),
+        h("span", { class: "val-note", text: v.notes || "" }),
+        extra(v));
+    });
 }
 
 // ---------------------------------------------------------------- firmware art
@@ -231,8 +262,9 @@ export function validationState(fw, f) {
   }
   // No live release info: fall back on the nightly watcher's verdict in validated.json.
   if (!rels.length) return { v: vals[0], current: !vals[0].supersededBy, newer: vals[0].supersededBy && { version: vals[0].supersededBy } };
-  // releases are newest first; anything listed before the validated one is newer
-  const newer = (idx >= 0 ? rels.slice(0, idx) : rels).find((r) => !r.prerelease);
+  // releases are newest first; anything listed before the validated one is newer. A list that
+  // doesn't have the validated version (older than the test) counts only higher version numbers.
+  const newer = (idx >= 0 ? rels.slice(0, idx) : rels.filter((r) => newerFirst(r, vals[0]) < 0)).find((r) => !r.prerelease);
   return { v: best || vals[0], current: !newer, newer };
 }
 

@@ -1,7 +1,7 @@
 import * as DX from "./dx7.js";
 import { mountFm1Keys, fm1LowNote } from "./fm1keys.js";
-import { h, fmtBytes, normVer, fwDirectory, fwSections, octo, octoFor, outcome,
-  validationTip, stepsText, verKey, shortVer, relTime, icon, installableState, latestValidations } from "./fwcards.js";
+import { h, fmtBytes, normVer, fwDirectory, fwSections, octo, outcome,
+  verKey, shortVer, relTime, icon, installableState, latestValidations, validatedList } from "./fwcards.js";
 import { installAction, openInstall, BASELINE } from "./fm1flash.js";
 
 // ================================================================ helpers
@@ -1445,10 +1445,9 @@ function renderFirmware() {
   $("#fwHistory tbody").replaceChildren(...(fw.history || []).map((r) =>
     h("tr", {}, h("td", { text: r.date.replace("T", " ") }), h("td", { text: fwName(r.id) }), h("td", { text: r.version }), h("td", { class: "muted", text: r.note }))));
 
-  const { nodes, carded } = fwSections(fw, FW_APP);
-  // Every downloaded file without a card on screen is listed under "Other files".
-  const orphans = Object.entries(fw.library || {}).filter(([id]) => !carded.has(id));
-  $("#fwCards").replaceChildren(...nodes, validatedSection(fw, orphans), fwDirectory(fw) || "");
+  // Leaderboard cards, then "Also popular" (#11–#30), then every validated firmware (same order as the homepage).
+  const { nodes } = fwSections(fw, FW_APP);
+  $("#fwCards").replaceChildren(...nodes, fwDirectory(fw) || "", validatedSection(fw));
   buildChecks();
   syncFirmwareFromPort();
 }
@@ -1459,11 +1458,10 @@ function validatedFile(fw, v) {
     v.sha256 ? l.sha256 === v.sha256 : verKey(l.version) === verKey(v.version) && (!v.file || l.name === v.file));
 }
 
-/** "Validated firmware": the newest tested version of each firmware, and whether its exact file is kept. */
-function validatedSection(fw, orphans) {
-  const recs = latestValidations(fw)
-    .sort((a, b) => fwName(a.id).localeCompare(fwName(b.id)) || String(b.date).localeCompare(String(a.date)));
-  const rows = recs.map((v) => {
+/** "All validated firmware": the newest tested version of each firmware, and whether its exact file is kept. */
+function validatedSection(fw) {
+  const recs = latestValidations(fw);
+  const rows = validatedList(fw, (v) => {
     const file = validatedFile(fw, v);
     const f = fw.catalog.find((c) => c.id === v.id);
     const { rel, asset } = releaseAsset(fw, v);
@@ -1473,27 +1471,14 @@ function validatedSection(fw, orphans) {
       action = h("button", { class: "ghost", text: "Download" });
       action.onclick = () => downloadAsset(f, rel, asset, action);
     } else action = h("span", { class: "muted", text: "not downloaded" });
-    const o = outcome(v);
-    return h("div", { class: "val-row " + o, title: validationTip(v) },
-      octoFor(v, validationTip(v)),
-      h("b", { text: fwName(v.id) }),
-      h("span", { class: "mono", text: shortVer(v.version) }),
-      h("span", { class: "muted", text: v.date }),
-      o !== "clean" && h("span", { class: "val-label " + o, text: o === "issues" ? "with issues" : "failed" }),
-      h("span", { class: "val-steps " + o, text: stepsText(v) }),
-      h("span", { class: "val-note", text: v.notes || "" }),
-      action,
-      f && installAction(v, installOpts(f, v)));
+    return [action, f && installAction(v, installOpts(f, v))];
   });
   const n = (o) => recs.filter((v) => outcome(v) === o).length;
   return h("section", { class: "card val" },
     h("div", { class: "section-head" },
-      h("h3", {}, octo("Validated"), " Validated firmware"),
+      h("h3", {}, octo("Validated"), " All Validated Firmware"),
       h("span", { class: "muted", text: [`${n("clean")} validated`, n("issues") && `${n("issues")} with issues`, n("failed") && `${n("failed")} failed`].filter(Boolean).join(" · ") })),
-    rows.length ? rows : h("p", { class: "muted", text: "Nothing validated yet. Validation happens in hands-on Claude Code sessions: flash, run, revert to stock (see VALIDATION.md)." }),
-    orphans.length > 0 && h("details", {},
-      h("summary", { class: "muted", text: `Other downloaded files, not in the top 10 (${orphans.reduce((n, [, l]) => n + l.length, 0)})` }),
-      h("div", { class: "local" }, orphans.map(([id, files]) => files.map((l) => libFileRow(id, l))))));
+    rows.length ? rows : h("p", { class: "muted", text: "Nothing validated yet. Validation happens in hands-on Claude Code sessions: flash, run, revert to stock (see VALIDATION.md)." }));
 }
 
 /** The release and file a validation record pinned, when the release list has them. */
