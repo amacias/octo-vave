@@ -29,11 +29,11 @@
   a { color: var(--accent); }
   .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
   html { scroll-behavior: smooth; scroll-padding-top: 70px; }  /* section links stop below the sticky top bar */
-  header.hero { text-align: center; padding: 40px 0 28px; }
-  .hero img.octo { width: 170px; height: auto; display: inline; filter: none; }  /* not the card octopus of css/firmware.css */
-  .hero h1 { font-size: clamp(34px, 6vw, 52px); margin: 8px 0 0; letter-spacing: -.01em; }
-  .hero .by { color: var(--muted); font-style: italic; margin: 0 0 16px; }
-  .hero .tag { font-size: clamp(17px, 2.4vw, 21px); max-width: 680px; margin: 0 auto 24px; }
+  header.hero { display: flex; align-items: center; gap: 16px; padding: 20px 0 4px; }
+  .hero img.octo { width: 64px; height: auto; flex: none; filter: none; }  /* not the card octopus of css/firmware.css */
+  .hero h1 { font-size: clamp(26px, 4vw, 34px); margin: 0; letter-spacing: -.01em; }
+  .hero .by { color: var(--muted); font-style: italic; font-size: 15px; font-weight: 400; }
+  .hero .tag { font-size: 16px; margin: 2px 0 0; color: var(--muted); }
   .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
   .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 10px; font-weight: 600; text-decoration: none; border: 1px solid var(--line); color: var(--ink); background: var(--panel); }
   .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
@@ -103,6 +103,7 @@
     <a class="brand" href="#top"><img src="img/octo.svg" alt="">Octo-Vave</a>
     <div class="links">
       <a href="#leaderboard">Leaderboard</a>
+      <a href="#validated">Validated</a>
       <a href="#install">Install App</a>
       <a href="https://github.com/amacias/octo-vave/issues/new?template=validation-report.yml">Report a validation</a>
       <a class="gh-link" href="https://github.com/amacias/octo-vave"><svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
@@ -111,36 +112,22 @@
 </nav>
 <header class="hero wrap" id="top">
   <img class="octo" src="img/octo-hero.svg" alt="Octo-Vave: an orange octopus">
-  <h1>Octo-Vave</h1>
-  <p class="by">by Artificial Music</p>
-  <p class="tag">Every free firmware for the <b>M-VAVE FM-1</b> in one place: found, ranked, downloaded, checked and played.
-    The orange octopus marks firmware tested on a real FM-1.</p>
-  <div class="cta">
-    <a class="btn primary" href="#leaderboard">Get started</a>
-    <a class="btn" href="#install">Install App</a>
+  <div>
+    <h1>Octo-Vave <span class="by">by Artificial Music</span></h1>
+    <p class="tag">Every free firmware for the <b>M-VAVE FM-1</b>, ranked, with validated installs one click away.</p>
   </div>
 </header>
 
-<section class="wrap">
-  <h2><img src="img/octo.svg" alt="">What it does</h2>
-  <div class="grid">
-    <div class="card"><h3>Finds every free firmware</h3><p>Official, the community top 10 ranked by stars and downloads, free closed-source projects, and the next 20. Paid firmware is never listed.</p></div>
-    <div class="card"><h3>Tags what you're getting</h3><p>Open or closed source, published checksum, one-click revert to stock, and how it installs: web, Python or M-UPGRADE.</p></div>
-    <div class="card"><h3>Checks every download</h3><p>Files land in a local library, verified against the SHA256 each project publishes.</p></div>
-    <div class="card"><h3>Validated on a real FM-1</h3><p>Installed, played, Sound-checked and reverted to stock. The exact file tested is pinned by its SHA256.</p></div>
-    <div class="card"><h3>Plays the FM-1</h3><p>A key bed modeled on the device, perform and FX controls, a DX7-style voice editor, a patch library and MIDI tools.</p></div>
-    <div class="card"><h3>Runs on your computer</h3><p>A small Python server on 127.0.0.1 and a page in Chrome or Edge. No account, no cloud, nothing to install but Python.</p></div>
-  </div>
-</section>
-
 <section class="wrap" id="leaderboard">
   <h2><img src="img/octo.svg" alt="">Firmware Leaderboard</h2>
-  <p class="muted">Free firmware for the FM-1: stock, FM-1 Open and the top community projects, the same cards as the app's Firmware page.
-    An orange octopus <img class="inline-octo" src="img/octo.svg" alt="orange octopus"> is our stamp of validation: that version was installed, played and reverted to stock on a real FM-1.</p>
+  <p class="muted">Stock, FM-1 Open and the top community projects. An orange octopus <img class="inline-octo" src="img/octo.svg" alt="orange octopus">
+    means that version was installed, played and reverted to stock on a real FM-1.</p>
   <p class="muted fw-status" id="fwStatus">Loading the firmware list…</p>
   <div id="fwLive"></div>
+</section>
 
-  <h3 class="sub" id="validated"><img class="inline-octo" src="img/octo.svg" alt="">Validated firmware</h3>
+<section class="wrap" id="validated">
+  <h2><img src="img/octo.svg" alt="">Validated firmware</h2>
   <p class="muted">From <a href="https://github.com/amacias/octo-vave/blob/main/firmware/validated.json"><code>firmware/validated.json</code></a>.
     A grey octopus means the project has a newer release that hasn't been tested yet.
     Got the file somewhere else? Compare its SHA256 with the one below.
@@ -153,6 +140,18 @@
     </table>
   </div>
   <p class="muted">Tested one yourself? <a href="https://github.com/amacias/octo-vave/issues/new?template=validation-report.yml">Send a validation report</a>.</p>
+</section>
+
+<section class="wrap" id="about">
+  <h2><img src="img/octo.svg" alt="">What it does</h2>
+  <div class="grid">
+    <div class="card"><h3>Finds every free firmware</h3><p>Official, the community top 10 ranked by stars and downloads, free closed-source projects, and the next 20. Paid firmware is never listed.</p></div>
+    <div class="card"><h3>Tags what you're getting</h3><p>Open or closed source, published checksum, one-click revert to stock, and how it installs: web, Python or M-UPGRADE.</p></div>
+    <div class="card"><h3>Checks every download</h3><p>Files land in a local library, verified against the SHA256 each project publishes.</p></div>
+    <div class="card"><h3>Validated on a real FM-1</h3><p>Installed, played, Sound-checked and reverted to stock. The exact file tested is pinned by its SHA256.</p></div>
+    <div class="card"><h3>Plays the FM-1</h3><p>A key bed modeled on the device, perform and FX controls, a DX7-style voice editor, a patch library and MIDI tools.</p></div>
+    <div class="card"><h3>Runs on your computer</h3><p>A small Python server on 127.0.0.1 and a page in Chrome or Edge. No account, no cloud, nothing to install but Python.</p></div>
+  </div>
 </section>
 
 <section class="wrap" id="install">
@@ -249,7 +248,7 @@
     const asset = rel?.assets?.find((a) => a.name === v.file);
     let access = null;
     return {
-      name: f.name, stock: f.id === "official", installUrl: f.links?.install, downloadUrl: asset?.url || rel?.url,
+      name: f.name, isStock: f.id === "official", installUrl: f.links?.install, downloadUrl: asset?.url || rel?.url,
       async getAccess() {
         if (!navigator.requestMIDIAccess) throw new Error("This browser has no Web MIDI. Use Chrome or Edge on a computer.");
         try { access = access || await navigator.requestMIDIAccess({ sysex: true }); }
