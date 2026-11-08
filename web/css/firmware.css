@@ -41,6 +41,8 @@
 .fw-stats b { color: var(--ink); font-family: var(--mono); font-weight: 600; }
 .fw-actions { display: flex; gap: 6px; flex-wrap: wrap; padding-top: 4px; }
 .fw-actions .btn, .fw-actions button { font-size: 13px; padding: 6px 10px; }
+button.fw-inst { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
+button.fw-inst:disabled { color: var(--muted); border-color: var(--line); }
 .fw-lib { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ok); }
 .fw-more summary { cursor: pointer; color: var(--muted); font-size: 12.5px; }
 .fw-more[open] { font-size: 13px; }
@@ -167,6 +169,12 @@ a.btn.fw-install-btn { padding: 3px 10px; }
 .fw-flash .muted { color: var(--muted); }
 .fw-flash p { margin: 6px 0; }
 .fw-i-notes { margin: 6px 0 10px; padding-left: 18px; color: var(--muted); font-size: 13px; }
+.fw-i-notes li.warn { color: var(--warn); }
+.fw-i-route ol { margin: 6px 0; padding-left: 22px; font-size: 13.5px; }
+.fw-i-route li.active { font-weight: 600; }
+.fw-i-route li.done { color: var(--ok); }
+.fw-i-route li.done::after { content: " ✓"; }
+.fw-i-route li.skipped { color: var(--muted); text-decoration: line-through; }
 .fw-i-file { font-size: 13px; }
 .fw-i-file.ok, .fw-i-msg.ok { color: var(--ok); }
 .fw-i-file.bad, .fw-i-msg.bad { color: var(--bad); }

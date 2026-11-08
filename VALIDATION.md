@@ -28,7 +28,8 @@ and checks. Ask for each action as one clearly marked prompt, separate from stat
 5. **Run.** The firmware boots and its screen matches the project's docs. In the dashboard,
    Sound check *Generic MIDI* mode: at least step 1 (notes) and step 2 (channel scan). Play
    the FM-1's own keys and knobs. Note anything odd.
-6. **Revert.** Return to stock with the installer's *Return to official V15*, or with
+6. **Revert.** Return to stock with **Install** on Octo-Vave's Stock V15 card. Other ways:
+   the installer's *Return to official V15* (some now fetch M-VAVE's newer V16 instead), or
    M-UPGRADE and the library's `FM-1.fwsc`. Confirm the stock screen, then Sound check
    *Stock M-VAVE* steps 1 and 6 (notes and SysEx voice) work again.
 7. **Record.**

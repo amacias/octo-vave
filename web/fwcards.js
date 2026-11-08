@@ -58,6 +58,7 @@ const ICON = {
   code: "M8 7l-5 5 5 5M16 7l5 5-5 5",
   doc: "M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7",
   check: "M5 12l5 5 9-10",
+  flash: "M12 3v9m0 0l-4-4m4 4l4-4M5 15h14v5H5z",
 };
 export function icon(k) {
   const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -212,6 +213,11 @@ export function validationState(fw, f) {
   return { v: best || vals[0], current: !newer, newer };
 }
 
+/** validationState over the passing records only (clean or with issues): what Install puts on the FM-1. */
+export function installableState(fw, f) {
+  return validationState({ ...fw, validated: (fw.validated || []).filter((v) => ["clean", "issues"].includes(outcome(v))) }, f);
+}
+
 export function valTitle(st) {
   return validationTip(st.v) + (st.current ? "" : `\nNewer release ${shortVer(st.newer.version)} hasn't been tested yet.`);
 }
@@ -252,7 +258,7 @@ export function relTime(d) {
 
 /**
  * One firmware card. `app` holds the local library actions:
- * { download(f, rel, asset, btn), fileRow(id, file), importFile(f, version, file), reveal(f), toast(msg, err) }.
+ * { download(f, rel, asset, btn), install(f) → Install button, fileRow(id, file), importFile(f, version, file), reveal(f), toast(msg, err) }.
  * Without it (the homepage) downloads are plain links to the release files and the library block is left out.
  */
 export function fwCard(f, fw, rank, app = null) {
@@ -362,7 +368,8 @@ export function fwCard(f, fw, rank, app = null) {
     h("div", { class: "fw-body fw-foot" },
       h("div", { class: "fw-actions" },
         dlBtn,
-        linkBtn(L.install, "ext", f.kind === "stock" ? "Updater" : "Install", "Open the installer"),
+        app?.install?.(f),
+        linkBtn(L.install, "ext", f.kind === "stock" ? "Updater" : "Installer", "Open the project's own installer"),
         linkBtn(L.try, "play", "Try", "Play it in the browser, no FM-1 needed")),
       // every card icon in one row: links, then traits, then install requirements and methods
       h("div", { class: "fw-icons" },

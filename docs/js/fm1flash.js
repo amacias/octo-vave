@@ -1,6 +1,6 @@
 // fm1flash.js: install a validated firmware on the FM-1 over Web MIDI, for the Install buttons
-// of the Validated firmware list (app and homepage; the homepage loads a copy, docs/js/fm1flash.js,
-// kept identical by tools/fm1_site.py).
+// of the firmware cards and the Validated firmware list (app and homepage; the homepage loads a
+// copy, docs/js/fm1flash.js, kept identical by tools/fm1_site.py).
 //
 // It speaks the FM-1's own update protocol, the one M-UPGRADE and the community installers use,
 // written from FM-1-RE's notes (github.com/AL-255/FM-1-RE, docs/io/11-ota-protocol.md, WTFPL).
@@ -14,8 +14,14 @@
 //
 // Only the exact validated file is ever sent: the caller's record pins its sha256, and the
 // dialog refuses any other file. Nothing starts without the Install click in the dialog.
+//
+// Every route goes through stock V15 (planRoute): off stock, one click installs stock first,
+// checks that the FM-1 reports it, then installs the firmware asked for.
 
-import { h, outcome } from "./fwcards.js";
+import { h, outcome, verKey, shortVer } from "./fwcards.js";
+
+/** The stock firmware every validation is tested against, and the identity its package installs. */
+export const BASELINE = { id: "official", version: "V15", identity: "FM-1_015" };
 
 const HANDSHAKE = [0xf0, 0x00, 0x32, 0x45, 0x00, 0x00, 0x00, 0x40, 0x7f, 0xf7];
 const UPGRADE = [0xf0, 0x22, 0x24, 0x35, 0x7f, 0xf7];
@@ -25,7 +31,7 @@ const MAX_REQUEST = 512;
 // Ports worth a handshake: the FM-1 under stock ("FM-1 Midi"), its update loader and FM-1 Open
 // ("USB-Midi") and the community firmware ("Felucca", "AMB-1 FM-1", "ChoralRoot FM-1", "Hortator").
 // Other MIDI gear is never probed, even when it is the app's selected port.
-const FM1_PORT = /fm-?1|felucca|choralroot|hortator|ota|usb-midi|composite|sinco/i;
+const FM1_PORT = /fm-?1|felucca|choralroot|hortator|clipper|duell|ota|usb-midi|composite|sinco/i;
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function fail(code, message) { return Object.assign(new Error(message), { code }); }
@@ -197,22 +203,41 @@ async function serve(link, image, finish, idleMs, onData) {
   }
 }
 
+/** The FM-1 and what it reports, as { link, id }; it may still be restarting after a cut-off try. */
+export async function locate(access, prefer) {
+  const dev = await waitForDevice(access, { prefer }, 10000);
+  if (dev) return dev;
+  const seen = [...access.inputs.values()].map((p) => p.name).filter(Boolean);
+  throw fail("notfound", "The FM-1 didn't answer. Plug it in by USB and close any other program using it (M-UPGRADE, a web installer, a MIDI editor): on Windows only one program can use it at a time. Under FM-1 Open, use its Workbench to go back to stock first. "
+    + (seen.length ? `MIDI ports seen: ${seen.join(", ")}.` : "No MIDI ports are visible."));
+}
+
 /**
- * Install a package (the whole .fwsc file as a Uint8Array). `step(name, detail)` reports
- * progress: find, check, loader, resume, write ({ bytes, total }), restart.
+ * The installs that take the FM-1 from what it reports (`id`) to `target` (a packageInfo):
+ * ["stock", "target"], ["target"], or [] when it already runs the stock asked for.
+ * Always through stock: validation tests stock → firmware → stock and never one firmware over
+ * another, and several firmware share an identity (SLOOP, GHOULBOX and Hortator all install
+ * FM-1_900), which the FM-1 refuses as an update to the version it runs. In update mode the
+ * write is finished with stock, unless `resume` says this dialog was writing the target.
+ */
+export function planRoute(id, target, base = BASELINE.identity, resume = null) {
+  if (target.product === base) return id.text === base && !id.ota ? [] : ["target"];
+  if (id.ota) return resume === "target" ? ["target"] : ["stock", "target"];
+  return id.text === base ? ["target"] : ["stock", "target"];
+}
+
+/**
+ * Install a package (the whole .fwsc file as a Uint8Array) on `dev` (from locate) or the FM-1
+ * found first. `step(name, detail)` reports progress: find, check, loader, resume,
+ * write ({ bytes, total }), restart.
  * Resolves to { identity, expected } (identity null when the FM-1 restarted but didn't answer).
  */
-export async function installPackage(access, file, { prefer, step = () => {} } = {}) {
+export async function installPackage(access, file, { prefer, dev, step = () => {} } = {}) {
   const pkg = packageInfo(file);
   if (!pkg) throw fail("package", "This file isn't an FM-1 firmware package (.fwsc).");
   const image = logicalImage(file);
   step("find");
-  let dev = await waitForDevice(access, { prefer }, 10000);   // it may still be restarting after a cut-off try
-  if (!dev) {
-    const seen = [...access.inputs.values()].map((p) => p.name).filter(Boolean);
-    throw fail("notfound", "The FM-1 didn't answer. Plug it in by USB and close any other program using it (M-UPGRADE, a web installer, a MIDI editor): on Windows only one program can use it at a time. Under FM-1 Open, use its Workbench to go back to stock first. "
-      + (seen.length ? `MIDI ports seen: ${seen.join(", ")}.` : "No MIDI ports are visible."));
-  }
+  dev = dev || await locate(access, prefer);
   if (dev.id.model !== pkg.model) { dev.link.close(); throw fail("model", `The device reports ${dev.id.text}, but this package is for ${pkg.product}.`); }
   if (!dev.id.ota) {
     step("check", dev.id.text);
@@ -253,12 +278,7 @@ export async function installPackage(access, file, { prefer, step = () => {} } =
 const STEPS = [["find", "Find the FM-1"], ["check", "Check the package"], ["loader", "Restart into update mode"],
   ["write", "Write the firmware"], ["restart", "Restart and check"]];
 
-/**
- * The Install action for one validated record, or null when it can't be installed from here.
- * opts: name (shown), file record v, downloadUrl, installUrl (the project's own installer),
- * getFile() → Uint8Array, or null when the user has to pick the downloaded file,
- * getAccess() → MIDIAccess with SysEx, prefer (port name), before(), after(result | null), mount.
- */
+/** The Install action for one validated record (options as for openInstall), or null when it can't be installed from here. */
 export function installAction(v, opts) {
   if (!["clean", "issues"].includes(outcome(v))) return null;   // only passing validations
   if (!/\.fwsc$/i.test(v.file || "") || !v.sha256) {
@@ -267,55 +287,81 @@ export function installAction(v, opts) {
       title: `${opts.name} installs from its own page`, text: "Installer ↗" });
   }
   const b = h("button", { class: "ghost fw-install-btn", text: "Install",
-    title: opts.stock ? "Put stock V15 back on the FM-1 (the validated file)" : `Install the validated ${opts.name} ${v.version} on the FM-1` });
+    title: opts.isStock ? "Put stock V15 back on the FM-1 (the validated file)" : `Install the validated ${opts.name} ${v.version} on the FM-1` });
   b.onclick = () => openInstall(v, opts);
   return b;
 }
 
-function openInstall(v, o) {
-  let file = null, running = false;
-  const label = o.name.includes(v.version) ? o.name : `${o.name} ${v.version}`;   // "Stock V15" names its version
-  const title = o.stock ? `Back to ${label}` : `Install ${label}`;
+/**
+ * The Install dialog for one passing validation record `v` with a pinned .fwsc file.
+ * o: name (shown), isStock (v is stock), downloadUrl, getFile() → Uint8Array, or null when the
+ * user has to pick the downloaded file, getAccess() → MIDIAccess with SysEx, prefer() (port name),
+ * installed (the logged firmware, { id, version, label }), before(), after(result | null), mount,
+ * and stock: the first leg when the FM-1 isn't on stock, { v, name, getFile(), log(result) }.
+ * Without stock (the homepage) the dialog installs over stock only and asks for stock first.
+ */
+export function openInstall(v, o) {
+  let file = null, stockFile = null, running = false, lastLeg = null;
+  const two = !o.isStock && !!o.stock;   // can go back to stock on the way
+  const stockName = o.stock?.name || "Stock V15";
+  const label = o.name.includes(shortVer(v.version)) ? o.name : `${o.name} ${shortVer(v.version)}`;   // "Stock V15" names its version
+  const title = o.isStock ? `Back to ${label}` : `Install ${label}`;
+  const inst = o.installed;
   const fileMsg = h("p", { class: "fw-i-file", text: "Getting the validated file…" });
+  const stockMsg = two && h("p", { class: "fw-i-file", text: `Getting the validated ${stockName}…` });
   const picker = h("input", { type: "file", accept: ".fwsc", hidden: true });
   const pick = h("div", { class: "fw-i-pick", hidden: true },
     h("p", {}, "This page can't fetch the file from its host. ",
       o.downloadUrl ? h("a", { href: o.downloadUrl, rel: "noopener", text: `Download ${v.file}` }) : `Download ${v.file}`,
       ", then choose it or drop it here."),
     h("button", { type: "button", class: "ghost", text: "Choose the file…", onclick: () => picker.click() }), picker);
+  const legs = two && {
+    stock: h("li", {}, `Back to ${stockName}`, h("span", { class: "muted", text: " (skipped when the FM-1 already runs it)" })),
+    target: h("li", { text: `Install ${label}` }),
+  };
+  const route = two && h("div", { class: "fw-i-route" },
+    inst && h("p", { class: "muted", text: `Logged on the FM-1: ${inst.label}.` }),
+    h("ol", {}, legs.stock, legs.target));
   const stepList = h("ol", { class: "fw-i-steps", hidden: true }, STEPS.map(([k, label]) => h("li", { "data-step": k, text: label })));
   const bar = h("progress", { max: 100, value: 0, hidden: true });
   const msg = h("p", { class: "fw-i-msg", role: "status" });
-  const go = h("button", { class: "primary", text: o.stock ? "Install stock" : "Install", disabled: true });
+  const go = h("button", { class: "primary", text: o.isStock ? "Install stock" : "Install", disabled: true });
   const close = h("button", { type: "button", class: "ghost", text: "Cancel" });
   const dlg = h("dialog", { class: "fw-flash" },
     h("h3", { text: title }),
-    h("p", { class: "muted", text: "The FM-1 restarts twice and the whole update takes 2 to 3 minutes. Keep it plugged in and this page open until it says Done." }),
+    h("p", { class: "muted", text: two
+      ? `Off stock V15, the FM-1 goes back to stock first and then gets ${label}: 4 restarts, about 5 minutes. On stock it's one install, 2 to 3 minutes. Keep it plugged in and this page open until it says Done.`
+      : "The FM-1 restarts twice and the whole update takes 2 to 3 minutes. Keep it plugged in and this page open until it says Done." }),
     h("ul", { class: "fw-i-notes" },
+      outcome(v) === "issues" && h("li", { class: "warn", text: `Validated with issues: ${v.notes || v.checks || "see its record"}` }),
+      inst?.id === "fm1open" && h("li", { class: "warn", text: "The log says FM-1 Open is on the FM-1. It doesn't answer this update protocol: go back to stock with its Workbench (Restore original V15) first." }),
       h("li", { text: "Some firmware resets voices, patterns or projects: save what you want to keep first." }),
       h("li", { text: "Close other programs using the FM-1 (M-UPGRADE, web installers, MIDI editors)." }),
-      o.stock ? null : h("li", { text: "Going back later: Install on the Stock V15 row." })),
-    fileMsg, pick, stepList, bar, msg,
+      !o.isStock && !two && h("li", { text: "This installs over stock V15 only: on any other firmware, Install Stock V15 first." }),
+      o.isStock ? null : h("li", { text: `Going back later: Install on ${stockName}.` })),
+    route, fileMsg, stockMsg, pick, stepList, bar, msg,
     h("div", { class: "fw-i-actions" }, close, go));
   (o.mount || document.body).append(dlg);
 
   const leave = (e) => { e.preventDefault(); e.returnValue = ""; };
+  const ready = () => { go.disabled = running || !file || (two && !stockFile); };
   const done = () => { window.removeEventListener("beforeunload", leave); running = false; close.disabled = false; };
   dlg.addEventListener("cancel", (e) => { if (running) e.preventDefault(); });
   dlg.addEventListener("close", () => dlg.remove());
   close.onclick = () => { if (!running) dlg.close(); };
 
-  const accept = async (bytes) => {
+  const check = async (bytes, rec, el, who) => {
     const sum = await sha256Hex(bytes);
-    if (sum !== v.sha256.toLowerCase()) {
-      file = null; go.disabled = true;
-      fileMsg.className = "fw-i-file bad";
-      fileMsg.textContent = `That file isn't the validated ${v.file}: its SHA256 is ${sum.slice(0, 12)}…, the validated one ${v.sha256.slice(0, 12)}…`;
-      return;
-    }
-    file = bytes; go.disabled = false; pick.hidden = true;
-    fileMsg.className = "fw-i-file ok";
-    fileMsg.textContent = `✓ ${v.file}: the validated file (SHA256 ${v.sha256.slice(0, 12)}…)`;
+    const ok = sum === rec.sha256.toLowerCase();
+    el.className = "fw-i-file " + (ok ? "ok" : "bad");
+    el.textContent = ok ? `✓ ${who}: ${rec.file}, the validated file (SHA256 ${rec.sha256.slice(0, 12)}…)`
+      : `That file isn't the validated ${rec.file}: its SHA256 is ${sum.slice(0, 12)}…, the validated one ${rec.sha256.slice(0, 12)}…`;
+    return ok;
+  };
+  const accept = async (bytes) => {
+    file = (await check(bytes, v, fileMsg, label)) ? bytes : null;
+    if (file) pick.hidden = true;
+    ready();
   };
   const fromBlob = (blob) => blob && blob.arrayBuffer().then((buf) => accept(new Uint8Array(buf)));
   picker.onchange = () => fromBlob(picker.files[0]);
@@ -326,37 +372,79 @@ function openInstall(v, o) {
     const at = STEPS.findIndex(([s]) => s === k);
     stepList.querySelectorAll("li").forEach((li, i) => { li.className = i < at ? "done" : i === at ? "active" : ""; });
   };
+  const markLeg = (leg) => {
+    if (!legs) return;
+    const at = leg ? ["stock", "target"].indexOf(leg) : 2;
+    [legs.stock, legs.target].forEach((li, i) => { if (li.className !== "skipped") li.className = i < at ? "done" : i === at ? "active" : ""; });
+  };
+  const progress = (k, d) => {
+    mark(k === "resume" ? "write" : k);
+    if (k === "check") msg.textContent = `Found ${d}.`;
+    if (k === "resume") msg.textContent = "The FM-1 is in update mode: finishing the write.";
+    if (k === "write") {
+      bar.hidden = false; bar.value = Math.min(99, Math.round((100 * d.bytes) / d.total));
+      msg.textContent = `Writing: ${bar.value}%`;
+    }
+  };
   go.onclick = async () => {
     running = true; go.disabled = true; close.disabled = true; stepList.hidden = false;
     window.addEventListener("beforeunload", leave);
     msg.className = "fw-i-msg"; msg.textContent = ""; bar.value = 0; bar.hidden = true;
     let result = null;
     try {
+      const pkg = packageInfo(file);
+      if (!pkg) throw fail("package", "This file isn't an FM-1 firmware package (.fwsc).");
+      const base = (stockFile && packageInfo(stockFile)?.product) || BASELINE.identity;
       const access = await o.getAccess();
       if (o.before) await o.before();
-      result = await installPackage(access, file, { prefer: o.prefer?.(), step: (k, d) => {
-        mark(k === "resume" ? "write" : k);
-        if (k === "check") msg.textContent = `Found ${d}.`;
-        if (k === "resume") msg.textContent = "The FM-1 is in update mode: finishing the write.";
-        if (k === "write") {
-          bar.hidden = false; bar.value = Math.min(99, Math.round((100 * d.bytes) / d.total));
-          msg.textContent = `Writing: ${bar.value}%`;
+      mark("find");
+      let dev = await locate(access, o.prefer?.());
+      const id = dev.id, plan = planRoute(id, pkg, base, lastLeg);
+      // same identity off stock: the log tells whether it's this firmware or another that shares it
+      const there = !plan.length || (plan[0] === "stock" && id.text === pkg.product && !id.ota
+        && inst?.id === v.id && verKey(inst.version) === verKey(v.version));
+      if (there || (plan[0] === "stock" && !two)) {
+        dev.link.close();
+        if (!there) {
+          throw fail("stockfirst", id.ota ? `The FM-1 is in update mode. Install Stock V15 first to finish it, then ${label}.`
+            : `The FM-1 reports ${id.text}, not stock V15 (${base}). Install Stock V15 first, then ${label}: each validation tested the install from stock.`);
         }
-      } });
+        stepList.hidden = true;
+        msg.className = "fw-i-msg ok";
+        msg.textContent = `The FM-1 already runs ${label}: it reports ${id.text}${plan.length ? " and the log agrees" : ""}. Nothing was written.`;
+        close.textContent = "Close"; go.hidden = true;
+        return;
+      }
+      if (legs) legs.stock.className = plan[0] === "stock" ? "" : "skipped";
+      for (const leg of plan) {
+        lastLeg = leg; markLeg(leg); bar.hidden = true;
+        const r = await installPackage(access, leg === "stock" ? stockFile : file, { dev, prefer: o.prefer?.(), step: progress });
+        dev = null;
+        if (leg === "target") { result = r; continue; }
+        if (o.stock.log) await o.stock.log(r);
+        if (r.identity !== base) {
+          throw fail("baseline", r.identity
+            ? `${stockName} was written, but the FM-1 now reports ${r.identity}, not ${base}. Stopped before installing ${label}.`
+            : `${stockName} was written, but the FM-1 didn't answer after restarting. Stopped before installing ${label}: look at its screen, then try again.`);
+        }
+      }
+      lastLeg = null; markLeg(null);
       bar.value = 100;
       stepList.querySelectorAll("li").forEach((li) => { li.className = "done"; });
+      const via = plan[0] === "stock" ? `back on ${stockName} first, then ${label}. ` : "";
       msg.className = "fw-i-msg " + (result.identity === result.expected ? "ok" : "warn");
       msg.textContent = !result.identity
-        ? `Written. The FM-1 restarted but didn't answer the check: look at its screen. It should run ${result.expected}.`
-        : result.identity === result.expected ? `Done: the FM-1 now reports ${result.identity}.`
-          : `Written, but the FM-1 now reports ${result.identity} (the package says ${result.expected}).`;
+        ? `Written: ${via}The FM-1 restarted but didn't answer the check: look at its screen. It should run ${result.expected}.`
+        : result.identity === result.expected ? `Done: ${via}The FM-1 now reports ${result.identity}.`
+          : `Written: ${via}But the FM-1 now reports ${result.identity} (the package says ${result.expected}).`;
       close.textContent = "Close"; go.hidden = true;
     } catch (e) {
       msg.className = "fw-i-msg bad";
       msg.textContent = e.message;
-      go.disabled = !file; go.textContent = "Try again";
+      go.textContent = "Try again";
     } finally {
       done();
+      ready();
       if (o.after) await o.after(result);
     }
   };
@@ -366,4 +454,11 @@ function openInstall(v, o) {
     if (bytes) return accept(bytes);
     fileMsg.textContent = ""; pick.hidden = false;
   }).catch((e) => { fileMsg.textContent = ""; pick.hidden = false; msg.className = "fw-i-msg bad"; msg.textContent = e.message; });
+  if (two) {
+    Promise.resolve().then(() => o.stock.getFile()).then(async (bytes) => {
+      if (!bytes) throw new Error(`${stockName}'s ${o.stock.v.file} isn't available.`);
+      stockFile = (await check(bytes, o.stock.v, stockMsg, stockName)) ? bytes : null;
+      ready();
+    }).catch((e) => { stockMsg.className = "fw-i-file bad"; stockMsg.textContent = e.message; });
+  }
 }

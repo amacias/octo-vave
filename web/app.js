@@ -1,8 +1,8 @@
 import * as DX from "./dx7.js";
 import { mountFm1Keys, fm1LowNote } from "./fm1keys.js";
 import { h, fmtBytes, normVer, fwDirectory, fwSections, octo, octoFor, outcome, isValidated,
-  validationTip, stepsText, verKey, shortVer, relTime } from "./fwcards.js";
-import { installAction } from "./fm1flash.js";
+  validationTip, stepsText, verKey, shortVer, relTime, icon, installableState } from "./fwcards.js";
+import { installAction, openInstall, BASELINE } from "./fm1flash.js";
 
 // ================================================================ helpers
 
@@ -1466,8 +1466,7 @@ function validatedSection(fw, orphans) {
   const rows = recs.map((v) => {
     const file = validatedFile(fw, v);
     const f = fw.catalog.find((c) => c.id === v.id);
-    const rel = fw.releases?.sources?.[v.id]?.releases?.find((r) => verKey(r.version) === verKey(v.version));
-    const asset = rel?.assets.find((a) => a.name === v.file) || rel?.assets.find((a) => /\.fwsc$/i.test(a.name));
+    const { rel, asset } = releaseAsset(fw, v);
     let action;
     if (file) action = h("span", { class: "badge ok", title: "sha256 " + file.sha256, text: "✓ downloaded" });
     else if (f && rel && asset) {
@@ -1484,7 +1483,7 @@ function validatedSection(fw, orphans) {
       h("span", { class: "val-steps " + o, text: stepsText(v) }),
       h("span", { class: "val-note", text: v.notes || "" }),
       action,
-      f && installAction(v, installOpts(f, v, rel, asset)));
+      f && installAction(v, installOpts(f, v)));
   });
   const n = (o) => recs.filter((v) => outcome(v) === o).length;
   return h("section", { class: "card val" },
@@ -1497,42 +1496,81 @@ function validatedSection(fw, orphans) {
       h("div", { class: "local" }, orphans.map(([id, files]) => files.map((l) => libFileRow(id, l))))));
 }
 
-/** The Install button's hooks for a validated record: the library file (downloaded first if needed). */
-function installOpts(f, v, rel, asset) {
-  return {
-    name: f.name, stock: f.id === "official", installUrl: f.links?.install, mount: $("#fwCards"),
+/** The release and file a validation record pinned, when the release list has them. */
+function releaseAsset(fw, v) {
+  const rel = fw.releases?.sources?.[v.id]?.releases?.find((r) => verKey(r.version) === verKey(v.version));
+  const asset = rel?.assets.find((a) => a.name === v.file) || rel?.assets.find((a) => /\.fwsc$/i.test(a.name));
+  return { rel, asset };
+}
+
+/** A validated record's file from the library, downloaded first if needed. */
+async function validatedBytes(f, v) {
+  let file = validatedFile(S.fw, v);
+  if (!file) {
+    const { rel, asset } = releaseAsset(S.fw, v);
+    if (!rel || !asset) throw new Error(`${v.file} isn't in the library and its release isn't listed: download it on the ${f.name} card first.`);
+    await api("firmware/download", { method: "POST", body: JSON.stringify({ id: f.id, version: rel.version, asset: asset.name }) });
+    S.fw = await api("firmware");
+    file = validatedFile(S.fw, v);
+    if (!file) throw new Error(`The downloaded ${asset.name} isn't the validated file.`);
+  }
+  const r = await fetch("/api/firmware/file?key=" + encodeURIComponent(file.key));
+  if (!r.ok) throw new Error(`Couldn't read ${file.name} from the library.`);
+  return new Uint8Array(await r.arrayBuffer());
+}
+
+/** Log an install by the Install button (the history and Sound check follow it). */
+function logInstall(f, v, result) {
+  return api("firmware/installed", { method: "POST", body: JSON.stringify({ id: f.id, version: v.version,
+    note: `Install button${result.identity ? `: the FM-1 reports ${result.identity}` : ""}` }) }).catch(() => {});
+}
+
+/** The Install hooks for a validated record; off stock, the way goes back through stock V15 first. */
+function installOpts(f, v) {
+  const inst = S.fw?.installed;
+  const o = {
+    name: f.name, isStock: f.id === BASELINE.id, installUrl: f.links?.install,
+    installed: inst && { id: inst.id, version: inst.version, label: fwNameVer(inst.id, inst.version) },
     prefer: () => S.out?.name,
     async getAccess() {
       if (!S.midi) await connectMidi();
       if (!S.midi) throw new Error("The app needs MIDI access with SysEx: press Connect and allow it (Chrome or Edge).");
       return S.midi;
     },
-    async getFile() {
-      let file = validatedFile(S.fw, v);
-      if (!file) {
-        if (!rel || !asset) throw new Error(`${v.file} isn't in the library and its release isn't listed: download it on the ${f.name} card first.`);
-        await api("firmware/download", { method: "POST", body: JSON.stringify({ id: f.id, version: rel.version, asset: asset.name }) });
-        S.fw = await api("firmware");
-        file = validatedFile(S.fw, v);
-        if (!file) throw new Error(`The downloaded ${asset.name} isn't the validated file.`);
-      }
-      const r = await fetch("/api/firmware/file?key=" + encodeURIComponent(file.key));
-      if (!r.ok) throw new Error(`Couldn't read ${file.name} from the library.`);
-      return new Uint8Array(await r.arrayBuffer());
-    },
+    getFile: () => validatedBytes(f, v),
     before() { stopClock(false); S.flashing = true; },
     async after(result) {
       // log first, then reconnect: back on the stock port, the auto-log would otherwise post too
-      if (result) {
-        await api("firmware/installed", { method: "POST", body: JSON.stringify({ id: f.id, version: v.version,
-          note: `Install button${result.identity ? `: the FM-1 reports ${result.identity}` : ""}` }) }).catch(() => {});
-        S.fw = await api("firmware").catch(() => S.fw);
-        renderFirmware();
-      }
+      if (result) await logInstall(f, v, result);
+      S.fw = await api("firmware").catch(() => S.fw);
+      renderFirmware();
       S.flashing = false;
       fillPorts();   // back on the FM-1's port (by its saved name) if it's there again
     },
   };
+  const sv = !o.isStock && (S.fw?.validated || []).find((r) => r.id === BASELINE.id && verKey(r.version) === verKey(BASELINE.version)
+    && ["clean", "issues"].includes(outcome(r)) && r.sha256 && /\.fwsc$/i.test(r.file || ""));
+  const sf = sv && S.fw.catalog.find((c) => c.id === BASELINE.id);
+  if (sf) o.stock = { v: sv, name: sf.name, getFile: () => validatedBytes(sf, sv), log: (r) => logInstall(sf, sv, r) };
+  return o;
+}
+
+/** A card's Install button: its newest passing validation, or a disabled button until there is one. */
+function cardInstall(f) {
+  const st = installableState(S.fw, f);
+  if (!st) {
+    return h("button", { class: "fw-inst", disabled: true, title: "Not validated yet: Install unlocks once a hands-on validation pins a tested file" },
+      icon("flash"), "Install");
+  }
+  if (!/\.fwsc$/i.test(st.v.file || "") || !st.v.sha256) return null;   // FM-1 Open: its Workbench installs it (the Installer link)
+  const ver = shortVer(st.v.version);
+  const b = h("button", { class: "fw-inst",
+    title: (f.id === BASELINE.id ? `Put the validated ${f.name} back on the FM-1` : `Install the validated ${f.name} ${ver} on the FM-1, going back to stock V15 first when needed`)
+      + (st.current ? "" : `
+Newer release ${shortVer(st.newer.version)} hasn't been validated yet.`) },
+    icon("flash"), st.current ? "Install" : `Install ${ver}`);
+  b.onclick = () => openInstall(st.v, installOpts(f, st.v));
+  return b;
 }
 
 async function downloadAsset(f, rel, a, btn) {
@@ -1568,6 +1606,7 @@ async function markInstalled(id, version, note = "") {
 /** Library actions for the shared firmware cards (fwcards.js); the homepage renders them without these. */
 const FW_APP = {
   download: downloadAsset,
+  install: cardInstall,
   fileRow: libFileRow,
   toast,
   async importFile(f, version, file) {
