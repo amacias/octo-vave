@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated": "2026-10-18",
+  "updated": "2026-11-07",
   "ranking": "Live ranking of free, open-source FM-1 firmware, rebuilt on every update check from the cicloid/awesome-fm-1 list (Custom firmware → Open source) and a GitHub repository search, scored ln(1+stars) + ln(1+total .fwsc downloads). Top 10 get cards, #11–#30 the list. Only projects with a GitHub release carrying a .fwsc image count. Free closed-source firmware (FM-1+VA, April OS) has no stars or download counts to compare, so it gets its own curated, unranked section. Paid firmware (Groove OS) is left out. Projects without a curated entry get a card from their GitHub metadata, marked \"not curated yet\". Offline fallback: firmware/directory.json.",
   "discovery": {
     "searches": [
@@ -659,6 +659,540 @@
         "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
         "install_method": [
           "web"
+        ]
+      }
+    },
+    {
+      "id": "obervave",
+      "name": "OberVave",
+      "author": "zvenson",
+      "kind": "community",
+      "tagline": "Eight-voice analog-style polysynth",
+      "tags": [
+        "8-voice poly",
+        "Hard sync",
+        "SEM filter"
+      ],
+      "art": {
+        "hue": 7
+      },
+      "links": {
+        "repo": "https://github.com/zvenson/obervave"
+      },
+      "summary": "Single eight-voice analog-style polysynth after the classic American poly synths of 1979-84, with hard sync, cross-modulation, SEM-style filter morph. GPL-3.0.",
+      "install": "Python installer from the repo (tools/fm1_install.py) or M-UPGRADE; no web installer.",
+      "source": {
+        "type": "github",
+        "repo": "zvenson/obervave",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": false,
+        "revertNote": "No return to stock in the project's tools: Octo-Vave's Stock V15 Install puts stock back (tested 2026-11-07).",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "python",
+          "m-upgrade"
+        ]
+      }
+    },
+    {
+      "id": "loom-8",
+      "name": "LOOM-8",
+      "author": "charlesvestal",
+      "kind": "community",
+      "tagline": "OP-XY-inspired eight-track groovebox",
+      "tags": [
+        "8 tracks",
+        "64 steps",
+        "P-locks"
+      ],
+      "art": {
+        "hue": 45
+      },
+      "links": {
+        "install": "https://charlesvestal.github.io/fm1-loom/install/",
+        "repo": "https://github.com/charlesvestal/fm1-loom"
+      },
+      "summary": "OP-XY-inspired groovebox by Charles Vestal: eight colour-coded tracks, 85 factory presets, a 64-step sequencer with step tricks and parameter locks, weave. MPL-2.0.",
+      "install": "Web installer on the project site (Chrome/Edge, USB).",
+      "source": {
+        "type": "github",
+        "repo": "charlesvestal/fm1-loom",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": true,
+        "revertNote": "The installer can put M-VAVE's stock firmware back; Octo-Vave's Stock V15 Install works too (tested 2026-11-07).",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web"
+        ]
+      }
+    },
+    {
+      "id": "clipper",
+      "name": "Clipper",
+      "author": "isod89",
+      "kind": "community",
+      "tagline": "Experimental synth grown out of SLOOP",
+      "tags": [
+        "SLOOP-based",
+        "ENV2/ENV3",
+        "LFO2/LFO3"
+      ],
+      "art": {
+        "hue": 14
+      },
+      "links": {
+        "install": "https://isod89.github.io/clipper-fm1/webapp/installer/",
+        "repo": "https://github.com/isod89/clipper-fm1"
+      },
+      "summary": "Experimental synthesizer firmware that grew out of SLOOP, with per-voice ENV2/ENV3 and LFO2/LFO3 modulation. GPL-3.0.",
+      "install": "Web installer on the project site (Chrome/Edge, USB).",
+      "source": {
+        "type": "github",
+        "repo": "isod89/clipper-fm1",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": true,
+        "revertNote": "The installer's return to the official firmware accepts V15 or V16; Octo-Vave's Stock V15 Install works too (tested 2026-11-07).",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web"
+        ]
+      }
+    },
+    {
+      "id": "orbit",
+      "name": "ORBIT",
+      "author": "dspaudio",
+      "kind": "community",
+      "tagline": "SLOOP-based groovebox with OP-1-style screens",
+      "tags": [
+        "SLOOP-based",
+        "OP-1 screens",
+        "Event tape"
+      ],
+      "art": {
+        "hue": 114
+      },
+      "links": {
+        "install": "https://dspaudio.github.io/orbit/",
+        "repo": "https://github.com/dspaudio/orbit"
+      },
+      "summary": "SLOOP-based groovebox with OP-1-inspired screens, sample tools and an event tape for moving what the four tracks play. GPL-3.0.",
+      "install": "Install from the project page (see its README); the current release is the Bluetooth MIDI build.",
+      "source": {
+        "type": "github",
+        "repo": "dspaudio/orbit",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": false,
+        "revertNote": "Return to stock not checked in the project's docs: Octo-Vave's Stock V15 Install puts stock back (tested 2026-11-07).",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web"
+        ]
+      }
+    },
+    {
+      "id": "polly",
+      "name": "Polly",
+      "author": "charlesvestal",
+      "kind": "community",
+      "tagline": "QY70-style pocket arranger",
+      "tags": [
+        "Arranger",
+        "8-part band",
+        "General MIDI"
+      ],
+      "art": {
+        "hue": 85
+      },
+      "links": {
+        "install": "https://charlesvestal.github.io/fm1-polly/",
+        "repo": "https://github.com/charlesvestal/fm1-polly"
+      },
+      "summary": "QY70-style pocket arranger by Charles Vestal: a style plays a band of eight instruments steered by the chords you play, with General MIDI sounds from Sonivox. GPL-3.0.",
+      "install": "Web installer on the project site (Chrome/Edge, USB).",
+      "source": {
+        "type": "github",
+        "repo": "charlesvestal/fm1-polly",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": false,
+        "revertNote": "Return to stock not checked in the project's docs: Octo-Vave's Stock V15 Install puts stock back (tested 2026-11-07).",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web"
+        ]
+      }
+    },
+    {
+      "id": "dub-1",
+      "name": "DUB-1",
+      "author": "sbegueria",
+      "kind": "community",
+      "tagline": "Generative dub techno machine",
+      "tags": [
+        "Generative",
+        "Dub techno",
+        "Tape echo"
+      ],
+      "art": {
+        "hue": 160
+      },
+      "links": {
+        "install": "https://sbegueria.github.io/fm1-dub/install/",
+        "repo": "https://github.com/sbegueria/fm1-dub"
+      },
+      "summary": "Generative dub techno machine that plays itself from power-on: chord stabs into a tape echo, FM pings, sub bass, kick, shaker and hat on an eight-bar. GPL-3.0.",
+      "install": "Web installer on the project site (Chrome/Edge, USB).",
+      "source": {
+        "type": "github",
+        "repo": "sbegueria/fm1-dub",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": true,
+        "revertNote": "The installer and M-UPGRADE can put stock back; Octo-Vave's Stock V15 Install works too (tested 2026-11-07).",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web"
+        ]
+      }
+    },
+    {
+      "id": "coralflower",
+      "name": "CoralFlower",
+      "author": "FicusFicusov",
+      "kind": "community",
+      "tagline": "Orchid-inspired chord instrument",
+      "tags": [
+        "Chord instrument",
+        "Auto bass",
+        "Pixel flower"
+      ],
+      "art": {
+        "hue": 309
+      },
+      "links": {
+        "install": "https://ficusficusov.github.io/CoralFlower/",
+        "repo": "https://github.com/FicusFicusov/CoralFlower"
+      },
+      "summary": "Chord instrument inspired by the Telepathic Instruments Orchid: every note becomes a chord with a bass underneath, while a pixel flower grows on screen. GPL-3.0.",
+      "install": "Web installer on the project site (Chrome/Edge, USB).",
+      "source": {
+        "type": "github",
+        "repo": "FicusFicusov/CoralFlower",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": false,
+        "revertNote": "The project's way back is M-UPGRADE with M-VAVE's FM-1.fwsc: Octo-Vave's Stock V15 Install puts stock back (tested 2026-11-07).",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web"
+        ]
+      }
+    },
+    {
+      "id": "ctl-1",
+      "name": "CTL-1",
+      "author": "charlesvestal",
+      "kind": "community",
+      "tagline": "MIDI controller with its own GM sounds",
+      "tags": [
+        "MIDI controller",
+        "Arp",
+        "Euclidean drums"
+      ],
+      "art": {
+        "hue": 269
+      },
+      "links": {
+        "install": "https://charlesvestal.github.io/fm1-ctl/install/",
+        "repo": "https://github.com/charlesvestal/fm1-ctl"
+      },
+      "summary": "Turns the FM-1 into a MIDI controller, with General MIDI sounds of its own. MPL-2.0.",
+      "install": "Web installer on the project site (Chrome/Edge, USB): with or without Bluetooth MIDI.",
+      "source": {
+        "type": "github",
+        "repo": "charlesvestal/fm1-ctl",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": true,
+        "revertNote": "The installer can put M-VAVE's stock firmware back; Octo-Vave's Stock V15 Install works too (tested 2026-11-07).",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web"
+        ]
+      }
+    },
+    {
+      "id": "gr-mm",
+      "name": "GR!MM",
+      "author": "GRiMMBIENT",
+      "kind": "community",
+      "tagline": "Dark ambient and dungeon synth",
+      "tags": [
+        "Dark ambient",
+        "4 tracks",
+        "64 steps"
+      ],
+      "art": {
+        "hue": 78
+      },
+      "links": {
+        "install": "https://grimmbient.github.io/grimm/hub.html",
+        "repo": "https://github.com/GRiMMBIENT/grimm"
+      },
+      "summary": "Dark ambient, dungeon synth and deathdream firmware: four tracks, seven sound sources, long dark effects, a 64-step sequencer and one-key chords. GPL-3.0.",
+      "install": "Install from the GR!MM hub (Chrome/Edge, USB) or with the repo's Python tool.",
+      "source": {
+        "type": "github",
+        "repo": "GRiMMBIENT/grimm",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": false,
+        "revertNote": "Return to stock not checked in the project's docs: Octo-Vave's Stock V15 Install puts stock back (tested 2026-11-07).",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web",
+          "python"
+        ]
+      }
+    },
+    {
+      "id": "fmini-1",
+      "name": "FMini-1",
+      "author": "ruppert",
+      "kind": "community",
+      "tagline": "Minimoog Model D emulation",
+      "tags": [
+        "Minimoog",
+        "Arp",
+        "Sequencer"
+      ],
+      "art": {
+        "hue": 115
+      },
+      "links": {
+        "install": "https://ruppert.github.io/fmini-1/",
+        "repo": "https://github.com/ruppert/fmini-1"
+      },
+      "summary": "Minimoog Model D emulation by Guilherme Ruppert with effects, arpeggiator and sequencer. GPL-3.0.",
+      "install": "Web installer on the project site (Chrome/Edge, USB).",
+      "source": {
+        "type": "github",
+        "repo": "ruppert/fmini-1",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": false,
+        "revertNote": "Return to stock not checked in the project's docs: Octo-Vave's Stock V15 Install puts stock back (tested 2026-11-07).",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web"
+        ]
+      }
+    },
+    {
+      "id": "duell",
+      "name": "DUELL",
+      "author": "oscillr",
+      "kind": "community",
+      "tagline": "Bitimbral synthesizer with morph",
+      "tags": [
+        "Bitimbral",
+        "Morph",
+        "Web editor"
+      ],
+      "art": {
+        "hue": 291
+      },
+      "links": {
+        "install": "https://oscillr.github.io/DUELL/install/",
+        "repo": "https://github.com/oscillr/DUELL"
+      },
+      "summary": "Bitimbral synthesizer by OSCILL/R: two complete parts, three ways to play them together and a morph between two versions of every sound. GPL-3.0.",
+      "install": "Web installer on the project site (Chrome/Edge, USB); save a backup first.",
+      "source": {
+        "type": "github",
+        "repo": "oscillr/DUELL",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": true,
+        "revertNote": "The project documents the way back to V15 (docs/INSTALL.md); Octo-Vave's Stock V15 Install works too (tested 2026-11-07).",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web"
+        ]
+      }
+    },
+    {
+      "id": "frodhes",
+      "name": "Frodhes",
+      "author": "leonardoMirabal",
+      "kind": "community",
+      "tagline": "Modelled e-piano, vibraphone and marimba",
+      "tags": [
+        "E-piano",
+        "Vibes + marimba",
+        "Physical model"
+      ],
+      "art": {
+        "hue": 312
+      },
+      "links": {
+        "install": "https://leonardomirabal.github.io/frodhes/#install",
+        "repo": "https://github.com/leonardoMirabal/frodhes"
+      },
+      "summary": "Physically modelled electric piano, vibraphone and marimba with no samples, plus effects, arpeggiator, sequencer, scales and a web emulator. GPL-3.0.",
+      "install": "Install from the project's emulator page (Chrome/Edge, USB) or with the repo's Python tool.",
+      "source": {
+        "type": "github",
+        "repo": "leonardoMirabal/frodhes",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": false,
+        "revertNote": "Return to stock not checked in the project's docs: Octo-Vave's Stock V15 Install puts stock back (tested 2026-11-07).",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web",
+          "python"
+        ]
+      }
+    },
+    {
+      "id": "ravel",
+      "name": "Ravel",
+      "author": "De-Pattern",
+      "kind": "community",
+      "tagline": "Eight-track sound-design groovebox",
+      "tags": [
+        "8 tracks",
+        "13 engines",
+        "Cross-trigger"
+      ],
+      "art": {
+        "hue": 13
+      },
+      "links": {
+        "install": "https://de-pattern.github.io/Ravel_FM1/install/",
+        "repo": "https://github.com/De-Pattern/Ravel_FM1"
+      },
+      "summary": "Eight-track groovebox for sound design where synth, struck and drum tracks trigger, excite and modulate one another, with thirteen synth engines, a graph. GPL-3.0.",
+      "install": "Web installer on the project site (Chrome/Edge, USB).",
+      "source": {
+        "type": "github",
+        "repo": "De-Pattern/Ravel_FM1",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": true,
+        "revertNote": "The installer puts M-VAVE's firmware back; M-UPGRADE works too, and so does Octo-Vave's Stock V15 Install (tested 2026-11-07).",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "web"
+        ]
+      }
+    },
+    {
+      "id": "shine-on",
+      "name": "Shine On",
+      "author": "zvenson",
+      "kind": "community",
+      "tagline": "Seventies string machine",
+      "tags": [
+        "String machine",
+        "BBD ensemble",
+        "Phaser"
+      ],
+      "art": {
+        "hue": 253
+      },
+      "links": {
+        "repo": "https://github.com/zvenson/shineon"
+      },
+      "summary": "Seventies string machine on four tracks with six formant registers, BBD ensemble and phaser, mixer, step sequencer and 32 programs. GPL-3.0.",
+      "install": "Python installer from the repo (tools/fm1_install.py) or M-UPGRADE; no web installer.",
+      "source": {
+        "type": "github",
+        "repo": "zvenson/shineon",
+        "assetPatterns": [
+          "\\.fwsc$"
+        ]
+      },
+      "traits": {
+        "source": "open",
+        "revert": false,
+        "revertNote": "No return to stock in the project's tools: Octo-Vave's Stock V15 Install puts stock back (tested 2026-11-07).",
+        "requires_stock_version": null,
+        "requires_stock_note": "No stock version required: the project's docs don't ask for one before installing.",
+        "install_method": [
+          "python",
+          "m-upgrade"
         ]
       }
     }
