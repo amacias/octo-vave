@@ -674,7 +674,9 @@
         "SEM filter"
       ],
       "art": {
-        "hue": 7
+        "hue": 7,
+        "image": "img/fw/obervave.png",
+        "credit": "https://github.com/zvenson/obervave/blob/HEAD/docs/screen.png"
       },
       "links": {
         "repo": "https://github.com/zvenson/obervave"
@@ -712,7 +714,9 @@
         "P-locks"
       ],
       "art": {
-        "hue": 45
+        "hue": 45,
+        "image": "img/fw/loom-8.png",
+        "credit": "https://charlesvestal.github.io/fm1-loom/img/screen-beat-playing.png"
       },
       "links": {
         "install": "https://charlesvestal.github.io/fm1-loom/install/",
@@ -750,7 +754,9 @@
         "LFO2/LFO3"
       ],
       "art": {
-        "hue": 14
+        "hue": 14,
+        "image": "img/fw/clipper.png",
+        "credit": "https://github.com/isod89/clipper-fm1/blob/HEAD/assets/screens/live-grid.png"
       },
       "links": {
         "install": "https://isod89.github.io/clipper-fm1/webapp/installer/",
@@ -788,7 +794,9 @@
         "Event tape"
       ],
       "art": {
-        "hue": 114
+        "hue": 114,
+        "image": "img/fw/orbit.png",
+        "credit": "https://github.com/dspaudio/orbit/blob/HEAD/docs/orbit-demo-0.3.png"
       },
       "links": {
         "install": "https://dspaudio.github.io/orbit/",
@@ -826,7 +834,9 @@
         "General MIDI"
       ],
       "art": {
-        "hue": 85
+        "hue": 85,
+        "image": "img/fw/polly.png",
+        "credit": "https://charlesvestal.github.io/fm1-polly/img/manual/quickstart_song.png"
       },
       "links": {
         "install": "https://charlesvestal.github.io/fm1-polly/",
@@ -864,7 +874,9 @@
         "Tape echo"
       ],
       "art": {
-        "hue": 160
+        "hue": 160,
+        "image": "img/fw/dub-1.png",
+        "credit": "https://github.com/sbegueria/fm1-dub/blob/HEAD/docs/img/screen-main.png"
       },
       "links": {
         "install": "https://sbegueria.github.io/fm1-dub/install/",
@@ -902,7 +914,9 @@
         "Pixel flower"
       ],
       "art": {
-        "hue": 309
+        "hue": 309,
+        "image": "img/fw/coralflower.png",
+        "credit": "https://github.com/FicusFicusov/CoralFlower/blob/HEAD/docs/images/home.png"
       },
       "links": {
         "install": "https://ficusficusov.github.io/CoralFlower/",
@@ -940,7 +954,9 @@
         "Euclidean drums"
       ],
       "art": {
-        "hue": 269
+        "hue": 269,
+        "image": "img/fw/ctl-1.png",
+        "credit": "https://github.com/charlesvestal/fm1-ctl/blob/HEAD/docs/img/screen-play.png"
       },
       "links": {
         "install": "https://charlesvestal.github.io/fm1-ctl/install/",
@@ -978,7 +994,9 @@
         "64 steps"
       ],
       "art": {
-        "hue": 78
+        "hue": 78,
+        "image": "img/fw/gr-mm.png",
+        "credit": "https://github.com/GRiMMBIENT/grimm/blob/HEAD/docs/screens/home.png"
       },
       "links": {
         "install": "https://grimmbient.github.io/grimm/hub.html",
@@ -1017,7 +1035,9 @@
         "Sequencer"
       ],
       "art": {
-        "hue": 115
+        "hue": 115,
+        "image": "img/fw/fmini-1.png",
+        "credit": "https://github.com/ruppert/fmini-1/blob/HEAD/assets/readme/screen-osc.png"
       },
       "links": {
         "install": "https://ruppert.github.io/fmini-1/",
@@ -1055,7 +1075,9 @@
         "Web editor"
       ],
       "art": {
-        "hue": 291
+        "hue": 291,
+        "image": "img/fw/duell.png",
+        "credit": "https://github.com/oscillr/DUELL/blob/HEAD/docs/duell-card.jpg"
       },
       "links": {
         "install": "https://oscillr.github.io/DUELL/install/",
@@ -1093,7 +1115,9 @@
         "Physical model"
       ],
       "art": {
-        "hue": 312
+        "hue": 312,
+        "image": "img/fw/frodhes.png",
+        "credit": "https://github.com/leonardoMirabal/frodhes/blob/HEAD/docs/manual/img/thumbnail.png"
       },
       "links": {
         "install": "https://leonardomirabal.github.io/frodhes/#install",
@@ -1132,7 +1156,9 @@
         "Cross-trigger"
       ],
       "art": {
-        "hue": 13
+        "hue": 13,
+        "image": "img/fw/ravel.png",
+        "credit": "https://github.com/De-Pattern/Ravel_FM1/blob/HEAD/docs/manual/home-tracks.png"
       },
       "links": {
         "install": "https://de-pattern.github.io/Ravel_FM1/install/",
@@ -1170,7 +1196,9 @@
         "Phaser"
       ],
       "art": {
-        "hue": 253
+        "hue": 253,
+        "image": "img/fw/shine-on.png",
+        "credit": "https://github.com/zvenson/shineon/blob/HEAD/docs/screen.png"
       },
       "links": {
         "repo": "https://github.com/zvenson/shineon"
