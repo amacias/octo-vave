@@ -66,6 +66,21 @@
       "supersededBy": "v0.29.2"
     },
     {
+      "id": "choralroot",
+      "version": "v0.29.2",
+      "file": "choralroot-0.29.2.fwsc",
+      "sha256": "b96afe10c09ba241b25d18ceff9570183495412ccf94050f1e1cb9a75ace09cc",
+      "date": "2026-11-07",
+      "steps": {
+        "install": true,
+        "run": true,
+        "revert": true
+      },
+      "result": "clean",
+      "checks": "played and checked by hand on the device by the user (Sound check not run): 'fantastic'; earlier the same day an automated run installed it over stock with Octo-Vave's flasher and reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
+      "notes": "MIDI port 'ChoralRoot FM-1', no USB audio device: it plays through the FM-1's own speaker. It sends its own MIDI clock. A chord instrument: notes sent over MIDI from a computer didn't sound in the automated run, so judge it by playing the device. Plain choralroot-0.29.2.fwsc (not the smk37/mke/elite builds, which are for the SMK-37)."
+    },
+    {
       "id": "clipper",
       "version": "v1.3.1",
       "file": "clipper-1.3.1.fwsc",
