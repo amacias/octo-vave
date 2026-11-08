@@ -1,7 +1,7 @@
 import * as DX from "./dx7.js";
 import { mountFm1Keys, fm1LowNote } from "./fm1keys.js";
 import { h, fmtBytes, normVer, fwDirectory, fwSections, octo, outcome,
-  verKey, shortVer, relTime, icon, installableState, latestValidations, validatedList } from "./fwcards.js";
+  verKey, shortVer, relTime, icon, installableState, validatedSection } from "./fwcards.js";
 import { installAction, openInstall, BASELINE } from "./fm1flash.js";
 
 // ================================================================ helpers
@@ -1447,7 +1447,7 @@ function renderFirmware() {
 
   // Leaderboard cards, then "Also popular" (#11–#30), then every validated firmware (same order as the homepage).
   const { nodes } = fwSections(fw, FW_APP);
-  $("#fwCards").replaceChildren(...nodes, fwDirectory(fw) || "", validatedSection(fw));
+  $("#fwCards").replaceChildren(...nodes, fwDirectory(fw) || "", appValidatedSection(fw));
   buildChecks();
   syncFirmwareFromPort();
 }
@@ -1459,9 +1459,8 @@ function validatedFile(fw, v) {
 }
 
 /** "All validated firmware": the newest tested version of each firmware, and whether its exact file is kept. */
-function validatedSection(fw) {
-  const recs = latestValidations(fw);
-  const rows = validatedList(fw, (v) => {
+function appValidatedSection(fw) {
+  return validatedSection(fw, (v) => {
     const file = validatedFile(fw, v);
     const f = fw.catalog.find((c) => c.id === v.id);
     const { rel, asset } = releaseAsset(fw, v);
@@ -1472,13 +1471,7 @@ function validatedSection(fw) {
       action.onclick = () => downloadAsset(f, rel, asset, action);
     } else action = h("span", { class: "muted", text: "not downloaded" });
     return [action, f && installAction(v, installOpts(f, v))];
-  });
-  const n = (o) => recs.filter((v) => outcome(v) === o).length;
-  return h("section", { class: "card val" },
-    h("div", { class: "section-head" },
-      h("h3", {}, octo("Validated"), " All Validated Firmware"),
-      h("span", { class: "muted", text: [`${n("clean")} validated`, n("issues") && `${n("issues")} with issues`, n("failed") && `${n("failed")} failed`].filter(Boolean).join(" · ") })),
-    rows.length ? rows : h("p", { class: "muted", text: "Nothing validated yet. Validation happens in hands-on Claude Code sessions: flash, run, revert to stock (see VALIDATION.md)." }));
+  }, { empty: "Nothing validated yet. Validation happens in hands-on Claude Code sessions: flash, run, revert to stock (see VALIDATION.md)." });
 }
 
 /** The release and file a validation record pinned, when the release list has them. */

@@ -69,12 +69,17 @@
   @media (max-width: 560px) { .links a:not(.gh-link) { display: none; } }
   footer img { width: 40px; }
   /* firmware sections: the app's cards and lists (css/firmware.css) on this page's controls */
-  .fwsec .fw-status { font-size: 14px; margin: -4px 0 4px; }
+  .fwsec { padding-top: 22px; }
+  .fwsec .fw-head { margin-bottom: 4px; }
+  .fwsec .fw-title { font-size: 22px; margin: 0; gap: 8px; }  /* the app's page title size */
+  .fwsec .fw-title img { width: 22px; }
+  .fwsec .fw-status { font-size: 13px; }
+  .fwsec .intro { color: var(--muted); font-size: 14px; margin: 0 0 4px; max-width: 80ch; }
+  .fwsec .card { padding: 16px; border-radius: var(--radius); }  /* the app's card */
+  .fwsec .card .val-intro, .fwsec .card .val-foot { font-size: 13px; color: var(--muted); margin: 0 0 8px; }
+  .fwsec .card .val-foot { margin: 10px 0 0; }
   .fwsec .live { font-size: 14px; line-height: 1.45; }  /* the app's type size, so they lay out as on the Firmware page */
   .fwsec .live code { background: none; padding: 0; }
-  .fwsec .dir-head { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
-  .fwsec .val-list { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 6px 16px; }
-  .fwsec .val-row:last-child { border-bottom: 0; }
   .fwsec .btn { font-weight: 500; border-radius: 8px; gap: 6px; }
   .fwsec .btn.ghost { background: none; }
   .fwsec button { font: inherit; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); cursor: pointer; }
@@ -89,9 +94,7 @@
   .fwsec .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 6px 0; }
   .fwsec .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
   .fwsec .card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0; }
-  .fwsec .fw-section { font-size: 18px; margin: 28px 0 12px; }
   .fwsec .fw-legend-row { margin: 14px 0 -4px; }
-  .fwsec h3.sub { font-size: 18px; margin: 32px 0 6px; display: flex; align-items: center; gap: 8px; }
 </style>
 </head>
 <body>
@@ -117,28 +120,14 @@
 </header>
 
 <section class="wrap wide fwsec" id="leaderboard">
-  <h2><img src="img/octo.svg" alt="">Firmware Leaderboard</h2>
-  <p class="muted">Stock, FM-1 Open and the top community projects. An orange octopus <img class="inline-octo" src="img/octo.svg" alt="orange octopus">
+  <div class="section-head fw-head">
+    <h2 class="fw-title"><img src="img/octo.svg" alt="">Firmware Leaderboard</h2>
+    <span class="muted fw-status" id="fwStatus">Loading the firmware list…</span>
+  </div>
+  <p class="intro">Stock, FM-1 Open and the top community projects. An orange octopus <img class="inline-octo" src="img/octo.svg" alt="orange octopus">
     means that version was installed, played and reverted to stock on a real FM-1.</p>
-  <p class="muted fw-status" id="fwStatus">Loading the firmware list…</p>
   <div class="live" id="fwLive"></div>
-</section>
-
-<section class="wrap wide fwsec" id="popular">
-  <h2><img src="img/octo.svg" alt="">Also Popular</h2>
-  <p class="muted dir-head"><span>The next most popular projects, ranked by GitHub stars and downloads<span id="dirRange"></span>.
-    An octopus marks a validated one.</span> <span id="dirFull"></span></p>
-  <div class="live" id="dirLive"><p class="muted">Loading…</p></div>
-</section>
-
-<section class="wrap wide fwsec" id="validated">
-  <h2><img src="img/octo.svg" alt="">All Validated Firmware</h2>
-  <p class="muted">The newest tested version of each firmware, from <a href="https://github.com/amacias/octo-vave/blob/main/firmware/validated.json"><code>firmware/validated.json</code></a>.
-    A grey octopus means the project has a newer release that hasn't been tested yet.
-    <b>Install</b> puts that exact file on your FM-1 from this page (Chrome or Edge, USB cable);
-    Install on Stock V15 takes it back to stock. Got the file somewhere else? <b>SHA256</b> copies its checksum to compare.</p>
-  <div class="live val-list" id="val"><p class="muted">Loading…</p></div>
-  <p class="muted">Tested one yourself? <a href="https://github.com/amacias/octo-vave/issues/new?template=validation-report.yml">Send a validation report</a>.</p>
+  <div class="live" id="fwMore"></div>
 </section>
 
 <section class="wrap" id="about">
@@ -200,7 +189,7 @@
   // The Firmware section renders with the app's own card code (js/fwcards.js, a copy of web/fwcards.js)
   // from the nightly snapshot docs/data/firmware.json (tools/fm1_site.py). Read from the repository
   // first, so a new snapshot shows before Pages republishes; this site's own copy is the fallback.
-  import { h, fwSections, fwDirectory, validatedList, relTime, copySha, verKey }
+  import { h, fwSections, fwDirectory, validatedSection, relTime, copySha, verKey }
     from "./js/fwcards.js";
   import { installAction } from "./js/fm1flash.js";
   const SNAPSHOTS = ["https://raw.githubusercontent.com/amacias/octo-vave/main/docs/data/firmware.json", "data/firmware.json"];
@@ -216,15 +205,25 @@
     throw new Error("no snapshot");
   }
 
-  // One line per firmware, as in the app; the homepage adds the SHA256 copy and Install.
-  function validatedRows(fw) {
-    const rows = validatedList(fw, (v) => {
+  // The app's "All Validated Firmware" card; the homepage adds the SHA256 copy and Install to each line.
+  function validatedCard(fw) {
+    const link = (href, text) => h("a", { href, text });
+    const card = validatedSection(fw, (v) => {
       const copy = v.sha256 && h("button", { class: "ghost mini-btn copy", text: "SHA256", title: `Copy the full SHA256 of ${v.file || "the tested file"}:
 ${v.sha256}` });
       if (copy) copy.onclick = () => copySha(v, copy);
       return [copy, installAction(v, installOpts(fw, v))];
+    }, {
+      note: h("p", { class: "val-intro" }, "The newest tested version of each firmware, from ",
+        link("https://github.com/amacias/octo-vave/blob/main/firmware/validated.json", "validated.json"),
+        ". Grey octopus: a newer release hasn't been tested yet. ", h("b", { text: "Install" }),
+        " puts that exact file on your FM-1 (Chrome or Edge, USB cable); Install on Stock V15 takes it back to stock. ",
+        h("b", { text: "SHA256" }), " copies the checksum to compare a file you got elsewhere."),
+      foot: h("p", { class: "val-foot" }, "Tested one yourself? ",
+        link("https://github.com/amacias/octo-vave/issues/new?template=validation-report.yml", "Send a validation report"), "."),
     });
-    return rows.length ? rows : [h("p", { class: "muted", text: "Nothing validated yet." })];
+    card.id = "validated";
+    return card;
   }
 
   // Install button: the browser flashes the validated file over Web MIDI (js/fm1flash.js). Most hosts
@@ -254,18 +253,16 @@ ${v.sha256}` });
   }
 
   loadSnapshot().then((fw) => {
-    $("fwStatus").textContent = `Updated nightly from GitHub and awesome-fm-1 · this list: ${relTime(fw.generated_at)}.`;
+    $("fwStatus").textContent = `Updated nightly from GitHub and awesome-fm-1 · ${relTime(fw.generated_at)}`;
     $("fwLive").replaceChildren(...fwSections(fw, null, { merged: true }).nodes);
-    // the cards show the top 12; the list goes on from #13
-    const dir = fwDirectory(fw, { from: 12, bare: true });
-    if (dir) { $("dirRange").textContent = ` (${dir.range})`; $("dirFull").replaceChildren(dir.full); $("dirLive").replaceChildren(dir.list); }
-    else $("dirLive").replaceChildren();
-    $("val").replaceChildren(...validatedRows(fw));
+    // the app's cards below the leaderboard: Also Popular (from #13: the homepage shows 12 cards), then All Validated
+    const dir = fwDirectory(fw, { from: 12 });
+    if (dir) dir.id = "popular";
+    $("fwMore").replaceChildren(dir || "", validatedCard(fw));
   }).catch(() => {
     $("fwStatus").replaceChildren("Couldn't load the firmware list here; see ",
       h("a", { href: "https://github.com/amacias/octo-vave/blob/main/firmware/catalog.json", text: "catalog.json" }), " and ",
       h("a", { href: "https://github.com/amacias/octo-vave/blob/main/firmware/validated.json", text: "validated.json" }), ".");
-    $("val").replaceChildren(); $("dirLive").replaceChildren();
   });
 </script>
 </body>

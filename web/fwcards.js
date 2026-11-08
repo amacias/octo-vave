@@ -54,6 +54,21 @@ export function fwDirectory(fw, { from = 10, bare = false } = {}) {
 }
 
 /**
+ * The "All Validated Firmware" card (app and homepage): head with counts, an optional `note`
+ * under it, the rows of validatedList(fw, extra), and an optional `foot`.
+ */
+export function validatedSection(fw, extra, { note = null, foot = null, empty = "Nothing validated yet." } = {}) {
+  const recs = latestValidations(fw);
+  const n = (o) => recs.filter((v) => outcome(v) === o).length;
+  const rows = validatedList(fw, extra);
+  return h("section", { class: "card val" },
+    h("div", { class: "section-head" },
+      h("h3", {}, octo("Validated"), " All Validated Firmware"),
+      h("span", { class: "muted", text: [`${n("clean")} validated`, n("issues") && `${n("issues")} with issues`, n("failed") && `${n("failed")} failed`].filter(Boolean).join(" · ") })),
+    note, rows.length ? rows : h("p", { class: "muted", text: empty }), foot);
+}
+
+/**
  * "All validated firmware": one line per firmware with its newest tested version
  * (latestValidations), grey when a newer stable release hasn't been tested.
  * `extra(v)` appends the page's own controls (the app: download state + Install;
