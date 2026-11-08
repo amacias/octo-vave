@@ -72,18 +72,9 @@ and reverted to stock V15, with everything working. The colour tells you how it 
 | red | Failed validation |
 | grey | Validated before, but the project has a newer release that hasn't been tested yet |
 
-Validated so far, all <img src="docs/img/octo.svg" height="16" alt="orange"> orange:
-
-| | Firmware | Version | Author |
-|---|---|---|---|
-| <img src="docs/img/octo.svg" height="18" alt="orange"> | Stock V15 | V15 | M-VAVE |
-| <img src="docs/img/octo.svg" height="18" alt="orange"> | FM-1 Open | V13 | M-VAVE |
-| <img src="docs/img/octo.svg" height="18" alt="orange"> | Felucca | v1.6.1 | hugelton |
-| <img src="docs/img/octo.svg" height="18" alt="orange"> | SLOOP | v2.7.1 | 3dSam (isod89) |
-| <img src="docs/img/octo.svg" height="18" alt="orange"> | ChoralRoot | v0.25.1 | Quixotic7 |
-| <img src="docs/img/octo.svg" height="18" alt="orange"> | AMB-1 | v1.3 | Charles Vestal |
-
-The live list, with notes from each session, is at the bottom of the Firmware page and in
+**See every validated firmware, with an Install button for each, on the
+[homepage's Validated firmware list](https://amacias.github.io/octo-vave/#validated).** The app shows
+the same list at the bottom of its Firmware page. The records, with notes from each session, are in
 [`firmware/validated.json`](firmware/validated.json). How a session runs: [VALIDATION.md](VALIDATION.md).
 
 <p align="center">
