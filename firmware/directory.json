@@ -12,7 +12,7 @@
       "desc": "Live four-track groovebox by 3dSam: three synths plus a drum machine, 37 drum kits, punch-in FX, layer system, song mode, web editor",
       "license": "GPL-3.0",
       "stars": 767,
-      "downloads": 8977,
+      "downloads": 8978,
       "score": 15.746,
       "curated": true
     },
@@ -38,8 +38,8 @@
       "desc": "Multi-engine synth firmware by Leo Kuroshita (H\u00fcgelton Instruments)",
       "license": "GPL-3.0",
       "stars": 685,
-      "downloads": 3602,
-      "score": 14.72,
+      "downloads": 3603,
+      "score": 14.721,
       "curated": true
     },
     {
@@ -64,8 +64,8 @@
       "desc": "Orchid-style chord instrument: one hand plays roots, the other shapes chords, with voicings, key modes, bass and a looper",
       "license": "GPL-3.0",
       "stars": 104,
-      "downloads": 5740,
-      "score": 13.309,
+      "downloads": 5745,
+      "score": 13.31,
       "curated": true
     },
     {
@@ -77,7 +77,7 @@
       "desc": "ReBirth-style groovebox by Charles Vestal: TR-909, TR-808, two TB-303s with TB-3PO acid generators and a breakbeat slicer, each with its own sequencer",
       "license": "GPL-3.0",
       "stars": 224,
-      "downloads": 2567,
+      "downloads": 2568,
       "score": 13.267,
       "curated": true
     },
@@ -90,7 +90,7 @@
       "desc": "Single eight-voice analog-style polysynth after the classic American poly synths of 1979-84, with hard sync, cross-modulation, SEM-style filter morph\u2026",
       "license": "GPL-3.0",
       "stars": 51,
-      "downloads": 4187,
+      "downloads": 4188,
       "score": 12.291,
       "curated": true
     },
@@ -116,7 +116,7 @@
       "desc": "Eight-track drum machine by DEADACTIVE with 808, 909 and Plaits drum models, samples, Mutable Instruments Grids, a pumping compressor and resonators",
       "license": "GPL-3.0",
       "stars": 57,
-      "downloads": 2818,
+      "downloads": 2819,
       "score": 12.005,
       "curated": true
     },
@@ -142,8 +142,8 @@
       "desc": "Omnichord-style chord harp by Charles Vestal: strum the white keys, pick chords on the black ones, with rhythm patterns and auto bass",
       "license": "GPL-3.0",
       "stars": 79,
-      "downloads": 1711,
-      "score": 11.827,
+      "downloads": 1712,
+      "score": 11.828,
       "curated": true
     },
     {
@@ -154,9 +154,9 @@
       "url": "https://github.com/charlesvestal/fm1-loom",
       "desc": "OP-XY-inspired groovebox by Charles Vestal: eight colour-coded tracks, 85 factory presets, a 64-step sequencer with step tricks and parameter locks, weave\u2026",
       "license": "MPL-2.0",
-      "stars": 68,
+      "stars": 69,
       "downloads": 1491,
-      "score": 11.542,
+      "score": 11.556,
       "curated": true
     },
     {
@@ -246,8 +246,8 @@
       "desc": "Generative firmware, formerly Melodee (Tess): 13 generators, song forms and modulation on four tracks",
       "license": "GPL-3.0",
       "stars": 26,
-      "downloads": 1624,
-      "score": 10.689,
+      "downloads": 1626,
+      "score": 10.69,
       "curated": false
     },
     {
@@ -285,8 +285,8 @@
       "desc": "Dark ambient, dungeon synth and deathdream firmware: four tracks, seven sound sources, long dark effects, a 64-step sequencer and one-key chords",
       "license": "GPL-3.0",
       "stars": 38,
-      "downloads": 1018,
-      "score": 10.59,
+      "downloads": 1020,
+      "score": 10.592,
       "curated": true
     },
     {
@@ -298,8 +298,8 @@
       "desc": "Minimoog Model D emulation by Guilherme Ruppert with effects, arpeggiator and sequencer",
       "license": "GPL-3.0",
       "stars": 35,
-      "downloads": 1029,
-      "score": 10.521,
+      "downloads": 1030,
+      "score": 10.522,
       "curated": true
     },
     {
@@ -376,7 +376,7 @@
       "desc": "Seventies string machine on four tracks with six formant registers, BBD ensemble and phaser, mixer, step sequencer and 32 programs",
       "license": "GPL-3.0",
       "stars": 8,
-      "downloads": 3169,
+      "downloads": 3170,
       "score": 10.259,
       "curated": true
     },

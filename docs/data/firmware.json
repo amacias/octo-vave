@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-09T03:13:28Z",
+ "generated_at": "2026-11-09T04:00:27Z",
  "catalog": [
   {
    "id": "official",
@@ -1359,7 +1359,7 @@
    "desc": "Live four-track groovebox by 3dSam: three synths plus a drum machine, 37 drum kits, punch-in FX, layer system, song mode, web editor",
    "license": "GPL-3.0",
    "stars": 767,
-   "downloads": 8977,
+   "downloads": 8978,
    "score": 15.746,
    "curated": true,
    "origin": "awesome-fm-1",
@@ -1397,8 +1397,8 @@
    "desc": "Multi-engine synth firmware by Leo Kuroshita (Hügelton Instruments)",
    "license": "GPL-3.0",
    "stars": 685,
-   "downloads": 3602,
-   "score": 14.72,
+   "downloads": 3603,
+   "score": 14.721,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1435,8 +1435,8 @@
    "desc": "Orchid-style chord instrument: one hand plays roots, the other shapes chords, with voicings, key modes, bass and a looper",
    "license": "GPL-3.0",
    "stars": 104,
-   "downloads": 5740,
-   "score": 13.309,
+   "downloads": 5745,
+   "score": 13.31,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1454,7 +1454,7 @@
    "desc": "ReBirth-style groovebox by Charles Vestal: TR-909, TR-808, two TB-303s with TB-3PO acid generators and a breakbeat slicer, each with its own sequencer",
    "license": "GPL-3.0",
    "stars": 224,
-   "downloads": 2567,
+   "downloads": 2568,
    "score": 13.267,
    "curated": true,
    "origin": "awesome-fm-1",
@@ -1473,7 +1473,7 @@
    "desc": "Single eight-voice analog-style polysynth after the classic American poly synths of 1979-84, with hard sync, cross-modulation, SEM-style filter morph…",
    "license": "GPL-3.0",
    "stars": 51,
-   "downloads": 4187,
+   "downloads": 4188,
    "score": 12.291,
    "curated": true,
    "origin": "awesome-fm-1",
@@ -1511,7 +1511,7 @@
    "desc": "Eight-track drum machine by DEADACTIVE with 808, 909 and Plaits drum models, samples, Mutable Instruments Grids, a pumping compressor and resonators",
    "license": "GPL-3.0",
    "stars": 57,
-   "downloads": 2818,
+   "downloads": 2819,
    "score": 12.005,
    "curated": true,
    "origin": "awesome-fm-1",
@@ -1549,8 +1549,8 @@
    "desc": "Omnichord-style chord harp by Charles Vestal: strum the white keys, pick chords on the black ones, with rhythm patterns and auto bass",
    "license": "GPL-3.0",
    "stars": 79,
-   "downloads": 1711,
-   "score": 11.827,
+   "downloads": 1712,
+   "score": 11.828,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1567,9 +1567,9 @@
    "url": "https://github.com/charlesvestal/fm1-loom",
    "desc": "OP-XY-inspired groovebox by Charles Vestal: eight colour-coded tracks, 85 factory presets, a 64-step sequencer with step tricks and parameter locks, weave…",
    "license": "MPL-2.0",
-   "stars": 68,
+   "stars": 69,
    "downloads": 1491,
-   "score": 11.542,
+   "score": 11.556,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1701,8 +1701,8 @@
    "desc": "Generative firmware, formerly Melodee (Tess): 13 generators, song forms and modulation on four tracks",
    "license": "GPL-3.0",
    "stars": 26,
-   "downloads": 1624,
-   "score": 10.689,
+   "downloads": 1626,
+   "score": 10.69,
    "curated": false,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1758,8 +1758,8 @@
    "desc": "Dark ambient, dungeon synth and deathdream firmware: four tracks, seven sound sources, long dark effects, a 64-step sequencer and one-key chords",
    "license": "GPL-3.0",
    "stars": 38,
-   "downloads": 1018,
-   "score": 10.59,
+   "downloads": 1020,
+   "score": 10.592,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1777,8 +1777,8 @@
    "desc": "Minimoog Model D emulation by Guilherme Ruppert with effects, arpeggiator and sequencer",
    "license": "GPL-3.0",
    "stars": 35,
-   "downloads": 1029,
-   "score": 10.521,
+   "downloads": 1030,
+   "score": 10.522,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1891,7 +1891,7 @@
    "desc": "Seventies string machine on four tracks with six formant registers, BBD ensemble and phaser, mixer, step sequencer and 32 programs",
    "license": "GPL-3.0",
    "stars": 8,
-   "downloads": 3169,
+   "downloads": 3170,
    "score": 10.259,
    "curated": true,
    "origin": "awesome-fm-1",
@@ -1923,7 +1923,7 @@
   }
  ],
  "discovery": {
-  "checked": "2026-11-09T03:13:24",
+  "checked": "2026-11-09T04:00:24",
   "notes": [],
   "stats": {
    "scanned": 279,
@@ -2018,6 +2018,22 @@
    "checks": "played and checked by hand on the device by the user (Sound check not run): 'fantastic'; earlier the same day an automated run installed it over stock with Octo-Vave's flasher and reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
    "notes": "MIDI port 'ChoralRoot FM-1', no USB audio device: it plays through the FM-1's own speaker. It sends its own MIDI clock. A chord instrument: notes sent over MIDI from a computer didn't sound in the automated run, so judge it by playing the device. Plain choralroot-0.29.2.fwsc (not the smk37/mke/elite builds, which are for the SMK-37).",
    "supersededBy": "v0.32"
+  },
+  {
+   "id": "choralroot",
+   "version": "v0.32",
+   "file": "choralroot-0.32.fwsc",
+   "sha256": "a4f88c00142141a40b645162f360696c319f78c0ce032a87d4d014f52ddd12b0",
+   "date": "2026-11-08",
+   "steps": {
+    "install": true,
+    "run": true,
+    "revert": true
+   },
+   "result": "clean",
+   "checks": "played tones, changed presets",
+   "notes": "",
+   "method": "manual"
   },
   {
    "id": "clipper",
@@ -2543,7 +2559,7 @@
   }
  ],
  "releases": {
-  "checked": "2026-11-09T03:13:24",
+  "checked": "2026-11-09T04:00:24",
   "sources": {
    "official": {
     "releases": [
@@ -2627,7 +2643,7 @@
         "name": "felucca-1.8.2-beta.fwsc",
         "size": 610286,
         "url": "https://github.com/hugelton/Felucca/releases/download/v1.8.2-beta/felucca-1.8.2-beta.fwsc",
-        "downloads": 144
+        "downloads": 145
        }
       ],
       "sha256sums": null,
@@ -2725,7 +2741,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-04",
      "releases": 21,
-     "downloads": 3602
+     "downloads": 3603
     }
    },
    "sloop": {
@@ -2741,7 +2757,7 @@
         "name": "sloop-2.8.5.fwsc",
         "size": 610076,
         "url": "https://github.com/isod89/sloop-fm1/releases/download/v2.8.5/sloop-2.8.5.fwsc",
-        "downloads": 518
+        "downloads": 519
        },
        {
         "name": "sloop-editor-2.8.5.html",
@@ -2875,7 +2891,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-04",
      "releases": 16,
-     "downloads": 8977
+     "downloads": 8978
     }
    },
    "x0x": {
@@ -2891,7 +2907,7 @@
         "name": "x0x-1.2.1.fwsc",
         "size": 609682,
         "url": "https://github.com/charlesvestal/fm1-x0x/releases/download/v1.2.1/x0x-1.2.1.fwsc",
-        "downloads": 139
+        "downloads": 140
        }
       ],
       "sha256sums": "https://github.com/charlesvestal/fm1-x0x/releases/download/v1.2.1/SHA256SUMS",
@@ -2989,7 +3005,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-08",
      "releases": 26,
-     "downloads": 2567
+     "downloads": 2568
     }
    },
    "melodee": {
@@ -3155,7 +3171,7 @@
         "name": "choralroot-0.32.fwsc",
         "size": 659880,
         "url": "https://github.com/Quixotic7/ChoralRootFM1/releases/download/v0.32/choralroot-0.32.fwsc",
-        "downloads": 50
+        "downloads": 54
        }
       ],
       "sha256sums": "https://github.com/Quixotic7/ChoralRootFM1/releases/download/v0.32/SHA256SUMS",
@@ -3219,7 +3235,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-09",
      "releases": 46,
-     "downloads": 5740
+     "downloads": 5745
     }
    },
    "fomni": {
@@ -3235,7 +3251,7 @@
         "name": "omni-0.4.1.fwsc",
         "size": 609659,
         "url": "https://github.com/charlesvestal/fm1-fomni/releases/download/v0.4.1/omni-0.4.1.fwsc",
-        "downloads": 79
+        "downloads": 80
        }
       ],
       "sha256sums": "https://github.com/charlesvestal/fm1-fomni/releases/download/v0.4.1/SHA256SUMS",
@@ -3333,7 +3349,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-08",
      "releases": 7,
-     "downloads": 1711
+     "downloads": 1712
     }
    },
    "ghoulbox": {
@@ -3945,7 +3961,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-05",
      "releases": 13,
-     "downloads": 2818
+     "downloads": 2819
     }
    },
    "fm1va": {
@@ -4198,7 +4214,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-02",
      "releases": 8,
-     "downloads": 4187
+     "downloads": 4188
     }
    },
    "loom-8": {
@@ -4308,7 +4324,7 @@
     ],
     "error": null,
     "stats": {
-     "stars": 68,
+     "stars": 69,
      "license": "MPL-2.0",
      "pushed": "2026-11-06",
      "releases": 21,
@@ -5019,7 +5035,7 @@
         "name": "grimm.fwsc",
         "size": 610160,
         "url": "https://github.com/GRiMMBIENT/grimm/releases/download/v2.0.2/grimm.fwsc",
-        "downloads": 73
+        "downloads": 75
        }
       ],
       "sha256sums": null,
@@ -5083,7 +5099,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-07",
      "releases": 4,
-     "downloads": 1018
+     "downloads": 1020
     }
    },
    "fmini-1": {
@@ -5099,7 +5115,7 @@
         "name": "fmini-1-fm1-2.2.0.fwsc",
         "size": 610082,
         "url": "https://github.com/ruppert/fmini-1/releases/download/v2.2.0/fmini-1-fm1-2.2.0.fwsc",
-        "downloads": 111
+        "downloads": 112
        }
       ],
       "sha256sums": null,
@@ -5197,7 +5213,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-08",
      "releases": 6,
-     "downloads": 1029
+     "downloads": 1030
     }
    },
    "duell": {
@@ -5584,7 +5600,7 @@
         "name": "shineon-3.0.1.fwsc",
         "size": 612204,
         "url": "https://github.com/zvenson/shineon/releases/download/v3.0.1/shineon-3.0.1.fwsc",
-        "downloads": 227
+        "downloads": 228
        }
       ],
       "sha256sums": "https://github.com/zvenson/shineon/releases/download/v3.0.1/SHA256SUMS",
@@ -5665,7 +5681,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-10-23",
      "releases": 5,
-     "downloads": 3169
+     "downloads": 3170
     }
    },
    "optimist": {
@@ -6564,13 +6580,13 @@
         "name": "tessera-3.4.1-1core.fwsc",
         "size": 610617,
         "url": "https://github.com/Rastapopolix/tessera/releases/download/v3.4.1/tessera-3.4.1-1core.fwsc",
-        "downloads": 25
+        "downloads": 26
        },
        {
         "name": "tessera-3.4.1.fwsc",
         "size": 610617,
         "url": "https://github.com/Rastapopolix/tessera/releases/download/v3.4.1/tessera-3.4.1.fwsc",
-        "downloads": 43
+        "downloads": 44
        }
       ],
       "sha256sums": "https://github.com/Rastapopolix/tessera/releases/download/v3.4.1/SHA256SUMS",
@@ -6698,7 +6714,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-09",
      "releases": 20,
-     "downloads": 1624
+     "downloads": 1626
     }
    },
    "fimba-1": {
