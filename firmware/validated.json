@@ -82,6 +82,22 @@
       "supersededBy": "v0.32"
     },
     {
+      "id": "choralroot",
+      "version": "v0.32",
+      "file": "choralroot-0.32.fwsc",
+      "sha256": "a4f88c00142141a40b645162f360696c319f78c0ce032a87d4d014f52ddd12b0",
+      "date": "2026-11-08",
+      "steps": {
+        "install": true,
+        "run": true,
+        "revert": true
+      },
+      "result": "clean",
+      "checks": "played tones, changed presets",
+      "notes": "",
+      "method": "manual"
+    },
+    {
       "id": "clipper",
       "version": "v1.3.1",
       "file": "clipper-1.3.1.fwsc",
