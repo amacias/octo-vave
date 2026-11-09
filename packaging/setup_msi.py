@@ -39,8 +39,7 @@ def _commit():
 
 VERSION_JSON = ROOT / "build" / "version.json"
 VERSION_JSON.parent.mkdir(exist_ok=True)
-VERSION_JSON.write_text(json.dumps({"version": VERSION, "commit": _commit()}) + "
-", encoding="utf-8")
+VERSION_JSON.write_text(json.dumps({"version": VERSION, "commit": _commit()}), encoding="utf-8")
 
 include_files = [
     ("web", "web"),
