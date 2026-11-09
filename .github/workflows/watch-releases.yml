@@ -3,11 +3,19 @@
 # the Firmware page's data for the homepage (docs/data/firmware.json; see tools/fm1_site.py).
 # After a complete scan, the same ranking also becomes firmware/directory.json, the leaderboard
 # a fresh install shows before its first Check for updates.
+# It also runs when a merge changes the validations or the catalog, so a merged validation reaches
+# the homepage right away. Its own commits don't start it again: pushes made with GITHUB_TOKEN
+# don't trigger workflows.
 name: Watch firmware releases
 
 on:
   schedule:
     - cron: "23 6 * * *"   # every day, 06:23 UTC
+  push:
+    branches: [main]
+    paths:
+      - firmware/validated.json
+      - firmware/catalog.json
   workflow_dispatch:
 
 permissions:
@@ -47,7 +55,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -- firmware/validated.json firmware/directory.json docs/
-          if git diff --cached --quiet -- firmware/validated.json; then msg="Homepage: nightly firmware list"
-          else msg="Grey out validations superseded by new releases; refresh the homepage firmware list"; fi
+          if ! git diff --cached --quiet -- firmware/validated.json; then msg="Grey out validations superseded by new releases; refresh the homepage firmware list"
+          elif [ "${{ github.event_name }}" = "push" ]; then msg="Homepage: firmware list after ${GITHUB_SHA::7}"
+          else msg="Homepage: nightly firmware list"; fi
           git commit -m "$msg"
           git push

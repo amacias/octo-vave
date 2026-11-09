@@ -14,7 +14,9 @@ What the MSI does:
   %LOCALAPPDATA%\\Octo-Vave, which upgrades and uninstalling leave alone;
 - replaces an older Octo-Vave on install (same upgrade code, higher version).
 """
+import json
 import os
+import subprocess
 from pathlib import Path
 
 from cx_Freeze import Executable, setup
@@ -27,6 +29,19 @@ VERSION = os.environ.get("OCTOVAVE_VERSION", "1.0.0")
 UPGRADE_CODE = "{171CB56E-EB47-4966-A662-F91CC6B0FC12}"
 ICON = "packaging/octo.ico"
 
+# The version the app shows in its header (server.app_version reads it from the install folder).
+def _commit():
+    try:
+        return subprocess.run(["git", "rev-parse", "--short=7", "HEAD"], capture_output=True, text=True, timeout=10).stdout.strip()
+    except OSError:
+        return ""
+
+
+VERSION_JSON = ROOT / "build" / "version.json"
+VERSION_JSON.parent.mkdir(exist_ok=True)
+VERSION_JSON.write_text(json.dumps({"version": VERSION, "commit": _commit()}) + "
+", encoding="utf-8")
+
 include_files = [
     ("web", "web"),
     ("firmware/catalog.json", "firmware/catalog.json"),
@@ -35,6 +50,7 @@ include_files = [
     ("firmware/formats", "firmware/formats"),
     ("docs/data/firmware.json", "docs/data/firmware.json"),  # published ranking + releases until the first Check for updates
     ("LICENSE", "LICENSE.txt"),
+    ("build/version.json", "version.json"),
 ]
 
 build_exe = {

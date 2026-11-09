@@ -1,7 +1,7 @@
 import * as DX from "./dx7.js";
 import { mountFm1Keys, fm1LowNote } from "./fm1keys.js";
 import { h, fmtBytes, normVer, fwDirectory, fwSections, octo, outcome,
-  verKey, shortVer, relTime, icon, installableState, validatedSection, newerFirst } from "./fwcards.js";
+  verKey, shortVer, relTime, icon, installableState, validationState, validatedSection, newerFirst, isBaseline, nameVer } from "./fwcards.js";
 import { installAction, openInstall, BASELINE } from "./fm1flash.js";
 
 // ================================================================ helpers
@@ -1478,9 +1478,12 @@ function validatedFile(fw, v) {
 
 /** "All validated firmware": the newest tested version of each firmware, and whether its exact file is kept. */
 function appValidatedSection(fw) {
+  const offered = new Set();   // one Revalidate per firmware, on its newest line
   return validatedSection(fw, (v) => {
     const file = validatedFile(fw, v);
     const f = fw.catalog.find((c) => c.id === v.id);
+    const re = f && !offered.has(f.id) && revalidateButton(f);
+    if (re) offered.add(f.id);
     const { rel, asset } = releaseAsset(fw, v);
     let action;
     if (file) action = h("span", { class: "badge ok", title: "sha256 " + file.sha256, text: "✓ downloaded" });
@@ -1488,7 +1491,7 @@ function appValidatedSection(fw) {
       action = h("button", { class: "ghost", text: "Download" });
       action.onclick = () => downloadAsset(f, rel, asset, action);
     } else action = h("span", { class: "muted", text: "not downloaded" });
-    return [action, v.local && submitLink(fw, v), f && installAction(v, installOpts(f, v))];
+    return [action, v.local && submitLink(fw, v), f && installAction(v, installOpts(f, v)), re];
   }, { empty: "Nothing validated yet. Validation is hands-on: flash, run, revert to stock (see VALIDATION.md), or Validate newest on a card after downloading its release." });
 }
 
@@ -1551,7 +1554,8 @@ function logInstall(f, v, result) {
 function installOpts(f, v) {
   const inst = S.fw?.installed;
   const o = {
-    name: f.name, isStock: f.id === BASELINE.id, installUrl: f.links?.install,
+    // only stock V15 itself installs on its own; newer stock (V16 …) goes through V15 like any firmware
+    name: f.name, isStock: isBaseline(v), installUrl: f.links?.install,
     installed: inst && { id: inst.id, version: inst.version, label: fwNameVer(inst.id, inst.version) },
     prefer: () => S.out?.name,
     async getAccess() {
@@ -1570,15 +1574,31 @@ function installOpts(f, v) {
       fillPorts();   // back on the FM-1's port (by its saved name) if it's there again
     },
   };
-  const sv = !o.isStock && (S.fw?.validated || []).find((r) => r.id === BASELINE.id && verKey(r.version) === verKey(BASELINE.version)
-    && ["clean", "issues"].includes(outcome(r)) && r.sha256 && /\.fwsc$/i.test(r.file || ""));
+  const sv = !o.isStock && baselineRecord();
   const sf = sv && S.fw.catalog.find((c) => c.id === BASELINE.id);
   if (sf) o.stock = { v: sv, name: sf.name, getFile: () => validatedBytes(sf, sv), log: (r) => logInstall(sf, sv, r) };
   return o;
 }
 
-/** A card's Install button: its newest passing validation, or a disabled button until there is one. */
+/** The passing stock V15 record with its pinned .fwsc: the baseline every install and validation goes back to. */
+function baselineRecord(fw = S.fw) {
+  return (fw?.validated || []).find((r) => isBaseline(r) && ["clean", "issues"].includes(outcome(r)) && r.sha256 && /\.fwsc$/i.test(r.file || ""));
+}
+
+/**
+ * A card's Install button: its newest passing validation, or a disabled button until there is one.
+ * The Stock card always installs V15, the baseline, even after a newer stock version is validated
+ * (that one installs from All Validated Firmware).
+ */
 function cardInstall(f) {
+  if (f.id === BASELINE.id) {
+    const v = baselineRecord();
+    if (!v) return null;
+    const b = h("button", { class: "fw-inst", title: `Put the validated ${nameVer(f.name, v.version)} back on the FM-1: the baseline every firmware goes back to` },
+      icon("flash"), `Install ${shortVer(v.version)}`);
+    b.onclick = () => openInstall(v, installOpts(f, v));
+    return b;
+  }
   const st = installableState(S.fw, f);
   if (!st) {
     return h("button", { class: "fw-inst", disabled: true, title: "Not validated yet: Install unlocks once a hands-on validation pins a tested file (download the release, then Validate newest)" },
@@ -1587,7 +1607,7 @@ function cardInstall(f) {
   if (!/\.fwsc$/i.test(st.v.file || "") || !st.v.sha256) return null;   // FM-1 Open: its Workbench installs it (the Installer link)
   const ver = shortVer(st.v.version);
   const b = h("button", { class: "fw-inst",
-    title: (f.id === BASELINE.id ? `Put the validated ${f.name} back on the FM-1` : `Install the validated ${f.name} ${ver} on the FM-1, going back to stock V15 first when needed`)
+    title: `Install the validated ${f.name} ${ver} on the FM-1, going back to stock V15 first when needed`
       + (st.current ? "" : `
 Newer release ${shortVer(st.newer.version)} hasn't been validated yet.`) },
     icon("flash"), st.current ? "Install" : `Install ${ver}`);
@@ -1617,15 +1637,53 @@ function trialCandidate(fw, f) {
   return newest && (!tested || newerFirst(newest, tested) < 0) ? newest : null;
 }
 
-/** A card's Validate newest button, when there's a downloaded file to test. */
+/**
+ * A card's Validate newest button, when there's a downloaded file to test. It reads Revalidate
+ * when the firmware's newest validation is outdated by a newer release (grey octopus); when that
+ * release isn't downloaded yet, the button downloads it first (revalidateButton). Stock counts
+ * too: a newer official version (V16 …) is tested like any firmware, from stock V15 and back.
+ */
 function cardValidate(f) {
-  if (f.id === BASELINE.id) return null;
   const l = trialCandidate(S.fw, f);
-  if (!l) return null;
+  if (!l) return revalidateButton(f);
   const going = S.fw.trials?.[f.id]?.key === l.key;
+  const st = validationState(S.fw, f);
+  const re = st && !st.current;
   const b = h("button", { class: "ghost fw-validate", title: `${going ? "Carry on with" : "Start"} the hands-on test of the downloaded ${l.name} (${shortVer(l.version)}): install it, play it, go back to stock V15 and record the result` },
-    icon("check"), going ? `Validating ${shortVer(l.version)}` : "Validate newest");
+    icon("check"), going ? `Validating ${shortVer(l.version)}` : re ? `Revalidate ${shortVer(l.version)}` : "Validate newest");
   b.onclick = () => openValidate(f, l);
+  return b;
+}
+
+/**
+ * Revalidate for a firmware whose newest validation a newer release outdates: tests the newest
+ * release's .fwsc (downloading it first when it isn't in the library) with the Validate dialog.
+ * Null when the validation is current, or the newer release has no .fwsc to install.
+ */
+function revalidateButton(f) {
+  const st = validationState(S.fw, f);
+  if (!st || st.current || !st.newer) return null;
+  const l = trialCandidate(S.fw, f);
+  const rel = (S.fw.releases?.sources?.[f.id]?.releases || []).find((r) => verKey(r.version) === verKey(st.newer.version));
+  const asset = rel?.assets.find((a) => /\.fwsc$/i.test(a.name) && !OTHER_DEVICE.test(a.name));
+  if (!l && !asset) return null;
+  const ver = shortVer((l || rel).version);
+  const b = h("button", { class: "ghost fw-validate",
+    title: `${nameVer(f.name, st.v.version)} was validated, but ${shortVer(st.newer.version)} hasn't been tested. `
+      + `${l ? `Test the downloaded ${l.name}` : `Download ${asset.name} and test it`}: install it, play it, go back to stock V15 and record the result.` },
+    icon("check"), `Revalidate ${ver}`);
+  b.onclick = async () => {
+    if (l) return openValidate(f, l);
+    const label = [...b.childNodes];
+    b.disabled = true; b.textContent = "Downloading…";
+    try {
+      await api("firmware/download", { method: "POST", body: JSON.stringify({ id: f.id, version: rel.version, asset: asset.name }) });
+      S.fw = await api("firmware");
+      const got = (S.fw.library?.[f.id] || []).find((x) => verKey(x.version) === verKey(rel.version) && x.name === asset.name);
+      if (!got) throw new Error(`${asset.name} didn't land in the library.`);
+      openValidate(f, got);
+    } catch (e) { toast(e.message, true); b.disabled = false; b.replaceChildren(...label); }
+  };
   return b;
 }
 
@@ -1635,10 +1693,9 @@ async function openValidate(f, l) {
   try { t = (await api("firmware/trial", { method: "POST", body: JSON.stringify({ id: f.id, key: l.key }) })).trial; }
   catch (e) { return toast(e.message, true); }
   S.fw.trials = { ...(S.fw.trials || {}), [f.id]: t };
-  const label = `${f.name} ${shortVer(l.version)}`;
+  const label = nameVer(f.name, l.version);
   const rec = { id: f.id, version: l.version, file: l.name, sha256: l.sha256 };   // what Install pins: this exact file
-  const stockRec = (S.fw.validated || []).find((r) => r.id === BASELINE.id && verKey(r.version) === verKey(BASELINE.version)
-    && ["clean", "issues"].includes(outcome(r)) && r.sha256 && /\.fwsc$/i.test(r.file || ""));
+  const stockRec = baselineRecord();
   const stockF = S.fw.catalog.find((c) => c.id === BASELINE.id);
 
   const box = (k) => h("input", { type: "checkbox", "data-step": k, checked: !!t.steps[k] });
@@ -2579,6 +2636,19 @@ function wire() {
   $("#userNotes").oninput = (e) => { S.settings.notes = e.target.value; saveSettings(); };
 }
 
+/** The running build next to the byline: "v1.0.101" from the installer, "dev d23785f" from a checkout. */
+async function showVersion() {
+  try {
+    const { version, commit } = await api("health");
+    const el = $("#appVer");
+    if (!version) return;
+    el.textContent = version === "dev" ? `dev${commit ? " " + commit : ""}` : `v${version}`;
+    el.title = version === "dev"
+      ? `Running from source (python server.py)${commit ? `, commit ${commit.replace("*", "")}${commit.endsWith("*") ? " with local changes" : ""}` : ""}`
+      : `Octo-Vave ${version}${commit ? ` (commit ${commit})` : ""}`;
+  } catch {}
+}
+
 async function init() {
   try {
     const saved = await api("settings");
@@ -2603,6 +2673,7 @@ async function init() {
   updateConn();
   loadPatches();
   loadFirmware({ autoRefresh: true });
+  showVersion();
 
   // Launch always opens on Firmware.
   switchTab("firmware");

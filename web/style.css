@@ -53,6 +53,7 @@ code, .mono { font-family: var(--mono); }
 .logo { width: 46px; height: 46px; flex: none; }
 .brand strong { font-size: 17px; letter-spacing: .01em; }
 .brand small.byline { font-style: italic; }
+.brand .appver { font-style: normal; font-size: 11px; opacity: .75; margin-left: 4px; font-variant-numeric: tabular-nums; }
 nav { display: flex; gap: 2px; flex-wrap: wrap; flex: 1; }
 nav button { background: none; border: 0; padding: 8px 12px; border-radius: 8px; color: var(--muted); font-weight: 500; }
 nav button:hover { background: var(--panel-2); color: var(--ink); }

@@ -77,11 +77,13 @@ export function validatedSection(fw, extra, { note = null, foot = null, empty = 
 export function validatedList(fw, extra = () => null) {
   const name = (id) => fw.catalog.find((f) => f.id === id)?.name || id;
   return latestValidations(fw)
-    .sort((a, b) => name(a.id).localeCompare(name(b.id)) || String(b.date).localeCompare(String(a.date)))
+    .sort((a, b) => name(a.id).localeCompare(name(b.id)) || newerFirst(a, b) || String(b.date).localeCompare(String(a.date)))
     .map((v) => {
-      const st = validationState({ ...fw, validated: [v] }, { id: v.id });
+      const base = keptBaseline(fw, v);
+      const st = base ? { current: true } : validationState({ ...fw, validated: [v] }, { id: v.id });
       const o = outcome(v);
-      const tip = validationTip(v) + (st.current ? "" : `\nNewer release ${shortVer(st.newer.version)} hasn't been tested yet.`);
+      const tip = validationTip(v) + (st.current ? "" : `\nNewer release ${shortVer(st.newer.version)} hasn't been tested yet.`)
+        + (base ? "\nThe baseline: every Install goes back to stock V15 first, and every validation reverts to it." : "");
       return h("div", { class: "val-row " + o, title: tip },
         octoFor(v, tip, st.current),
         h("b", { text: name(v.id) }),
@@ -89,6 +91,7 @@ export function validatedList(fw, extra = () => null) {
         !st.current && h("span", { class: "val-newer", text: `newer ${shortVer(st.newer.version)}` }),
         h("span", { class: "muted", text: v.date }),
         o !== "clean" && h("span", { class: "val-label " + o, text: o === "issues" ? "with issues" : "failed" }),
+        base && h("span", { class: "val-label baseline", title: "Stock V15 stays the baseline: every Install goes back to it first", text: "baseline" }),
         v.method === "manual" && h("span", { class: "val-label manual", title: MANUAL_TIP(v), text: v.local ? "manual · this computer" : "manual" }),
         h("span", { class: "val-steps " + o, text: stepsText(v) }),
         h("span", { class: "val-note", text: v.notes || "" }),
@@ -116,6 +119,20 @@ export function icon(k) {
 }
 
 // ---------------------------------------------------------------- validation
+
+/** The stock firmware every validation is tested against, and the identity its package installs.
+ *  Newer stock (V16 …) can be validated too, but V15 stays the baseline: the reversion image the
+ *  Install button routes through (fm1flash.js) and a line of its own in the validated list. */
+export const BASELINE = { id: "official", version: "V15", identity: "FM-1_015" };
+export const isBaseline = (v) => v?.id === BASELINE.id && verKey(v.version) === verKey(BASELINE.version);
+
+/** "Stock V15" + "V16" → "Stock V16"; "ChoralRoot" + "v0.32" → "ChoralRoot v0.32". */
+export function nameVer(name, version) {
+  const v = shortVer(String(version || "").trim());
+  if (!v || name.toLowerCase().endsWith(v.toLowerCase())) return name;
+  if (/^V\d+$/i.test(v) && /\sV\d+$/i.test(name)) return name.replace(/V\d+$/i, v.toUpperCase());
+  return `${name} ${v}`;
+}
 // firmware/validated.json is written by hands-on validation sessions (see
 // VALIDATION.md). The octopus colour is the outcome: orange = validated cleanly
 // (installed, ran, reverted to stock), purple = validated with issues, red = failed.
@@ -239,17 +256,25 @@ export function newerFirst(a, b) {
 /**
  * The validated-firmware list: once a newer version of a firmware has been tested, the older
  * records drop out of the list (they stay in validated.json as history). If the newest test
- * failed, the newest passing record stays too, so its Install button is still there.
+ * failed, the newest passing record stays too, so its Install button is still there. Stock V15
+ * (BASELINE) always keeps its line: it's what every other firmware goes back to.
  */
 export function latestValidations(fw) {
   const byId = new Map();
   for (const v of (fw.validated || []).filter(isValidated)) (byId.get(v.id) || byId.set(v.id, []).get(v.id)).push(v);
   return [...byId.values()].flatMap((vals) => {
     vals.sort((a, b) => String(b.date).localeCompare(String(a.date)) || newerFirst(a, b));
+    const keep = [vals[0]];
     const pass = vals.find((v) => outcome(v) !== "failed");
-    return pass && pass !== vals[0] ? [vals[0], pass] : [vals[0]];
+    if (pass && pass !== vals[0]) keep.push(pass);
+    const base = vals.find((v) => isBaseline(v) && outcome(v) !== "failed");
+    if (base && !keep.includes(base)) keep.push(base);
+    return keep;
   });
 }
+
+/** Stock V15's line once a newer stock version has been tested: kept as the baseline, not outdated. */
+const keptBaseline = (fw, v) => isBaseline(v) && (fw.validated || []).some((r) => r.id === v.id && isValidated(r) && newerFirst(r, v) < 0);
 
 /**
  * Comparable version: "ghoulbox-v2.3.2", "v2.3.2" and "2.3.2" are the same release,
@@ -372,7 +397,11 @@ export function fwCard(f, fw, rank, app = null) {
     const file = localFile(latest.version, primary.name), got = !!file;
     dlBtn = h("button", { class: got ? "got" : "primary", title: sizeTitle(primary) },
       icon(got ? "check" : "dl"), got ? gotLabel(file) : dlLabel(primary));
-    dlBtn.onclick = () => (got ? dlBtn.closest(".fw-card").querySelector("details").setAttribute("open", "") : app.download(f, latest, primary, dlBtn));
+    dlBtn.onclick = () => {
+      if (!got) return app.download(f, latest, primary, dlBtn);
+      const d = dlBtn.closest(".fw-card").querySelector("details.fw-more");
+      d.open = !d.open;   // the row follows through the toggle event (syncRow)
+    };
   } else if (primary?.url) {
     dlBtn = h("a", { class: "btn primary", href: primary.url, rel: "noopener", title: sizeTitle(primary) }, icon("dl"), dlLabel(primary));
   }

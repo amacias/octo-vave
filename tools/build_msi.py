@@ -117,7 +117,7 @@ def build(version):
     return msi, exe
 
 
-def selftest(exe):
+def selftest(exe, version=None):
     step("self-test of the built app")
     with tempfile.TemporaryDirectory() as home:
         r = subprocess.run([str(exe), "--selftest"], capture_output=True, text=True, timeout=60,
@@ -125,6 +125,8 @@ def selftest(exe):
     print("  " + (r.stdout.strip() or r.stderr.strip()))
     if r.returncode:
         fail("the built Octo-Vave.exe failed its self-test (HTTPS, web files, catalog, validations, formats)")
+    if version and f'"version": "{version}"' not in r.stdout:
+        fail(f"the built Octo-Vave.exe doesn't report version {version} (build/version.json)")
 
 
 def checksum(msi):
@@ -309,7 +311,7 @@ def main():
     dirty = check_tree(args)
     version = pick_version(args)
     msi, exe = build(version)
-    selftest(exe)
+    selftest(exe, version)
     sha = checksum(msi)
     write_build_info(msi, version, dirty, sha)
     step("built")

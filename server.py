@@ -56,6 +56,8 @@ REPO_RAW = "https://raw.githubusercontent.com/amacias/octo-vave/main/"
 LIVE = DATA / "live"
 FETCH_LIVE = FROZEN or os.environ.get("OCTOVAVE_LIVE") == "1"
 LIVE_LISTS = {CATALOG: "firmware", DIRECTORY: "projects", VALIDATED: "validations"}  # file: its list
+# The installer's version, written into the MSI by packaging/setup_msi.py (absent in a checkout).
+VERSION_FILE = ROOT / "version.json"
 
 HOST = "127.0.0.1"
 PORT = int(os.environ.get("FM1_PORT", "8765"))
@@ -102,6 +104,34 @@ def read_json(path, default):
         return json.loads(path.read_text(encoding="utf-8"))
     except (FileNotFoundError, json.JSONDecodeError):
         return default
+
+
+_VERSION = None
+
+
+def app_version():
+    """The running build, shown in the app's header: {"version": "1.0.101", "commit": "d23785f"} from
+    the MSI, {"version": "dev", "commit": ...} from a checkout (commit "" without git, + "*" if edited)."""
+    global _VERSION
+    if _VERSION is None:
+        info = read_json(VERSION_FILE, None)
+        if isinstance(info, dict) and info.get("version"):
+            _VERSION = {"version": str(info["version"]), "commit": str(info.get("commit") or "")[:7]}
+        else:
+            commit = ""
+            try:
+                import subprocess
+                git = ["git", "-C", str(ROOT)]
+                r = subprocess.run(git + ["rev-parse", "--short=7", "HEAD"], capture_output=True, text=True, timeout=5)
+                if r.returncode == 0:
+                    commit = r.stdout.strip()
+                    d = subprocess.run(git + ["status", "--porcelain", "--untracked-files=no"],
+                                       capture_output=True, text=True, timeout=5)
+                    commit += "*" if d.stdout.strip() else ""
+            except (OSError, subprocess.SubprocessError):
+                pass
+            _VERSION = {"version": "dev", "commit": commit}
+    return _VERSION
 
 
 def write_json(path, obj):
@@ -1336,7 +1366,7 @@ class Handler(SimpleHTTPRequestHandler):
         head = parts[0] if parts else ""
 
         if head == "health":
-            return self._send_json({"ok": True})
+            return self._send_json({"ok": True, **app_version()})
 
         if head == "settings":
             if method == "GET":
@@ -1747,7 +1777,7 @@ def selftest():
         "formats": FORMATS_DIR.is_dir(),
         "published": _published_ok(read_json(PUBLISHED, None)),
     }
-    print(json.dumps({"frozen": bool(FROZEN), "root": str(ROOT), "home": str(HOME), **ok}))
+    print(json.dumps({"frozen": bool(FROZEN), "root": str(ROOT), "home": str(HOME), "version": app_version()["version"], **ok}))
     return 0 if all(ok.values()) else 1
 
 

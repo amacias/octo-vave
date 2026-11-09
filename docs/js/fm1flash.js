@@ -19,10 +19,10 @@
 // Every route goes through stock V15 (planRoute): off stock, one click installs stock first,
 // checks that the FM-1 reports it, then installs the firmware asked for.
 
-import { h, outcome, verKey, shortVer } from "./fwcards.js";
+import { h, outcome, verKey, nameVer, BASELINE } from "./fwcards.js";
 
-/** The stock firmware every validation is tested against, and the identity its package installs. */
-export const BASELINE = { id: "official", version: "V15", identity: "FM-1_015" };
+// The stock firmware every validation is tested against (defined with the cards, fwcards.js).
+export { BASELINE };
 
 const HANDSHAKE = [0xf0, 0x00, 0x32, 0x45, 0x00, 0x00, 0x00, 0x40, 0x7f, 0xf7];
 const UPGRADE = [0xf0, 0x22, 0x24, 0x35, 0x7f, 0xf7];
@@ -300,7 +300,7 @@ export function installAction(v, opts) {
       title: `${opts.name} installs from its own page`, text: "Installer ↗" });
   }
   const b = h("button", { class: "ghost fw-install-btn", text: "Install",
-    title: opts.isStock ? "Put stock V15 back on the FM-1 (the validated file)" : `Install the validated ${opts.name} ${v.version} on the FM-1` });
+    title: opts.isStock ? "Put stock V15 back on the FM-1 (the validated file)" : `Install the validated ${nameVer(opts.name, v.version)} on the FM-1` });
   b.onclick = () => openInstall(v, opts);
   return b;
 }
@@ -319,7 +319,7 @@ export function openInstall(v, o) {
   let file = null, stockFile = null, running = false, lastLeg = null;
   const two = !o.isStock && !!o.stock;   // can go back to stock on the way
   const stockName = o.stock?.name || "Stock V15";
-  const label = o.name.includes(shortVer(v.version)) ? o.name : `${o.name} ${shortVer(v.version)}`;   // "Stock V15" names its version
+  const label = nameVer(o.name, v.version);   // "Stock V15" names its version; V16 → "Stock V16"
   const title = o.isStock ? `Back to ${label}` : `Install ${label}`;
   const inst = o.installed;
   const fileMsg = h("p", { class: "fw-i-file", text: o.trial ? "Getting the downloaded file…" : "Getting the validated file…" });
