@@ -73,6 +73,9 @@ def app_record(text):
 def report(body):
     """The record's fields from the form, completed from the app's record."""
     s = sections(body)
+    for label in ("Firmware", "Result"):  # a dropdown left unpicked comes through as "None"
+        if s.get(label) == "None":
+            s[label] = ""
     rec = app_record(s.get("Record from Octo-Vave"))
     fid = s.get("Firmware", "") or str(rec.get("id", ""))
     if fid == "other":
