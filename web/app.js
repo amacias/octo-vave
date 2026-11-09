@@ -1420,10 +1420,13 @@ async function refreshFirmware() {
 }
 
 function fwName(id) { return S.fw?.catalog.find((f) => f.id === id)?.name || id; }
-/** "AMB-1 v1.3"; skips the version when the name already ends with it ("Stock V15"). */
+/** "AMB-1 v1.3"; skips the version when the name already ends with it ("Stock V15"), and puts
+ *  another stock version in its place ("Stock V15" at V16 → "Stock V16", not "Stock V15 V16"). */
 function fwNameVer(id, version) {
   const name = fwName(id), v = String(version || "").trim();
-  return !v || name.toLowerCase().endsWith(v.toLowerCase()) ? name : `${name} ${v}`;
+  if (!v || name.toLowerCase().endsWith(v.toLowerCase())) return name;
+  if (/^V\d+$/i.test(v) && /\sV\d+$/i.test(name)) return name.replace(/V\d+$/i, v.toUpperCase());
+  return `${name} ${v}`;
 }
 
 /** Header status: when the published list was made, from how complete a scan, and when it was pulled. */
@@ -2095,7 +2098,8 @@ const checkAwaiting = new Set();
  *  community firmware renames it ("Felucca" for Felucca and its forks, "AMB-1 FM-1"),
  *  and FM-1 Open shows up as "USB-Midi". null = not connected. */
 function portFirmware() {
-  const n = S.out?.name || "";
+  // a port the FM-1 left (it restarts under a new name after an install) says nothing about it
+  const n = S.out && S.out.state !== "disconnected" ? S.out.name || "" : "";
   if (!n) return null;
   if (/^FM-?1 Midi/i.test(n)) return { stock: true, label: "stock firmware (port FM-1 Midi)" };
   if (/^AMB-1/i.test(n)) return { stock: false, id: "amb1", label: "AMB-1 (port AMB-1 FM-1)" };
@@ -2120,17 +2124,32 @@ function checkMode() {
   return m;
 }
 
-/** The port says stock but the log says otherwise (after a revert): log stock, so results
- *  land in the right profile. Other firmwares can't be told apart by port, so they are not
- *  logged automatically. */
+/** The stock version this FM-1 last reported to the Install button ("FM-1_015" → V15), else V15:
+ *  the port name can't tell stock versions apart, and M-VAVE's newest release isn't necessarily the
+ *  one on the device. */
+function stockVersion(history = []) {
+  for (const r of history) {
+    const m = r.id === "official" && /FM-1_0(\d{2})\b/.exec(r.note || "");
+    if (m) return "V" + +m[1];
+  }
+  return BASELINE.version;
+}
+
+/** The port says stock but the log says otherwise (after a revert by another tool): log stock, so
+ *  results land in the right profile. Other firmwares can't be told apart by port, so they are not
+ *  logged automatically. Never while an install runs or right after one was logged: the FM-1 passes
+ *  through stock on every install and its old port name lingers until it restarts. */
 let portSyncBusy = false;
+const SYNC_QUIET_MS = 2 * 60e3;
 async function syncFirmwareFromPort() {
   const pf = portFirmware();
   const inst = S.fw?.installed;
   if (!pf?.stock || !S.fw || !inst || inst.id === "official" || portSyncBusy) return;
+  if (document.querySelector("dialog.fw-flash[open]")) return;
+  if (Date.now() - Date.parse(inst.date) < SYNC_QUIET_MS) return;
   portSyncBusy = true;
   try {
-    const version = S.fw.releases?.sources?.official?.releases?.[0]?.version || "V15";
+    const version = stockVersion(S.fw.history);
     await api("firmware/installed", { method: "POST",
       body: JSON.stringify({ id: "official", version, note: "auto: the FM-1's port shows stock firmware" }) });
     S.fw = await api("firmware");
