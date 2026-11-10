@@ -71,8 +71,8 @@ export function validatedSection(fw, extra, { note = null, foot = null, empty = 
 /**
  * "All validated firmware": one line per firmware with its newest tested version
  * (latestValidations), grey when a newer stable release hasn't been tested.
- * `extra(v)` appends the page's own controls (the app: download state + Install;
- * the homepage: SHA256 copy + Install).
+ * `extra(v)` appends the page's own controls (the app: Submit, Install <version>, Validate <version>;
+ * the homepage: SHA256 copy + Install <version>).
  */
 export function validatedList(fw, extra = () => null) {
   const name = (id) => fw.catalog.find((f) => f.id === id)?.name || id;
@@ -362,10 +362,11 @@ export function relTime(d) {
 }
 
 /**
- * One firmware card. `app` holds the local library actions:
- * { download(f, rel, asset, btn), install(f) → Install button, validate(f) → Validate <version> button or null,
- *   fileRow(id, file), importFile(f, version, file), reveal(f), toast(msg, err) }.
- * Without it (the homepage) downloads are plain links to the release files and the library block is left out.
+ * One firmware card. `app` holds the page's actions:
+ * { install(f) → Install <version> button or null, validate(f) → Validate <version> button or null,
+ *   download(f, rel, asset, btn), fileRow(id, file), importFile(f, version, file), reveal(f), toast(msg, err) }.
+ * The homepage passes only install: without download, release files are plain links and the
+ * library block is left out.
  */
 export function fwCard(f, fw, rank, app = null) {
   const src = fw.releases?.sources?.[f.id];
@@ -396,25 +397,11 @@ export function fwCard(f, fw, rank, app = null) {
     fresh && !updateAvail && h("span", { class: "flag new", text: "NEW" }),
   ];
 
-  const dlLabel = (a) => (/\.fwsc$/i.test(a.name) ? "Download" : "Get ." + a.name.split(".").pop());
-  const sizeTitle = (a) => `${a.name}${a.size ? " · " + fmtBytes(a.size) : ""}`;
-  let dlBtn = null;
-  if (primary && app) {
-    const file = localFile(latest.version, primary.name), got = !!file;
-    dlBtn = h("button", { class: got ? "got" : "primary", title: sizeTitle(primary) },
-      icon(got ? "check" : "dl"), got ? gotLabel(file) : dlLabel(primary));
-    dlBtn.onclick = () => {
-      if (!got) return app.download(f, latest, primary, dlBtn);
-      const d = dlBtn.closest(".fw-card").querySelector("details.fw-more");
-      d.open = !d.open;   // the row follows through the toggle event (syncRow)
-    };
-  } else if (primary?.url) {
-    dlBtn = h("a", { class: "btn primary", href: primary.url, rel: "noopener", title: sizeTitle(primary) }, icon("dl"), dlLabel(primary));
-  }
   const linkBtn = (url, ic, label, title) => url && h("a", { class: "btn" + (label ? "" : " icon-only"), href: url, target: "_blank", rel: "noopener", title: title || label }, icon(ic), label);
 
+  // release files download from More (Install and Validate fetch what they need themselves)
   const assetAction = (rel, a) => {
-    if (!app) return a.url && h("a", { class: "btn ghost", href: a.url, rel: "noopener", text: "Download" });
+    if (!app?.download) return a.url && h("a", { class: "btn ghost", href: a.url, rel: "noopener", text: "Download" });
     const b = h("button", { class: "ghost", text: haveLocal(rel.version, a.name) ? "Re-download" : "Download" });
     b.onclick = () => app.download(f, rel, a, b);
     return b;
@@ -430,7 +417,7 @@ export function fwCard(f, fw, rank, app = null) {
       : h("div", { class: "muted", text: "No installable files in this release." }));
 
   let libBlock = null;
-  if (app) {
+  if (app?.fileRow) {
     const impVer = h("input", { placeholder: "version", style: "width:100px" });
     const impFile = h("input", { type: "file", hidden: true, accept: ".fwsc,.bin,.zip,.html" });
     impFile.onchange = () => impFile.files[0] && app.importFile(f, impVer.value || "manual", impFile.files[0]);
@@ -476,8 +463,8 @@ export function fwCard(f, fw, rank, app = null) {
         !src && f.source?.type !== "manual" && h("span", { class: "muted", text: "press Check for updates" })),
       valPin(val, app?.toast))),
     h("div", { class: "fw-body fw-foot" },
+      // the two main actions, Install <validated version> and Validate <newest version>, then the project's links
       h("div", { class: "fw-actions" },
-        dlBtn,
         app?.install?.(f),
         app?.validate?.(f),
         linkBtn(L.install, "ext", f.kind === "stock" ? "Updater" : "Installer", "Open the project's own installer"),

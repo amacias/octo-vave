@@ -1476,22 +1476,19 @@ function validatedFile(fw, v) {
     v.sha256 ? l.sha256 === v.sha256 : verKey(l.version) === verKey(v.version) && (!v.file || l.name === v.file));
 }
 
-/** "All validated firmware": the newest tested version of each firmware, and whether its exact file is kept. */
+/**
+ * "All validated firmware": the newest tested version of each firmware, with the card's two
+ * actions: Install <version> on each passing line, Validate <version> once per firmware (its
+ * newest line) when a newer or failed version needs a test. Install downloads the pinned file
+ * itself when it isn't in the library.
+ */
 function appValidatedSection(fw) {
-  const offered = new Set();   // one Validate per firmware, on its newest line
+  const offered = new Set();
   return validatedSection(fw, (v) => {
-    const file = validatedFile(fw, v);
     const f = fw.catalog.find((c) => c.id === v.id);
-    const re = f && !offered.has(f.id) && validateButton(f);
-    if (re) offered.add(f.id);
-    const { rel, asset } = releaseAsset(fw, v);
-    let action;
-    if (file) action = h("span", { class: "badge ok", title: "sha256 " + file.sha256, text: "✓ downloaded" });
-    else if (f && rel && asset) {
-      action = h("button", { class: "ghost", text: "Download" });
-      action.onclick = () => downloadAsset(f, rel, asset, action);
-    } else action = h("span", { class: "muted", text: "not downloaded" });
-    return [action, v.local && submitLink(fw, v), f && installAction(v, installOpts(f, v)), re];
+    const val = f && !offered.has(f.id) && validateButton(f);
+    if (val) offered.add(f.id);
+    return [v.local && submitLink(fw, v), f && installAction(v, installOpts(f, v)), val];
   }, { empty: "Nothing validated yet. Validation is hands-on: flash, run, revert to stock (see VALIDATION.md), or Validate on a card." });
 }
 
@@ -1586,33 +1583,22 @@ function baselineRecord(fw = S.fw) {
 }
 
 /**
- * A card's Install button: its newest passing validation, or a disabled button until there is one.
- * The Stock card always installs V15, the baseline, even after a newer stock version is validated
- * (that one installs from All Validated Firmware).
+ * A card's Install <version> button: its newest passing validation, none until there is one
+ * (Validate shows instead). The Stock card always installs V15, the baseline, even after a newer
+ * stock version is validated (that one installs from All Validated Firmware).
  */
 function cardInstall(f) {
   if (f.id === BASELINE.id) {
     const v = baselineRecord();
-    if (!v) return null;
-    const b = h("button", { class: "fw-inst", title: `Put the validated ${nameVer(f.name, v.version)} back on the FM-1: the baseline every firmware goes back to` },
-      icon("flash"), `Install ${shortVer(v.version)}`);
-    b.onclick = () => openInstall(v, installOpts(f, v));
-    return b;
+    return v && installAction(v, installOpts(f, v), { card: true,
+      title: `Put the validated ${nameVer(f.name, v.version)} back on the FM-1: the baseline every firmware goes back to` });
   }
   const st = installableState(S.fw, f);
-  if (!st) {
-    return h("button", { class: "fw-inst", disabled: true, title: "Not validated yet: Install unlocks once a hands-on validation pins a tested file (Validate it first)" },
-      icon("flash"), "Install");
-  }
-  if (!/\.fwsc$/i.test(st.v.file || "") || !st.v.sha256) return null;   // FM-1 Open: its Workbench installs it (the Installer link)
-  const ver = shortVer(st.v.version);
-  const b = h("button", { class: "fw-inst",
-    title: `Install the validated ${f.name} ${ver} on the FM-1, going back to stock V15 first when needed`
-      + (st.current ? "" : `
-Newer release ${shortVer(st.newer.version)} hasn't been validated yet.`) },
-    icon("flash"), st.current ? "Install" : `Install ${ver}`);
-  b.onclick = () => openInstall(st.v, installOpts(f, st.v));
-  return b;
+  if (!st) return null;   // never passed: the card shows Validate only
+  // FM-1 Open (no .fwsc): its Workbench installs it, the card's Installer link
+  return installAction(st.v, installOpts(f, st.v), { card: true,
+    title: `Install the validated ${nameVer(f.name, st.v.version)} on the FM-1, going back to stock V15 first when needed`
+      + (st.current ? "" : `\nNewer release ${shortVer(st.newer.version)} hasn't been validated yet.`) });
 }
 
 // ---------------------------------------------------------------- Validate
@@ -1633,8 +1619,8 @@ const PASSING = ["clean", "issues"];
  * that passed (installableState). Returns { l } (a downloaded file), { rel, asset } (the newest
  * stable release's .fwsc, downloaded when pressed) or null.
  * - a test under way comes first;
- * - releases count only for firmware tested before (a record of any outcome); a firmware never
- *   tested gets Validate once its release is downloaded;
+ * - a firmware never tested gets Validate for its newest stable release, as long as that release
+ *   has an FM-1 .fwsc (web installers and FM-1 Open's Workbench keep their Installer link);
  * - Stock counts too: a newer official version (V16 …) is tested from stock V15 and back.
  */
 function validateTarget(fw, f) {
@@ -1649,11 +1635,10 @@ function validateTarget(fw, f) {
   if (going) return { l: going };
   const l = lib.filter(newer).sort(newerFirst)[0];
   // the release: the stable one newer than the last pass (validationState reads the release order),
-  // or with only failed records, the newest stable release
+  // or, never passed, the newest stable release
   const rels = fw.releases?.sources?.[f.id]?.releases || [];
-  const st = recs.length && installableState(fw, f);
-  const rel = !recs.length ? null
-    : st ? (!st.current && rels.find((r) => verKey(r.version) === verKey(st.newer.version)))
+  const st = installableState(fw, f);
+  const rel = st ? (!st.current && rels.find((r) => verKey(r.version) === verKey(st.newer.version)))
     : rels.find((r) => !r.prerelease);
   const asset = rel && rel.assets?.find((a) => /\.fwsc$/i.test(a.name) && !OTHER_DEVICE.test(a.name));
   if (asset && (!l || newerFirst(rel, l) < 0)) return { rel, asset };

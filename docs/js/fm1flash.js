@@ -19,7 +19,7 @@
 // Every route goes through stock V15 (planRoute): off stock, one click installs stock first,
 // checks that the FM-1 reports it, then installs the firmware asked for.
 
-import { h, outcome, verKey, nameVer, BASELINE, isOneWay } from "./fwcards.js";
+import { h, outcome, verKey, nameVer, shortVer, icon, BASELINE, isOneWay } from "./fwcards.js";
 
 // The stock firmware every validation is tested against (defined with the cards, fwcards.js).
 export { BASELINE };
@@ -291,16 +291,21 @@ export async function installPackage(access, file, { prefer, dev, step = () => {
 const STEPS = [["find", "Find the FM-1"], ["check", "Check the package"], ["loader", "Restart into update mode"],
   ["write", "Write the firmware"], ["restart", "Restart and check"]];
 
-/** The Install action for one validated record (options as for openInstall), or null when it can't be installed from here. */
-export function installAction(v, opts) {
+/**
+ * The Install <version> action for one validated record (options as for openInstall), or null
+ * when it can't be installed from here. `card`: the firmware card's main button (no Installer
+ * link, the card has its own), with `title` for its tooltip.
+ */
+export function installAction(v, opts, { card = false, title = "" } = {}) {
   if (!["clean", "issues"].includes(outcome(v))) return null;   // only passing validations
   if (!/\.fwsc$/i.test(v.file || "") || !v.sha256) {
     // FM-1 Open ships as a Workbench page that flashes itself
-    return opts.installUrl && h("a", { class: "btn ghost fw-install-btn", href: opts.installUrl, target: "_blank", rel: "noopener",
+    return !card && opts.installUrl && h("a", { class: "btn ghost fw-install-btn", href: opts.installUrl, target: "_blank", rel: "noopener",
       title: `${opts.name} installs from its own page`, text: "Installer ↗" });
   }
-  const b = h("button", { class: "ghost fw-install-btn", text: "Install",
-    title: opts.isStock ? "Put stock V15 back on the FM-1 (the validated file)" : `Install the validated ${nameVer(opts.name, v.version)} on the FM-1` });
+  const b = h("button", { class: card ? "fw-inst" : "ghost fw-install-btn",
+    title: title || (opts.isStock ? "Put stock V15 back on the FM-1 (the validated file)" : `Install the validated ${nameVer(opts.name, v.version)} on the FM-1`) },
+    card && icon("flash"), `Install ${shortVer(v.version)}`);
   b.onclick = () => openInstall(v, opts);
   return b;
 }

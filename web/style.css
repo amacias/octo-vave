@@ -195,7 +195,6 @@ textarea { width: 100%; resize: vertical; }
 a.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); text-decoration: none; }
 a.btn:hover { border-color: var(--muted); }
 a.btn.icon-only { padding: 6px 8px; }
-button.got { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 50%, var(--line)); }
 .ic { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 @media (max-width: 640px) { .fw-safe { grid-template-columns: 1fr; } .fw-top { grid-template-columns: 1fr; } }
 
