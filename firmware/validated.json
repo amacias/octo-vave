@@ -47,7 +47,7 @@
       "result": "clean",
       "checks": "boots to ChoralRoot, keys play; generic sound check: heard notes, channel scan, velocity, program change, all notes off; unsure sustain, mod wheel; not heard pitch bend, aftertouch, clock sync, CC probe; sends MIDI clock and notes on ch 1-2; stock sound check 8/8 after revert (run all)",
       "notes": "MIDI port 'ChoralRoot FM-1' (USB 1209:0001). It sends its own MIDI clock, so it leads rather than follows external clock. Installed over stock with 'Skip the backup' (stock cannot be backed up); Back up and return to official V15 asks for the unmodified FM-1.fwsc, saves a backup first and worked first time.",
-      "supersededBy": "v0.37"
+      "supersededBy": "v0.38"
     },
     {
       "id": "choralroot",
@@ -63,7 +63,7 @@
       "result": "clean",
       "checks": "installed with ChoralRoot's web installer over stock (Skip the backup), FM-1 answered as FM-1_920; played on the device; generic sound check (run all): heard notes, velocity, sustain, program change, all notes off; unsure channel scan, mod wheel, pitch bend, aftertouch, CC 74 probe; clock sync not heard (ChoralRoot sends its own clock); reverted with Octo-Vave's Install on Stock V15 (FM-1 reports FM-1_015)",
       "notes": "MIDI port 'ChoralRoot FM-1'. A chord instrument, not a stock-like synth: several generic MIDI tests have no stock-style mapping, as with 0.25.1. The file matches the release SHA256SUMS and the hash on ChoralRoot's installer page. Installing over stock needs 'Skip the backup' (stock cannot be backed up).",
-      "supersededBy": "v0.37"
+      "supersededBy": "v0.38"
     },
     {
       "id": "choralroot",
@@ -79,7 +79,7 @@
       "result": "clean",
       "checks": "played and checked by hand on the device by the user (Sound check not run): 'fantastic'; earlier the same day an automated run installed it over stock with Octo-Vave's flasher and reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
       "notes": "MIDI port 'ChoralRoot FM-1', no USB audio device: it plays through the FM-1's own speaker. It sends its own MIDI clock. A chord instrument: notes sent over MIDI from a computer didn't sound in the automated run, so judge it by playing the device. Plain choralroot-0.29.2.fwsc (not the smk37/mke/elite builds, which are for the SMK-37).",
-      "supersededBy": "v0.37"
+      "supersededBy": "v0.38"
     },
     {
       "id": "choralroot",
@@ -96,7 +96,7 @@
       "checks": "played tones, changed presets",
       "notes": "",
       "method": "manual",
-      "supersededBy": "v0.37"
+      "supersededBy": "v0.38"
     },
     {
       "id": "clipper",
@@ -126,7 +126,8 @@
       },
       "result": "clean",
       "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_930); notes on ch 1-3 and 10 sounded (picked up from the FM-1's speaker by a microphone; no USB audio); sends notes out on ch 1; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
-      "notes": "MIDI port 'CoralFlower FM-1', no USB audio device. Screen, knobs and keys not checked."
+      "notes": "MIDI port 'CoralFlower FM-1', no USB audio device. Screen, knobs and keys not checked.",
+      "supersededBy": "v0.7.1"
     },
     {
       "id": "ctl-1",
@@ -311,7 +312,7 @@
       "result": "clean",
       "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_958); notes on ch 1-3 and 10 sounded at the right pitch on the FM-1's USB audio; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
       "notes": "MIDI port 'Frodhes FM-1', USB audio 'Line (Frodhes FM-1)'. Plain frodhes-0.9.8.fwsc (not the smk37/mke builds). Screen, knobs and keys not checked.",
-      "supersededBy": "v0.9.9"
+      "supersededBy": "v0.9.10"
     },
     {
       "id": "ghoulbox",
@@ -495,7 +496,7 @@
       "result": "clean",
       "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_82012400); notes on ch 1-3 and 10 sounded at the right pitch on the FM-1's USB audio; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
       "notes": "MIDI port 'Ravel FM-1', USB audio 'Line (Felucca)'. Screen, knobs and keys not checked.",
-      "supersededBy": "v1.29.0"
+      "supersededBy": "v1.31.0"
     },
     {
       "id": "shine-on",

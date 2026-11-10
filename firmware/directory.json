@@ -11,9 +11,9 @@
       "url": "https://github.com/isod89/sloop-fm1",
       "desc": "Live four-track groovebox by 3dSam: three synths plus a drum machine, 37 drum kits, punch-in FX, layer system, song mode, web editor",
       "license": "GPL-3.0",
-      "stars": 773,
-      "downloads": 9058,
-      "score": 15.763,
+      "stars": 775,
+      "downloads": 9134,
+      "score": 15.774,
       "curated": true
     },
     {
@@ -24,9 +24,9 @@
       "url": "https://github.com/keremimo/melodee",
       "desc": "Felucca derivative that went its own way: ten engines, eight patterns per track, STUDIO workspaces, four-channel USB audio input, TR-808 kit",
       "license": "GPL-3.0",
-      "stars": 196,
-      "downloads": 16815,
-      "score": 15.013,
+      "stars": 198,
+      "downloads": 16830,
+      "score": 15.024,
       "curated": true
     },
     {
@@ -37,26 +37,13 @@
       "url": "https://github.com/hugelton/Felucca",
       "desc": "Multi-engine synth firmware by Leo Kuroshita (H\u00fcgelton Instruments)",
       "license": "GPL-3.0",
-      "stars": 698,
-      "downloads": 3667,
-      "score": 14.757,
+      "stars": 701,
+      "downloads": 3732,
+      "score": 14.779,
       "curated": true
     },
     {
       "rank": 4,
-      "id": "skiff",
-      "repo": "illuminus5/skiff",
-      "name": "Skiff",
-      "url": "https://github.com/illuminus5/skiff",
-      "desc": "Six-track groovebox with fourteen synth and drum engines, 143 factory sounds, a 64-step sequencer with chords, ratchets, trig conditions and parameter locks\u2026",
-      "license": "GPL-3.0",
-      "stars": 152,
-      "downloads": 4844,
-      "score": 13.516,
-      "curated": true
-    },
-    {
-      "rank": 5,
       "id": "choralroot",
       "repo": "Quixotic7/ChoralRootFM1",
       "name": "ChoralRoot",
@@ -64,8 +51,21 @@
       "desc": "Orchid-style chord instrument: one hand plays roots, the other shapes chords, with voicings, key modes, bass and a looper",
       "license": "GPL-3.0",
       "stars": 104,
-      "downloads": 6631,
-      "score": 13.454,
+      "downloads": 7270,
+      "score": 13.546,
+      "curated": true
+    },
+    {
+      "rank": 5,
+      "id": "skiff",
+      "repo": "illuminus5/skiff",
+      "name": "Skiff",
+      "url": "https://github.com/illuminus5/skiff",
+      "desc": "Six-track groovebox with fourteen synth and drum engines, 143 factory sounds, a 64-step sequencer with chords, ratchets, trig conditions and parameter locks\u2026",
+      "license": "GPL-3.0",
+      "stars": 152,
+      "downloads": 4884,
+      "score": 13.524,
       "curated": true
     },
     {
@@ -76,9 +76,9 @@
       "url": "https://github.com/charlesvestal/fm1-x0x",
       "desc": "ReBirth-style groovebox by Charles Vestal: TR-909, TR-808, two TB-303s with TB-3PO acid generators and a breakbeat slicer, each with its own sequencer",
       "license": "GPL-3.0",
-      "stars": 229,
-      "downloads": 2616,
-      "score": 13.308,
+      "stars": 230,
+      "downloads": 2631,
+      "score": 13.318,
       "curated": true
     },
     {
@@ -89,9 +89,9 @@
       "url": "https://github.com/zvenson/obervave",
       "desc": "Single eight-voice analog-style polysynth after the classic American poly synths of 1979-84, with hard sync, cross-modulation, SEM-style filter morph\u2026",
       "license": "GPL-3.0",
-      "stars": 53,
-      "downloads": 4282,
-      "score": 12.351,
+      "stars": 54,
+      "downloads": 4311,
+      "score": 12.376,
       "curated": true
     },
     {
@@ -102,9 +102,9 @@
       "url": "https://github.com/charlesvestal/fm1-amb",
       "desc": "Generative ambient machine inspired by Music for Airports that plays itself from power-on: tape loops of unequal length, gliding bass, Euclidean percussion",
       "license": "MPL-2.0",
-      "stars": 123,
-      "downloads": 1774,
-      "score": 12.302,
+      "stars": 124,
+      "downloads": 1789,
+      "score": 12.318,
       "curated": true
     },
     {
@@ -116,8 +116,8 @@
       "desc": "Eight-track drum machine by DEADACTIVE with 808, 909 and Plaits drum models, samples, Mutable Instruments Grids, a pumping compressor and resonators",
       "license": "GPL-3.0",
       "stars": 57,
-      "downloads": 2860,
-      "score": 12.019,
+      "downloads": 2871,
+      "score": 12.023,
       "curated": true
     },
     {
@@ -129,8 +129,8 @@
       "desc": "Dungeon synth firmware by Jason Persinger: cathedral reverb, worn-tape effect, hurdy-gurdy engine with drones, dark ambient presets and an old-RPG screen",
       "license": "GPL-3.0",
       "stars": 85,
-      "downloads": 1883,
-      "score": 11.995,
+      "downloads": 1891,
+      "score": 12.0,
       "curated": true
     },
     {
@@ -142,8 +142,8 @@
       "desc": "Omnichord-style chord harp by Charles Vestal: strum the white keys, pick chords on the black ones, with rhythm patterns and auto bass",
       "license": "GPL-3.0",
       "stars": 80,
-      "downloads": 1733,
-      "score": 11.853,
+      "downloads": 1742,
+      "score": 11.858,
       "curated": true
     },
     {
@@ -155,8 +155,8 @@
       "desc": "OP-XY-inspired groovebox by Charles Vestal: eight colour-coded tracks, 85 factory presets, a 64-step sequencer with step tricks and parameter locks, weave\u2026",
       "license": "MPL-2.0",
       "stars": 70,
-      "downloads": 1512,
-      "score": 11.585,
+      "downloads": 1515,
+      "score": 11.587,
       "curated": true
     },
     {
@@ -168,12 +168,25 @@
       "desc": "Experimental synthesizer firmware that grew out of SLOOP, with per-voice ENV2/ENV3 and LFO2/LFO3 modulation",
       "license": "GPL-3.0",
       "stars": 81,
-      "downloads": 1215,
-      "score": 11.51,
+      "downloads": 1223,
+      "score": 11.517,
       "curated": true
     },
     {
       "rank": 14,
+      "id": "optimist",
+      "repo": "w0ts/optimist",
+      "name": "Optimist",
+      "url": "https://github.com/w0ts/optimist",
+      "desc": "Modular firmware platform derived from SLOOP: a firmware builder lets you pick which engines, kits and effects fit in flash",
+      "license": "GPL-3.0",
+      "stars": 34,
+      "downloads": 2240,
+      "score": 11.27,
+      "curated": false
+    },
+    {
+      "rank": 15,
       "id": "jangada",
       "repo": "zednaked/jangada",
       "name": "Jangada",
@@ -181,22 +194,9 @@
       "desc": "Felucca fork adding superwave analog, a modulation matrix, latched drones, ratchets and synthesized drum kits",
       "license": "GPL-3.0",
       "stars": 37,
-      "downloads": 1954,
-      "score": 11.216,
+      "downloads": 1961,
+      "score": 11.219,
       "curated": true
-    },
-    {
-      "rank": 15,
-      "id": "optimist",
-      "repo": "w0ts/optimist",
-      "name": "Optimist",
-      "url": "https://github.com/w0ts/optimist",
-      "desc": "Modular firmware platform derived from SLOOP: a firmware builder lets you pick which engines, kits and effects fit in flash",
-      "license": "GPL-3.0",
-      "stars": 33,
-      "downloads": 2124,
-      "score": 11.188,
-      "curated": false
     },
     {
       "rank": 16,
@@ -206,13 +206,26 @@
       "url": "https://github.com/dspaudio/orbit",
       "desc": "SLOOP-based groovebox with OP-1-inspired screens, sample tools and an event tape for moving what the four tracks play",
       "license": "GPL-3.0",
-      "stars": 39,
-      "downloads": 1749,
-      "score": 11.156,
+      "stars": 40,
+      "downloads": 1755,
+      "score": 11.184,
       "curated": true
     },
     {
       "rank": 17,
+      "id": "tessera",
+      "repo": "Rastapopolix/tessera",
+      "name": "Tessera",
+      "url": "https://github.com/Rastapopolix/tessera",
+      "desc": "Generative firmware, formerly Melodee (Tess): 13 generators, song forms and modulation on four tracks",
+      "license": "GPL-3.0",
+      "stars": 28,
+      "downloads": 1673,
+      "score": 10.79,
+      "curated": false
+    },
+    {
+      "rank": 18,
       "id": "dub-1",
       "repo": "sbegueria/fm1-dub",
       "name": "DUB-1",
@@ -220,51 +233,12 @@
       "desc": "Generative dub techno machine that plays itself from power-on: chord stabs into a tape echo, FM pings, sub bass, kick, shaker and hat on an eight-bar\u2026",
       "license": "GPL-3.0",
       "stars": 38,
-      "downloads": 1214,
-      "score": 10.766,
+      "downloads": 1218,
+      "score": 10.769,
       "curated": true
-    },
-    {
-      "rank": 18,
-      "id": "tessera",
-      "repo": "Rastapopolix/tessera",
-      "name": "Tessera",
-      "url": "https://github.com/Rastapopolix/tessera",
-      "desc": "Generative firmware, formerly Melodee (Tess): 13 generators, song forms and modulation on four tracks",
-      "license": "GPL-3.0",
-      "stars": 27,
-      "downloads": 1667,
-      "score": 10.752,
-      "curated": false
     },
     {
       "rank": 19,
-      "id": "polly",
-      "repo": "charlesvestal/fm1-polly",
-      "name": "Polly",
-      "url": "https://github.com/charlesvestal/fm1-polly",
-      "desc": "QY70-style pocket arranger by Charles Vestal: a style plays a band of eight instruments steered by the chords you play, with General MIDI sounds from Sonivox\u2026",
-      "license": "GPL-3.0",
-      "stars": 27,
-      "downloads": 1633,
-      "score": 10.731,
-      "curated": true
-    },
-    {
-      "rank": 20,
-      "id": "gr-mm",
-      "repo": "GRiMMBIENT/grimm",
-      "name": "GR!MM",
-      "url": "https://github.com/GRiMMBIENT/grimm",
-      "desc": "Dark ambient, dungeon synth and deathdream firmware: four tracks, seven sound sources, long dark effects, a 64-step sequencer and one-key chords",
-      "license": "GPL-3.0",
-      "stars": 42,
-      "downloads": 1052,
-      "score": 10.721,
-      "curated": true
-    },
-    {
-      "rank": 21,
       "id": "coralflower",
       "repo": "FicusFicusov/CoralFlower",
       "name": "CoralFlower",
@@ -272,8 +246,34 @@
       "desc": "Chord instrument inspired by the Telepathic Instruments Orchid: every note becomes a chord with a bass underneath, while a pixel flower grows on screen",
       "license": "GPL-3.0",
       "stars": 25,
-      "downloads": 1722,
-      "score": 10.71,
+      "downloads": 1788,
+      "score": 10.748,
+      "curated": true
+    },
+    {
+      "rank": 20,
+      "id": "polly",
+      "repo": "charlesvestal/fm1-polly",
+      "name": "Polly",
+      "url": "https://github.com/charlesvestal/fm1-polly",
+      "desc": "QY70-style pocket arranger by Charles Vestal: a style plays a band of eight instruments steered by the chords you play, with General MIDI sounds from Sonivox\u2026",
+      "license": "GPL-3.0",
+      "stars": 27,
+      "downloads": 1638,
+      "score": 10.734,
+      "curated": true
+    },
+    {
+      "rank": 21,
+      "id": "gr-mm",
+      "repo": "GRiMMBIENT/grimm",
+      "name": "GR!MM",
+      "url": "https://github.com/GRiMMBIENT/grimm",
+      "desc": "Dark ambient, dungeon synth and deathdream firmware: four tracks, seven sound sources, long dark effects, a 64-step sequencer and one-key chords",
+      "license": "GPL-3.0",
+      "stars": 42,
+      "downloads": 1061,
+      "score": 10.729,
       "curated": true
     },
     {
@@ -285,8 +285,8 @@
       "desc": "Turns the FM-1 into a MIDI controller, with General MIDI sounds of its own",
       "license": "MPL-2.0",
       "stars": 23,
-      "downloads": 1686,
-      "score": 10.609,
+      "downloads": 1693,
+      "score": 10.613,
       "curated": true
     },
     {
@@ -298,8 +298,8 @@
       "desc": "Minimoog Model D emulation by Guilherme Ruppert with effects, arpeggiator and sequencer",
       "license": "GPL-3.0",
       "stars": 36,
-      "downloads": 1079,
-      "score": 10.596,
+      "downloads": 1097,
+      "score": 10.612,
       "curated": true
     },
     {
@@ -310,9 +310,9 @@
       "url": "https://github.com/jadamsowers/fm1-fimba",
       "desc": "Physically modelled kalimba with mbira patterns, granular cloud and tape",
       "license": "GPL-3.0",
-      "stars": 21,
-      "downloads": 1647,
-      "score": 10.498,
+      "stars": 22,
+      "downloads": 1660,
+      "score": 10.551,
       "curated": false
     },
     {
@@ -324,8 +324,8 @@
       "desc": "Eight-track groovebox for sound design where synth, struck and drum tracks trigger, excite and modulate one another, with thirteen synth engines, a graph\u2026",
       "license": "GPL-3.0",
       "stars": 29,
-      "downloads": 1180,
-      "score": 10.475,
+      "downloads": 1263,
+      "score": 10.543,
       "curated": true
     },
     {
@@ -337,8 +337,8 @@
       "desc": "Shigin accompaniment instrument inspired by Suikohsha's ST-50, with koto, sho, shakuhachi and taiko voices and the ST-50's just tuning",
       "license": "GPL-3.0",
       "stars": 21,
-      "downloads": 1545,
-      "score": 10.434,
+      "downloads": 1549,
+      "score": 10.437,
       "curated": false
     },
     {
@@ -350,8 +350,8 @@
       "desc": "Physically modelled electric piano, vibraphone and marimba with no samples, plus effects, arpeggiator, sequencer, scales and a web emulator",
       "license": "GPL-3.0",
       "stars": 12,
-      "downloads": 2493,
-      "score": 10.387,
+      "downloads": 2535,
+      "score": 10.403,
       "curated": true
     },
     {
@@ -363,8 +363,8 @@
       "desc": "Always-on ambience machine: it starts a new random in-key world on every boot and draws later ones from the pieces you like",
       "license": "GPL-3.0",
       "stars": 25,
-      "downloads": 1211,
-      "score": 10.358,
+      "downloads": 1214,
+      "score": 10.361,
       "curated": false
     },
     {
@@ -376,8 +376,8 @@
       "desc": "Bitimbral synthesizer by OSCILL/R: two complete parts, three ways to play them together and a morph between two versions of every sound",
       "license": "GPL-3.0",
       "stars": 21,
-      "downloads": 1405,
-      "score": 10.34,
+      "downloads": 1411,
+      "score": 10.344,
       "curated": true
     },
     {
@@ -389,8 +389,8 @@
       "desc": "Seventies string machine on four tracks with six formant registers, BBD ensemble and phaser, mixer, step sequencer and 32 programs",
       "license": "GPL-3.0",
       "stars": 8,
-      "downloads": 3223,
-      "score": 10.276,
+      "downloads": 3244,
+      "score": 10.282,
       "curated": true
     }
   ]
