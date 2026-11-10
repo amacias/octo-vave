@@ -43,7 +43,7 @@ DISCOVERY_CACHE = DATA / "discovery-cache.json"  # live community ranking + per-
 CATALOG = ROOT / "firmware" / "catalog.json"
 DIRECTORY = ROOT / "firmware" / "directory.json"
 VALIDATED = ROOT / "firmware" / "validated.json"  # written by validation sessions, read-only here
-# Validations recorded in the app ("Validate newest" on a card): same records as validated.json
+# Validations recorded in the app ("Validate" on a card): same records as validated.json
 # plus "method": "manual". They stay on this computer until someone moves them into
 # validated.json with a pull request; a repo record for the same firmware and version wins.
 LOCAL_VALIDATED = DATA / "validated-local.json"
@@ -1148,7 +1148,8 @@ def set_installed(body):
 
 
 # ---------------------------------------------------------------- manual validation
-# "Validate newest": a downloaded release that no record pins yet can be installed for a
+# "Validate <version>": a downloaded release that no passing record pins yet (or a record kept
+# on this computer, to redo it: saving replaces it) can be installed for a
 # hands-on test (the Install dialog sends exactly the library file, by sha256), then reverted
 # to stock and recorded here. The steps done so far are kept per firmware in
 # firmware-state.json "trials", so the test can span a reload or a Sound check run.
@@ -1234,7 +1235,7 @@ def save_manual_validation(body):
            "checks": checks, "notes": notes, "method": "manual"}
     doc = read_json(LOCAL_VALIDATED, {})
     doc = {"schema_version": 1,
-           "about": "Validations recorded in the Octo-Vave app (Validate newest), not yet in firmware/validated.json. "
+           "about": "Validations recorded in the Octo-Vave app (Validate), not yet in firmware/validated.json. "
                     "Move a record there with a pull request.",
            "validations": [v for v in doc.get("validations", [])
                            if not (v.get("id") == fid and _norm_ver(v.get("version", "")) == _norm_ver(rec["version"]))] + [rec]}

@@ -125,6 +125,12 @@ export function icon(k) {
  *  Install button routes through (fm1flash.js) and a line of its own in the validated list. */
 export const BASELINE = { id: "official", version: "V15", identity: "FM-1_015" };
 export const isBaseline = (v) => v?.id === BASELINE.id && verKey(v.version) === verKey(BASELINE.version);
+/**
+ * Stock versions that don't go back to the baseline cleanly: catalog.json's stock traits.oneWay,
+ * { from: "V16", note }. From V16 on, stock keeps its data in a format V15 misreads.
+ */
+export const oneWayFor = (catalog) => (catalog || []).find((c) => c.id === BASELINE.id)?.traits?.oneWay || null;
+export const isOneWay = (ow, id, version) => !!ow && id === BASELINE.id && !!version && newerFirst({ version }, { version: ow.from }) <= 0;
 
 /** "Stock V15" + "V16" → "Stock V16"; "ChoralRoot" + "v0.32" → "ChoralRoot v0.32". */
 export function nameVer(name, version) {
@@ -327,8 +333,8 @@ export function validationTip(v) {
   return `${OUTCOME_LABEL[outcome(v)]}: ${v.version} on ${v.date}. ${stepsText(v)}${v.checks ? `\nChecks: ${v.checks}` : ""}`
     + (v.notes ? `\n${v.notes}` : "") + (v.method === "manual" ? `\n${MANUAL_TIP(v)}` : "");
 }
-/** Records made with the app's Validate newest ("method": "manual"); "local" = not in validated.json yet. */
-const MANUAL_TIP = (v) => "Manual validation: tested by hand and recorded with Validate newest in the app"
+/** Records made with the app's Validate button ("method": "manual"); "local" = not in validated.json yet. */
+const MANUAL_TIP = (v) => "Manual validation: tested by hand and recorded with Validate in the app"
   + (v.local ? ". Only on this computer (data/validated-local.json) until a pull request adds it to the repository." : ".");
 
 // Each firmware is shown by a real screen capture from its own repo or docs
@@ -357,7 +363,7 @@ export function relTime(d) {
 
 /**
  * One firmware card. `app` holds the local library actions:
- * { download(f, rel, asset, btn), install(f) → Install button, validate(f) → Validate newest button or null,
+ * { download(f, rel, asset, btn), install(f) → Install button, validate(f) → Validate <version> button or null,
  *   fileRow(id, file), importFile(f, version, file), reveal(f), toast(msg, err) }.
  * Without it (the homepage) downloads are plain links to the release files and the library block is left out.
  */

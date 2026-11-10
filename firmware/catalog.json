@@ -58,7 +58,11 @@
         "requires_stock_note": "This is stock: M-UPGRADE (Windows) installs it over any firmware.",
         "install_method": [
           "m-upgrade"
-        ]
+        ],
+        "oneWay": {
+          "from": "V16",
+          "note": "From V16 on, stock keeps its voices, patterns and FX in a new format that V15 misreads: going back to V15 garbles the preset names and most tones (back on V16 they're fine again). Save the sounds you want to keep before moving to V16, and expect to reload them after going back to V15."
+        }
       }
     },
     {

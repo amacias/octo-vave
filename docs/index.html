@@ -195,7 +195,7 @@
   // The Firmware section renders with the app's own card code (js/fwcards.js, a copy of web/fwcards.js)
   // from the nightly snapshot docs/data/firmware.json (tools/fm1_site.py). Read from the repository
   // first, so a new snapshot shows before Pages republishes; this site's own copy is the fallback.
-  import { h, fwSections, fwDirectory, validatedSection, relTime, copySha, verKey, isBaseline }
+  import { h, fwSections, fwDirectory, validatedSection, relTime, copySha, verKey, isBaseline, oneWayFor }
     from "./js/fwcards.js";
   import { installAction } from "./js/fm1flash.js";
   const SNAPSHOTS = ["https://raw.githubusercontent.com/amacias/octo-vave/main/docs/data/firmware.json", "data/firmware.json"];
@@ -241,7 +241,7 @@ ${v.sha256}` });
     const asset = rel?.assets?.find((a) => a.name === v.file);
     let access = null;
     return {
-      name: f.name, isStock: isBaseline(v), installUrl: f.links?.install, downloadUrl: asset?.url || rel?.url,
+      name: f.name, isStock: isBaseline(v), installUrl: f.links?.install, downloadUrl: asset?.url || rel?.url, oneWay: oneWayFor(fw.catalog),
       async getAccess() {
         if (!navigator.requestMIDIAccess) throw new Error("This browser has no Web MIDI. Use Chrome or Edge on a computer.");
         try { access = access || await navigator.requestMIDIAccess({ sysex: true }); }

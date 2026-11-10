@@ -78,8 +78,9 @@ for firmware on the **top 30 leaderboard** (the homepage ranking); reports for a
 declined. The flow:
 
 1. **Run the session** above on your own FM-1: install, play it, run the Sound check, revert to stock V15.
-   In Octo-Vave, **Validate newest** on a card walks through it for a downloaded release that hasn't
-   been validated yet, and saves the result on your computer as a manual validation
+   In Octo-Vave, **Validate <version>** on a card walks through it for the newest release that hasn't
+   passed yet (a failed version keeps the button for a retest until a newer one comes out), and saves
+   the result on your computer as a manual validation
    (`"method": "manual"`, in `data/validated-local.json`).
 2. **Send a [validation report](https://github.com/amacias/octo-vave/issues/new?template=validation-report.yml).**
    From the app: **Submit** on the record (All Validated Firmware) opens the form filled in. GitHub

@@ -137,7 +137,7 @@ SCHEMA_VERSION = 1
 INSTALL_METHODS = {"web", "python", "m-upgrade"}
 DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}$")
 SHA_RE = re.compile(r"[0-9a-f]{64}$")
-METHODS = ("manual",)  # "manual": recorded with Validate newest in the app (data/validated-local.json)
+METHODS = ("manual",)  # "manual": recorded with Validate in the app (data/validated-local.json)
 
 
 def problems(doc, cat):

@@ -187,7 +187,7 @@ pinned SHA256 of the file that was tested.
   `python tools/fm1_site.py --write`; CI's `--check` fails when the copies differ.
 - **Anyone can contribute a validation** for M-VAVE's own firmware or one on the top 30 leaderboard. Open a
   [validation report](https://github.com/amacias/octo-vave/issues/new?template=validation-report.yml)
-  (the app's Validate newest + Submit fills it in). When a maintainer labels it `accepted`, a workflow
+  (the app's Validate + Submit fills it in). When a maintainer labels it `accepted`, a workflow
   checks the file against its release and prepares the record on a branch; the maintainer opens,
   reviews and merges the pull request. CI runs `python tools/fm1_validate.py check` on every pull request. Details in [VALIDATION.md](VALIDATION.md#contributing-a-validation).
 
@@ -214,7 +214,7 @@ Fields other tools can rely on:
 | validated | `validations[].result` | `"clean"`, `"issues"` or `"failed"` |
 | validated | `validations[].steps` | `install`, `run`, `revert` as true/false |
 | validated | `validations[].supersededBy` | set when a newer stable release exists (grey octopus) |
-| validated | `validations[].method` | `"manual"` for a hands-on test reported by an FM-1 owner (the app's Validate newest and Submit, or a validation report); left out for records from validation sessions |
+| validated | `validations[].method` | `"manual"` for a hands-on test reported by an FM-1 owner (the app's Validate and Submit, or a validation report); left out for records from validation sessions |
 
 `python tools/fm1_validate.py check` validates both files.
 

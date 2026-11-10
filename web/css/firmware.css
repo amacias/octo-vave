@@ -43,6 +43,7 @@
 .fw-actions .btn, .fw-actions button { font-size: 13px; padding: 6px 10px; }
 button.fw-inst { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
 button.fw-inst:disabled { color: var(--muted); border-color: var(--line); }
+button.fw-validate.failed { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 55%, var(--line)); }   /* newest version failed: retest */
 .fw-lib { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ok); }
 .fw-more summary { cursor: pointer; color: var(--muted); font-size: 12.5px; }
 .fw-more[open] { font-size: 13px; }
@@ -197,7 +198,7 @@ a.btn.fw-install-btn { padding: 3px 10px; }
 .fw-flash button.ghost { background: none; }
 .fw-flash button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .fw-flash button:disabled { opacity: .5; cursor: default; }
-/* Validate newest (app only) */
+/* Validate (app only) */
 .fw-val textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 13px; color: var(--ink); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; }
 .fw-v-steps { margin: 10px 0; padding-left: 22px; font-size: 13.5px; }
 .fw-v-steps li { margin: 6px 0; }

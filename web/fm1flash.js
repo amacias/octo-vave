@@ -19,7 +19,7 @@
 // Every route goes through stock V15 (planRoute): off stock, one click installs stock first,
 // checks that the FM-1 reports it, then installs the firmware asked for.
 
-import { h, outcome, verKey, nameVer, BASELINE } from "./fwcards.js";
+import { h, outcome, verKey, nameVer, BASELINE, isOneWay } from "./fwcards.js";
 
 // The stock firmware every validation is tested against (defined with the cards, fwcards.js).
 export { BASELINE };
@@ -312,7 +312,7 @@ export function installAction(v, opts) {
  * installed (the logged firmware, { id, version, label }), before(), after(result | null), mount,
  * and stock: the first leg when the FM-1 isn't on stock, { v, name, getFile(), log(result) }.
  * Without stock (the homepage) the dialog installs over stock only and asks for stock first.
- * trial: v isn't a validation but a downloaded file under test (the app's "Validate newest"):
+ * trial: v isn't a validation but a downloaded file under test (the app's Validate button):
  * the same pinning by sha256, worded as the downloaded file, with a warning.
  */
 export function openInstall(v, o) {
@@ -322,6 +322,14 @@ export function openInstall(v, o) {
   const label = nameVer(o.name, v.version);   // "Stock V15" names its version; V16 → "Stock V16"
   const title = o.isStock ? `Back to ${label}` : `Install ${label}`;
   const inst = o.installed;
+  // stock from V16 on doesn't go back to V15 cleanly (o.oneWay, catalog.json): warn on the way up and on the way back
+  const ow = o.oneWay;
+  const goingBack = ow && (o.isStock || two);
+  const oneWayNotes = ow && [
+    isOneWay(ow, v.id, v.version) && h("li", { class: "warn", text: `One-way: ${ow.note}` }),
+    goingBack && inst && isOneWay(ow, inst.id, inst.version) && h("li", { class: "warn", text: `The log says the FM-1 runs ${inst.label}. ${ow.note}` }),
+    goingBack && !inst && h("li", { class: "warn", text: `Coming from Stock ${ow.from} or newer? ${ow.note}` }),
+  ];
   const fileMsg = h("p", { class: "fw-i-file", text: o.trial ? "Getting the downloaded file…" : "Getting the validated file…" });
   const stockMsg = two && h("p", { class: "fw-i-file", text: `Getting the validated ${stockName}…` });
   const picker = h("input", { type: "file", accept: ".fwsc", hidden: true });
@@ -350,6 +358,7 @@ export function openInstall(v, o) {
     h("ul", { class: "fw-i-notes" },
       o.trial && h("li", { class: "warn", text: `Not validated yet: this installs ${v.file} for your hands-on test. Nobody has recorded it working on an FM-1.` }),
       outcome(v) === "issues" && h("li", { class: "warn", text: `Validated with issues: ${v.notes || v.checks || "see its record"}` }),
+      oneWayNotes,
       inst?.id === "fm1open" && h("li", { class: "warn", text: "The log says FM-1 Open is on the FM-1. It doesn't answer this update protocol: go back to stock with its Workbench (Restore original V15) first." }),
       h("li", { text: "Some firmware resets voices, patterns or projects: save what you want to keep first." }),
       h("li", { text: "Close other programs using the FM-1 (M-UPGRADE, web installers, MIDI editors)." }),

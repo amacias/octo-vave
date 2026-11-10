@@ -1,7 +1,7 @@
 import * as DX from "./dx7.js";
 import { mountFm1Keys, fm1LowNote } from "./fm1keys.js";
 import { h, fmtBytes, normVer, fwDirectory, fwSections, octo, outcome,
-  verKey, shortVer, relTime, icon, installableState, validationState, validatedSection, newerFirst, isBaseline, nameVer } from "./fwcards.js";
+  verKey, shortVer, relTime, icon, installableState, validatedSection, newerFirst, isBaseline, nameVer, oneWayFor, isOneWay } from "./fwcards.js";
 import { installAction, openInstall, BASELINE } from "./fm1flash.js";
 
 // ================================================================ helpers
@@ -1478,11 +1478,11 @@ function validatedFile(fw, v) {
 
 /** "All validated firmware": the newest tested version of each firmware, and whether its exact file is kept. */
 function appValidatedSection(fw) {
-  const offered = new Set();   // one Revalidate per firmware, on its newest line
+  const offered = new Set();   // one Validate per firmware, on its newest line
   return validatedSection(fw, (v) => {
     const file = validatedFile(fw, v);
     const f = fw.catalog.find((c) => c.id === v.id);
-    const re = f && !offered.has(f.id) && revalidateButton(f);
+    const re = f && !offered.has(f.id) && validateButton(f);
     if (re) offered.add(f.id);
     const { rel, asset } = releaseAsset(fw, v);
     let action;
@@ -1492,7 +1492,7 @@ function appValidatedSection(fw) {
       action.onclick = () => downloadAsset(f, rel, asset, action);
     } else action = h("span", { class: "muted", text: "not downloaded" });
     return [action, v.local && submitLink(fw, v), f && installAction(v, installOpts(f, v)), re];
-  }, { empty: "Nothing validated yet. Validation is hands-on: flash, run, revert to stock (see VALIDATION.md), or Validate newest on a card after downloading its release." });
+  }, { empty: "Nothing validated yet. Validation is hands-on: flash, run, revert to stock (see VALIDATION.md), or Validate on a card." });
 }
 
 /**
@@ -1555,7 +1555,7 @@ function installOpts(f, v) {
   const inst = S.fw?.installed;
   const o = {
     // only stock V15 itself installs on its own; newer stock (V16 …) goes through V15 like any firmware
-    name: f.name, isStock: isBaseline(v), installUrl: f.links?.install,
+    name: f.name, isStock: isBaseline(v), installUrl: f.links?.install, oneWay: oneWayFor(S.fw?.catalog),
     installed: inst && { id: inst.id, version: inst.version, label: fwNameVer(inst.id, inst.version) },
     prefer: () => S.out?.name,
     async getAccess() {
@@ -1601,7 +1601,7 @@ function cardInstall(f) {
   }
   const st = installableState(S.fw, f);
   if (!st) {
-    return h("button", { class: "fw-inst", disabled: true, title: "Not validated yet: Install unlocks once a hands-on validation pins a tested file (download the release, then Validate newest)" },
+    return h("button", { class: "fw-inst", disabled: true, title: "Not validated yet: Install unlocks once a hands-on validation pins a tested file (Validate it first)" },
       icon("flash"), "Install");
   }
   if (!/\.fwsc$/i.test(st.v.file || "") || !st.v.sha256) return null;   // FM-1 Open: its Workbench installs it (the Installer link)
@@ -1615,8 +1615,8 @@ Newer release ${shortVer(st.newer.version)} hasn't been validated yet.`) },
   return b;
 }
 
-// ---------------------------------------------------------------- Validate newest
-// A downloaded release newer than every record (or of a firmware never validated) can be
+// ---------------------------------------------------------------- Validate
+// The newest release that no passing record covers (or a firmware never validated) can be
 // installed for a hands-on test: install, play, back to stock V15, record the result. The
 // record goes in data/validated-local.json marked "method": "manual" (the server keeps it apart
 // from validated.json until a pull request moves it there); the steps done so far are kept by
@@ -1624,56 +1624,77 @@ Newer release ${shortVer(st.newer.version)} hasn't been validated yet.`) },
 
 const OTHER_DEVICE = /[-_.](smk-?\d+|mke|elite)(?=[-_.])/i;   // builds for M-VAVE's other synths (server.OTHER_DEVICE_RE)
 
-/** The downloaded file Validate newest offers for firmware f: its newest .fwsc that no record pins and no record is newer than. */
-function trialCandidate(fw, f) {
-  const recs = (fw.validated || []).filter((v) => v.id === f.id);
-  const pinned = (l) => recs.some((v) => (v.sha256 ? v.sha256 === l.sha256 : verKey(v.version) === verKey(l.version)));
+const PASSING = ["clean", "issues"];
+
+/**
+ * What Validate tests for firmware f: the newest version that no passing record (clean or with
+ * issues) covers. A failed version stays the target, so a red result leaves the button there for
+ * a retest, until an even newer version replaces it. Install meanwhile keeps the last version
+ * that passed (installableState). Returns { l } (a downloaded file), { rel, asset } (the newest
+ * stable release's .fwsc, downloaded when pressed) or null.
+ * - a test under way comes first;
+ * - releases count only for firmware tested before (a record of any outcome); a firmware never
+ *   tested gets Validate once its release is downloaded;
+ * - Stock counts too: a newer official version (V16 …) is tested from stock V15 and back.
+ */
+function validateTarget(fw, f) {
+  const recs = (fw.validated || []).filter((v) => v.id === f.id && outcome(v));
+  const pass = recs.filter((v) => PASSING.includes(outcome(v)));
+  const pinned = (l) => pass.some((v) => (v.sha256 ? v.sha256 === l.sha256 : verKey(v.version) === verKey(l.version)));
+  const best = [...pass].sort(newerFirst)[0];
+  const newer = (x) => !best || newerFirst(x, best) < 0;
+  const lib = (fw.library?.[f.id] || []).filter((l) => /\.fwsc$/i.test(l.name) && !OTHER_DEVICE.test(l.name) && !pinned(l));
   const t = fw.trials?.[f.id];
-  const lib = (fw.library?.[f.id] || []).filter((l) => /\.fwsc$/i.test(l.name) && !OTHER_DEVICE.test(l.name));
-  const going = t && lib.find((l) => l.key === t.key && !pinned(l));
-  if (going) return going;   // a test already under way
-  const newest = lib.filter((l) => !pinned(l)).sort(newerFirst)[0];
-  const tested = recs.filter((v) => outcome(v)).sort(newerFirst)[0];
-  return newest && (!tested || newerFirst(newest, tested) < 0) ? newest : null;
+  const going = t && lib.find((l) => l.key === t.key);
+  if (going) return { l: going };
+  const l = lib.filter(newer).sort(newerFirst)[0];
+  // the release: the stable one newer than the last pass (validationState reads the release order),
+  // or with only failed records, the newest stable release
+  const rels = fw.releases?.sources?.[f.id]?.releases || [];
+  const st = recs.length && installableState(fw, f);
+  const rel = !recs.length ? null
+    : st ? (!st.current && rels.find((r) => verKey(r.version) === verKey(st.newer.version)))
+    : rels.find((r) => !r.prerelease);
+  const asset = rel && rel.assets?.find((a) => /\.fwsc$/i.test(a.name) && !OTHER_DEVICE.test(a.name));
+  if (asset && (!l || newerFirst(rel, l) < 0)) return { rel, asset };
+  if (l) return { l };
+  // a passing record kept on this computer (not on main yet) can always be redone (#17)
+  const mine = [...pass].sort((a, b) => String(b.date).localeCompare(String(a.date)) || newerFirst(a, b))[0];
+  const file = mine?.local && (fw.library?.[f.id] || []).find((x) => x.sha256 === mine.sha256);
+  return file ? { l: file, redo: mine } : null;
+}
+
+/** The newest failed record of firmware id at that version, if its last test failed. */
+function failedAt(fw, id, version) {
+  const vals = (fw.validated || []).filter((v) => v.id === id && outcome(v) && verKey(v.version) === verKey(version))
+    .sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  return outcome(vals[0]) === "failed" ? vals[0] : null;
 }
 
 /**
- * A card's Validate newest button, when there's a downloaded file to test. It reads Revalidate
- * when the firmware's newest validation is outdated by a newer release (grey octopus); when that
- * release isn't downloaded yet, the button downloads it first (revalidateButton). Stock counts
- * too: a newer official version (V16 …) is tested like any firmware, from stock V15 and back.
+ * Validate <version>: the hands-on test of validateTarget (downloading the release first when
+ * needed). On a version whose last test failed it stays, in red, with the failure in its tooltip.
  */
-function cardValidate(f) {
-  const l = trialCandidate(S.fw, f);
-  if (!l) return revalidateButton(f);
-  const going = S.fw.trials?.[f.id]?.key === l.key;
-  const st = validationState(S.fw, f);
-  const re = st && !st.current;
-  const b = h("button", { class: "ghost fw-validate", title: `${going ? "Carry on with" : "Start"} the hands-on test of the downloaded ${l.name} (${shortVer(l.version)}): install it, play it, go back to stock V15 and record the result` },
-    icon("check"), going ? `Validating ${shortVer(l.version)}` : re ? `Revalidate ${shortVer(l.version)}` : "Validate newest");
-  b.onclick = () => openValidate(f, l);
-  return b;
-}
-
-/**
- * Revalidate for a firmware whose newest validation a newer release outdates: tests the newest
- * release's .fwsc (downloading it first when it isn't in the library) with the Validate dialog.
- * Null when the validation is current, or the newer release has no .fwsc to install.
- */
-function revalidateButton(f) {
-  const st = validationState(S.fw, f);
-  if (!st || st.current || !st.newer) return null;
-  const l = trialCandidate(S.fw, f);
-  const rel = (S.fw.releases?.sources?.[f.id]?.releases || []).find((r) => verKey(r.version) === verKey(st.newer.version));
-  const asset = rel?.assets.find((a) => /\.fwsc$/i.test(a.name) && !OTHER_DEVICE.test(a.name));
-  if (!l && !asset) return null;
-  const ver = shortVer((l || rel).version);
-  const b = h("button", { class: "ghost fw-validate",
-    title: `${nameVer(f.name, st.v.version)} was validated, but ${shortVer(st.newer.version)} hasn't been tested. `
-      + `${l ? `Test the downloaded ${l.name}` : `Download ${asset.name} and test it`}: install it, play it, go back to stock V15 and record the result.` },
-    icon("check"), `Revalidate ${ver}`);
+function validateButton(f) {
+  const tg = validateTarget(S.fw, f);
+  if (!tg) return null;
+  const { l, rel, asset, redo } = tg;
+  const version = (l || rel).version, ver = shortVer(version);
+  const going = l && S.fw.trials?.[f.id]?.key === l.key;
+  const failed = failedAt(S.fw, f.id, version);
+  const st = installableState(S.fw, f);
+  const title = [
+    failed && `${nameVer(f.name, failed.version)} failed validation on ${failed.date}${failed.notes ? `: ${failed.notes}` : ""}`,
+    failed && st && `Install keeps ${nameVer(f.name, st.v.version)}, the last version that passed.`,
+    redo && `${nameVer(f.name, redo.version)} was recorded on this computer on ${redo.date} and isn't in the repository yet: `
+      + "test it again or correct the result. Saving replaces that record.",
+    `${going ? "Carry on with" : "Start"} the hands-on test of ${l ? `the downloaded ${l.name}` : `${asset.name} (downloaded first)`}: `
+      + "install it, play it, go back to stock V15 and record the result.",
+  ].filter(Boolean).join("\n");
+  const b = h("button", { class: "ghost fw-validate" + (failed ? " failed" : ""), title },
+    icon("check"), `${going ? "Validating" : redo ? "Revalidate" : "Validate"} ${ver}`);
   b.onclick = async () => {
-    if (l) return openValidate(f, l);
+    if (l) return openValidate(f, l, redo);
     const label = [...b.childNodes];
     b.disabled = true; b.textContent = "Downloading…";
     try {
@@ -1688,10 +1709,17 @@ function revalidateButton(f) {
 }
 
 /** The Validate dialog: the three steps (each with its action), the result and the record. */
-async function openValidate(f, l) {
+async function openValidate(f, l, redo = null) {
   let t;
-  try { t = (await api("firmware/trial", { method: "POST", body: JSON.stringify({ id: f.id, key: l.key }) })).trial; }
+  try {
+    t = (await api("firmware/trial", { method: "POST", body: JSON.stringify({ id: f.id, key: l.key }) })).trial;
+    // Revalidate on a record kept on this computer: start from what was saved (#17)
+    if (redo && !t.result) t = (await api("firmware/trial", { method: "POST", body: JSON.stringify({ id: f.id, key: l.key,
+      steps: redo.steps || {}, result: redo.result, checks: redo.checks || "", notes: redo.notes || "" }) })).trial;
+  }
   catch (e) { return toast(e.message, true); }
+  const failed = failedAt(S.fw, f.id, l.version);
+  const ow = oneWayFor(S.fw.catalog);
   S.fw.trials = { ...(S.fw.trials || {}), [f.id]: t };
   const label = nameVer(f.name, l.version);
   const rec = { id: f.id, version: l.version, file: l.name, sha256: l.sha256 };   // what Install pins: this exact file
@@ -1715,8 +1743,12 @@ async function openValidate(f, l) {
   const close = h("button", { type: "button", class: "ghost", text: "Close" });
   const dlg = h("dialog", { class: "fw-flash fw-val" },
     h("h3", { text: `Validate ${label}` }),
-    h("p", { class: "muted", text: `A hands-on test of the downloaded ${l.name} (SHA256 ${l.sha256.slice(0, 12)}…), which no validation covers yet. `
+    h("p", { class: "muted", text: `A hands-on test of the downloaded ${l.name} (SHA256 ${l.sha256.slice(0, 12)}…)`
+      + `${redo ? ", replacing the result recorded on this computer" : ", which no passing validation covers yet"}. `
       + "Install it, play it, go back to stock V15, then record what happened. The record stays on this computer, marked as a manual validation, until a pull request adds it to the repository." }),
+    (failed || isOneWay(ow, f.id, l.version)) && h("ul", { class: "fw-i-notes" },
+      failed && h("li", { class: "warn", text: `Failed on ${failed.date}${failed.notes ? `: ${failed.notes}` : ""}` }),
+      isOneWay(ow, f.id, l.version) && h("li", { class: "warn", text: `One-way: ${ow.note}` })),
     h("ol", { class: "fw-v-steps" },
       h("li", {}, h("label", {}, boxes.install, " Installed"), instBtn),
       h("li", {}, h("label", {}, boxes.run, " Ran: it boots and plays as its docs describe"), scBtn),
@@ -1806,7 +1838,7 @@ async function markInstalled(id, version, note = "") {
 const FW_APP = {
   download: downloadAsset,
   install: cardInstall,
-  validate: cardValidate,
+  validate: validateButton,
   fileRow: libFileRow,
   toast,
   async importFile(f, version, file) {
