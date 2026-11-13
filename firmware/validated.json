@@ -189,7 +189,7 @@
       "result": "clean",
       "checks": "sounds, keys and knobs work; generic sound check 1-4 heard (notes, channels, velocity, sustain); stock steps 1-4 also heard (notes, program change, reverb, distortion); keys sent as MIDI notes on ch 1; stock sound check passed after revert",
       "notes": "Under Felucca the FM-1 shows up as MIDI port 'Felucca' (USB 1209:0001, shared with AMB-1) and ignores MIDI identity requests. Return to official V15 asks for the unmodified FM-1.fwsc and saves a full backup first; worked first time. Arpeggiator not figured out during the test.",
-      "supersededBy": "v1.7.0"
+      "supersededBy": "v1.8.2"
     },
     {
       "id": "felucca",
@@ -204,7 +204,8 @@
       },
       "result": "clean",
       "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_917); notes on ch 1-3 sounded at the right pitch on the FM-1's USB audio, ch 10 quieter; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
-      "notes": "MIDI port 'Felucca', USB audio 'Line (Felucca)'. Screen, knobs and keys not checked."
+      "notes": "MIDI port 'Felucca', USB audio 'Line (Felucca)'. Screen, knobs and keys not checked.",
+      "supersededBy": "v1.8.2"
     },
     {
       "id": "fm1open",
@@ -390,7 +391,7 @@
       "result": "clean",
       "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_100; the package header says FM-1_10001400); notes on ch 2 sounded on the FM-1's USB audio (bright, percussive), ch 3 faint, ch 1 and 10 silent; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
       "notes": "MIDI port 'LOOM-8 FM-1', USB audio 'Line (Felucca)'. Screen, knobs and keys not checked.",
-      "supersededBy": "v0.15"
+      "supersededBy": "v0.15.1"
     },
     {
       "id": "melodee",
@@ -437,7 +438,7 @@
       "result": "clean",
       "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_9533); notes on ch 1-3 and 10 sounded on the FM-1's USB audio, pitch about 30-45 cents flat (analog-style tuning?); reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
       "notes": "MIDI port 'Felucca', USB audio 'Line (Felucca)'. Plain obervave-3.3.2.fwsc (not the smk37/mke/elite builds). Screen, knobs and keys not checked.",
-      "supersededBy": "v3.5"
+      "supersededBy": "v3.5.2"
     },
     {
       "id": "official",
@@ -484,7 +485,7 @@
       "result": "clean",
       "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_300; the package header says FM-1_3000602); notes on ch 1-3 sounded at the right pitch on the FM-1's USB audio, ch 10 quieter; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
       "notes": "MIDI port 'Polly FM-1', USB audio 'Line (Felucca)'. Screen, knobs and keys not checked.",
-      "supersededBy": "v0.6.3"
+      "supersededBy": "v0.6.4"
     },
     {
       "id": "ravel",
@@ -500,7 +501,7 @@
       "result": "clean",
       "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_82012400); notes on ch 1-3 and 10 sounded at the right pitch on the FM-1's USB audio; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
       "notes": "MIDI port 'Ravel FM-1', USB audio 'Line (Felucca)'. Screen, knobs and keys not checked.",
-      "supersededBy": "v1.37.0"
+      "supersededBy": "v1.41.1"
     },
     {
       "id": "shine-on",
@@ -532,7 +533,7 @@
       "result": "clean",
       "checks": "installed with Skiff's web installer over stock (FM-1 reports FM-1_720); played and checked by hand on the device by the user (Sound check not run); reverted with Octo-Vave's Install on Stock V15 (FM-1 reports FM-1_015)",
       "notes": "The file matches GitHub's release digest. The installer's MIDI permission prompt can sit unseen in a background window: the install waits at 0% until it is allowed.",
-      "supersededBy": "v2.5.1"
+      "supersededBy": "v2.6"
     },
     {
       "id": "skiff",
@@ -548,7 +549,7 @@
       "result": "clean",
       "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_722); notes on ch 1-3 sounded at the right pitch on the FM-1's USB audio, ch 10 quieter; sends MIDI clock; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
       "notes": "MIDI port 'Felucca', USB audio 'Line (Felucca)'. Plain skiff-2.2.fwsc (not the smk37/mke/elite builds, which are for other M-VAVE devices). Screen, knobs and keys not checked.",
-      "supersededBy": "v2.5.1"
+      "supersededBy": "v2.6"
     },
     {
       "id": "sloop",
