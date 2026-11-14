@@ -31,8 +31,17 @@ const HEADER_BLOCKS = 20, BLOCK = 0x30;                   // .fwsc header: 47 da
 const MAX_REQUEST = 512;
 // Ports worth a handshake: the FM-1 under stock ("FM-1 Midi"), its update loader and FM-1 Open
 // ("USB-Midi") and the community firmware ("Felucca", "AMB-1 FM-1", "ChoralRoot FM-1", "Hortator").
-// Other MIDI gear is never probed, even when it is the app's selected port.
-const FM1_PORT = /fm-?1|felucca|choralroot|hortator|clipper|duell|ota|usb-midi|composite|sinco/i;
+// Other MIDI gear is never probed, even when it is the app's selected port. The app's port
+// lists use the same test, so it never connects to other MIDI gear either (issue #21).
+export const FM1_PORT = /fm-?1|felucca|choralroot|hortator|clipper|duell|ota|usb-midi|composite|sinco/i;
+// Names only the FM-1 uses. The rest ("USB-Midi", "composite") are FM-1 Open and update mode, but
+// plenty of other USB MIDI gear shares them: the app lists those and never picks one on its own.
+const FM1_NAMED = /fm-?1|felucca|choralroot|hortator|clipper|duell/i;
+
+/** How surely a port is the FM-1: 2 = its own name, 1 = a generic name it may use, 0 = other gear. */
+export function fm1PortRank(name) {
+  return FM1_NAMED.test(name || "") ? 2 : FM1_PORT.test(name || "") ? 1 : 0;
+}
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function fail(code, message) { return Object.assign(new Error(message), { code }); }
@@ -170,7 +179,7 @@ async function findDevice(access, { ota, prefer } = {}) {
   const outputs = [...access.outputs.values()];
   const inputs = [...access.inputs.values()]
     .filter((p) => p.state !== "disconnected" && FM1_PORT.test(p.name || ""))
-    .sort((a, b) => (b.name === prefer) - (a.name === prefer));
+    .sort((a, b) => (b.name === prefer) - (a.name === prefer) || fm1PortRank(b.name) - fm1PortRank(a.name));
   for (const input of inputs) {
     const output = outputs.find((o) => o.name === input.name && o.state !== "disconnected");
     if (!output) continue;
