@@ -29,6 +29,7 @@ CATALOG = ROOT / "firmware" / "catalog.json"
 FW_STATE = ROOT / "data" / "firmware-state.json"
 STEPS = ("install", "run", "revert")
 RESULTS = ("clean", "issues", "failed")
+STOCK_RE = re.compile(r"^V\d{1,3}$")  # the stock a validation installed from and reverted to; left out = V15
 
 
 def load(path, default):
@@ -93,6 +94,9 @@ def cmd_add(doc, args):
         sys.exit("--result issues needs --notes saying what went wrong and how it was worked around")
     if args.result == "failed" and not args.notes:
         sys.exit("--result failed needs --notes saying what failed")
+    stock = (args.stock or "").strip().upper()
+    if stock and not STOCK_RE.match(stock):
+        sys.exit(f"--stock should be a stock version like V15 or V16, not {args.stock!r}")
     if args.sha256:
         # a file checked elsewhere (tools/fm1_issue.py downloads the release file and compares)
         if not SHA_RE.match(args.sha256) or not args.file:
@@ -113,6 +117,7 @@ def cmd_add(doc, args):
         "checks": args.checks,
         "notes": args.notes,
         **({"method": args.method} if args.method else {}),
+        **({"stock": stock} if stock else {}),
     }
     rows = [v for v in doc.setdefault("validations", [])
             if not (v["id"] == args.id and norm(v["version"]) == norm(args.version))]
@@ -190,6 +195,8 @@ def problems(doc, cat):
             out.append(f"{where}: supersededBy must be a version string")
         if "method" in v and v["method"] not in METHODS:
             out.append(f"{where}: method must be one of {', '.join(METHODS)} (or left out)")
+        if "stock" in v and not (isinstance(v["stock"], str) and STOCK_RE.match(v["stock"])):
+            out.append(f"{where}: stock must be a stock version like \"V16\" (or left out for V15)")
         for field in ("checks", "notes"):
             hit = PRIVATE.search(v.get(field) or "")
             if hit:
@@ -239,6 +246,7 @@ def main():
     a.add_argument("--no-library", action="store_true", help="record without a library file / checksum")
     a.add_argument("--sha256", help="pin this checksum for --file instead of looking in the library")
     a.add_argument("--method", choices=METHODS, help="manual: tested by hand and reported from the app or a validation report")
+    a.add_argument("--stock", help="stock version installed from and reverted to, e.g. V16 (left out = V15)")
     r = sub.add_parser("remove", help="delete a record")
     r.add_argument("id"); r.add_argument("version")
     sub.add_parser("check", help="validate validated.json and the catalog fields tools rely on")
