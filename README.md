@@ -339,3 +339,5 @@ cover the firmware projects or their screen captures in `web/img/fw/`, which sta
 authors' terms.
 
 <p align="center"><img src="docs/img/octo.svg" width="48" alt=""><br><sub>Octo-Vave · by Artificial Music</sub></p>
+
+You can also try Octo Vave in the browser, no flashing needed, in the free community [FM-1 Emulator](https://fm1-emulator.atst.tools/).
