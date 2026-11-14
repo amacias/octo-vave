@@ -2,7 +2,7 @@ import * as DX from "./dx7.js";
 import { mountFm1Keys, fm1LowNote } from "./fm1keys.js";
 import { h, fmtBytes, normVer, fwDirectory, fwSections, octo, outcome,
   verKey, shortVer, relTime, icon, installableState, validatedSection, newerFirst, isBaseline, nameVer, oneWayFor, isOneWay } from "./fwcards.js";
-import { installAction, openInstall, BASELINE } from "./fm1flash.js";
+import { installAction, openInstall, BASELINE, fm1PortRank } from "./fm1flash.js";
 
 // ================================================================ helpers
 
@@ -90,7 +90,7 @@ const WIDGETS = {
 };
 
 const DEFAULTS = {
-  outName: "", inName: "", noteCh: 1, fxCh: 2, sysexGap: 4, bpm: 120, octave: 4, velocity: 100,
+  outName: "", inName: "", outChosen: "", inChosen: "", noteCh: 1, fxCh: 2, sysexGap: 4, bpm: 120, octave: 4, velocity: 100,
   liveSend: true, widgets: Object.fromEntries(Object.keys(WIDGETS).map((k) => [k, true])),
   notes: "", theme: "auto", accent: "", voice: null, fx: null, program: 1, soundcheck: {},
 };
@@ -132,18 +132,26 @@ async function connectMidi(quiet = false) {
   fillPorts();
 }
 
+// The app talks only to the FM-1 (issue #21): other MIDI gear on the same hub is never listed,
+// picked or opened. A port with the FM-1's own name is picked on its own; a generic one
+// ("USB-Midi": FM-1 Open, update mode, but also other gear) only once the user chose it.
+const fm1Ports = (map) => [...map.values()].filter((p) => p.state !== "disconnected" && fm1PortRank(p.name))
+  .sort((a, b) => fm1PortRank(b.name) - fm1PortRank(a.name));
+
 function fillPorts() {
   if (!S.midi) return;
-  const outs = [...S.midi.outputs.values()];
-  const ins = [...S.midi.inputs.values()];
-  const pick = (list, saved) =>
-    list.find((p) => p.name === saved) || list.find((p) => /fm-?1/i.test(p.name)) || list[0];
+  const outs = fm1Ports(S.midi.outputs);
+  const ins = fm1Ports(S.midi.inputs);
+  // a saved generic name counts only if the user picked it (older settings may hold other gear's)
+  const pick = (list, saved, chosen) =>
+    list.find((p) => p.name === saved && (fm1PortRank(p.name) === 2 || p.name === chosen))
+    || list.find((p) => fm1PortRank(p.name) === 2) || null;
   const fill = (sel, list, chosen) => {
     sel.replaceChildren(h("option", { value: "", text: "(none)" }),
       ...list.map((p) => h("option", { value: p.id, text: p.name, selected: chosen && p.id === chosen.id })));
   };
-  const o = pick(outs, S.settings.outName);
-  const i = pick(ins, S.settings.inName);
+  const o = pick(outs, S.settings.outName, S.settings.outChosen);
+  const i = pick(ins, S.settings.inName, S.settings.inChosen);
   fill($("#outSel"), outs, o);
   fill($("#inSel"), ins, i);
   bindPorts();
@@ -171,10 +179,14 @@ async function releaseMidi() {
   toast("MIDI ports released. Press Connect to use them again.");
 }
 
+/** The header and Home status without an output: other MIDI gear doesn't count as connected. */
+const noOutText = () => !S.midi ? "Not connected"
+  : fm1Ports(S.midi.outputs).length ? "FM-1 port not selected (Play & MIDI)" : "FM-1 not found";
+
 function updateConn() {
   const on = !!S.out;
   $("#connDot").className = "dot " + (on ? "on" : "off");
-  $("#connText").textContent = on ? S.out.name : S.midi ? "No output selected" : "Not connected";
+  $("#connText").textContent = on ? S.out.name : noOutText();
   $("#connectBtn").textContent = S.midi ? "Rescan" : "Connect";
   renderHomeStatus();
   buildChecks();  // Sound check's Auto mode follows the connected port
@@ -2477,7 +2489,7 @@ function applyWidgets() {
 function renderHomeStatus() {
   const on = !!S.out;
   $("#homeDot").className = "dot " + (on ? "on" : "off");
-  $("#homeConn").textContent = on ? "Connected" : S.midi ? "No output selected" : "Not connected";
+  $("#homeConn").textContent = on ? "Connected" : noOutText();
   $("#homeConn").title = on ? S.out.name : "";
 }
 
@@ -2526,8 +2538,8 @@ function switchTab(name) {
 function wire() {
   $$("#tabs button").forEach((b) => (b.onclick = () => switchTab(b.dataset.tab)));
   $("#connectBtn").onclick = () => connectMidi();
-  $("#outSel").onchange = () => { bindPorts(); saveSettings(); };
-  $("#inSel").onchange = () => { bindPorts(); saveSettings(); };
+  $("#outSel").onchange = () => { bindPorts(); S.settings.outChosen = S.out?.name || ""; saveSettings(); };
+  $("#inSel").onchange = () => { bindPorts(); S.settings.inChosen = S.inp?.name || ""; saveSettings(); };
   $("#releaseBtn").onclick = releaseMidi;
   chOptions($("#noteCh"), S.settings.noteCh);
   $("#noteCh").onchange = (e) => { S.settings.noteCh = +e.target.value; updateConn(); saveSettings(); };
