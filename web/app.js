@@ -1,7 +1,7 @@
 import * as DX from "./dx7.js";
 import { mountFm1Keys, fm1LowNote } from "./fm1keys.js";
 import { h, fmtBytes, normVer, fwDirectory, fwSections, octo, outcome,
-  verKey, shortVer, relTime, icon, installableState, validatedSection, newerFirst, isBaseline, nameVer, oneWayFor, isOneWay } from "./fwcards.js";
+  verKey, shortVer, relTime, icon, installableState, validatedSection, newerFirst, isBaseline, nameVer, oneWayFor, isOneWay, stockOf } from "./fwcards.js";
 import { installAction, openInstall, BASELINE, fm1PortRank } from "./fm1flash.js";
 
 // ================================================================ helpers
@@ -1519,10 +1519,10 @@ function submitLink(fw, v) {
   if (!mvave && !(fw.ranked || []).slice(0, 30).some((p) => p.id === v.id))
     return h("span", { class: "muted", text: "not in top 30",
       title: "Only firmware on the top 30 leaderboard can be submitted to the repository. This validation stays on this computer." });
-  const rec = { id: v.id, version: v.version, file: v.file, sha256: v.sha256, date: v.date, result: v.result, steps: v.steps, method: "manual" };
+  const rec = { id: v.id, version: v.version, file: v.file, sha256: v.sha256, date: v.date, result: v.result, steps: v.steps, method: "manual", stock: stockOf(v) };
   const q = new URLSearchParams({
     template: "validation-report.yml", title: `Validation: ${v.id} ${v.version}`,
-    version: v.version, file: v.file, sha256: v.sha256, checks: v.checks || "", notes: v.notes || "", stock: "V15",
+    version: v.version, file: v.file, sha256: v.sha256, checks: v.checks || "", notes: v.notes || "", stock: stockOf(v),
     record: JSON.stringify(rec, null, 1),
   });
   return h("a", { class: "btn ghost", href: `${REPORT_FORM}?${q}`, target: "_blank", rel: "noopener", text: "Submit",
@@ -1623,6 +1623,7 @@ function cardInstall(f) {
 const OTHER_DEVICE = /[-_.](smk-?\d+|mke|elite)(?=[-_.])/i;   // builds for M-VAVE's other synths (server.OTHER_DEVICE_RE)
 
 const PASSING = ["clean", "issues"];
+const STOCK_BASES = ["V15", "V16"];   // stock versions a validation can be tested against (#19)
 
 /**
  * What Validate tests for firmware f: the newest version that no passing record (clean or with
@@ -1712,7 +1713,7 @@ async function openValidate(f, l, redo = null) {
     t = (await api("firmware/trial", { method: "POST", body: JSON.stringify({ id: f.id, key: l.key }) })).trial;
     // Revalidate on a record kept on this computer: start from what was saved (#17)
     if (redo && !t.result) t = (await api("firmware/trial", { method: "POST", body: JSON.stringify({ id: f.id, key: l.key,
-      steps: redo.steps || {}, result: redo.result, checks: redo.checks || "", notes: redo.notes || "" }) })).trial;
+      steps: redo.steps || {}, result: redo.result, checks: redo.checks || "", notes: redo.notes || "", stock: stockOf(redo) }) })).trial;
   }
   catch (e) { return toast(e.message, true); }
   const failed = failedAt(S.fw, f.id, l.version);
@@ -1725,8 +1726,26 @@ async function openValidate(f, l, redo = null) {
 
   const box = (k) => h("input", { type: "checkbox", "data-step": k, checked: !!t.steps[k] });
   const boxes = { install: box("install"), run: box("run"), revert: box("revert") };
+  // The stock the test installs from and goes back to (#19), stored in the record. The app's
+  // Install buttons go through stock V15, so with another stock they step aside: install and
+  // revert by hand (M-UPGRADE or the project's installer). V16 → V15 garbles presets.
+  const stockSel = h("select", { title: "The stock version on the FM-1 before installing, and the one you go back to" },
+    STOCK_BASES.map((s) => h("option", { value: s, text: s === BASELINE.version ? `${s} (baseline)` : s, selected: (t.stock || BASELINE.version) === s })));
+  const onBase = () => stockSel.value === BASELINE.version;
   const instBtn = h("button", { type: "button", class: "ghost", text: `Install ${shortVer(l.version)}` });
-  const stockBtn = stockRec && stockF && h("button", { type: "button", class: "ghost", text: "Install Stock V15" });
+  const stockBtn = stockRec && stockF && h("button", { type: "button", class: "ghost", text: `Install ${nameVer(stockF.name, stockRec.version)}` });
+  const byHand = (what) => h("span", { class: "muted", text: what });
+  const instAlt = byHand("by hand: the app's Install goes through stock V15");
+  const revertLabel = h("span"), revertAlt = byHand("");
+  const show = (el, on) => { if (el) el.style.display = on ? "" : "none"; };   // buttons' CSS beats [hidden]
+  const syncStock = () => {
+    const s = stockSel.value, base = onBase();
+    revertLabel.textContent = ` Reverted to stock ${s}`;
+    revertAlt.textContent = `with M-UPGRADE${base ? " or the project's own installer" : ` and stock ${s}`}`;
+    show(instBtn, base); show(instAlt, !base);
+    show(stockBtn, base); show(revertAlt, !(stockBtn && base));
+  };
+  syncStock();
   const scBtn = h("button", { type: "button", class: "ghost", text: "Sound check" });
   const radios = ["clean", "issues", "failed"].map((r) => h("label", { class: "fw-v-res " + r },
     h("input", { type: "radio", name: "fwvres", value: r, checked: t.result === r }),
@@ -1742,14 +1761,15 @@ async function openValidate(f, l, redo = null) {
     h("h3", { text: `Validate ${label}` }),
     h("p", { class: "muted", text: `A hands-on test of the downloaded ${l.name} (SHA256 ${l.sha256.slice(0, 12)}…)`
       + `${redo ? ", replacing the result recorded on this computer" : ", which no passing validation covers yet"}. `
-      + "Install it, play it, go back to stock V15, then record what happened. The record stays on this computer, marked as a manual validation, until a pull request adds it to the repository." }),
+      + "Install it from stock, play it, go back to the same stock, then record what happened. The record stays on this computer, marked as a manual validation, until a pull request adds it to the repository." }),
     (failed || isOneWay(ow, f.id, l.version)) && h("ul", { class: "fw-i-notes" },
       failed && h("li", { class: "warn", text: `Failed on ${failed.date}${failed.notes ? `: ${failed.notes}` : ""}` }),
       isOneWay(ow, f.id, l.version) && h("li", { class: "warn", text: `One-way: ${ow.note}` })),
+    h("label", { class: "fw-v-stock" }, "Tested against stock ", stockSel),
     h("ol", { class: "fw-v-steps" },
-      h("li", {}, h("label", {}, boxes.install, " Installed"), instBtn),
+      h("li", {}, h("label", {}, boxes.install, " Installed"), instBtn, instAlt),
       h("li", {}, h("label", {}, boxes.run, " Ran: it boots and plays as its docs describe"), scBtn),
-      h("li", {}, h("label", {}, boxes.revert, " Reverted to stock V15"), stockBtn || h("span", { class: "muted", text: "with the project's own installer" }))),
+      h("li", {}, h("label", {}, boxes.revert, revertLabel), stockBtn, revertAlt)),
     h("div", { class: "fw-v-result" }, h("b", { text: "Result" }), radios),
     h("label", { class: "stack" }, "Checks", checks),
     h("label", { class: "stack" }, "Notes", notes),
@@ -1759,10 +1779,11 @@ async function openValidate(f, l, redo = null) {
   dlg.addEventListener("close", () => { dlg.remove(); renderFirmware(); });
 
   const form = () => ({ id: f.id, key: l.key, steps: Object.fromEntries(Object.entries(boxes).map(([k, b]) => [k, b.checked])),
-    result: dlg.querySelector('input[name="fwvres"]:checked')?.value || "", checks: checks.value, notes: notes.value });
+    result: dlg.querySelector('input[name="fwvres"]:checked')?.value || "", checks: checks.value, notes: notes.value, stock: stockSel.value });
   const keep = debounce(() => api("firmware/trial", { method: "POST", body: JSON.stringify(form()) })
     .then((r) => { S.fw.trials[f.id] = r.trial; }).catch(() => {}), 400);
   dlg.addEventListener("input", keep);
+  stockSel.addEventListener("change", syncStock);
   const tick = (k) => { boxes[k].checked = true; keep(); };
 
   // the steps' own actions: the Install dialog opens on top of this one

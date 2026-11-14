@@ -88,6 +88,7 @@ export function validatedList(fw, extra = () => null) {
         octoFor(v, tip, st.current),
         h("b", { text: name(v.id) }),
         h("span", { class: "mono", text: shortVer(v.version) }),
+        stockSeal(v),
         !st.current && h("span", { class: "val-newer", text: `newer ${shortVer(st.newer.version)}` }),
         h("span", { class: "muted", text: v.date }),
         o !== "clean" && h("span", { class: "val-label " + o, text: o === "issues" ? "with issues" : "failed" }),
@@ -132,7 +133,7 @@ export const isBaseline = (v) => v?.id === BASELINE.id && verKey(v.version) === 
 export const oneWayFor = (catalog) => (catalog || []).find((c) => c.id === BASELINE.id)?.traits?.oneWay || null;
 export const isOneWay = (ow, id, version) => !!ow && id === BASELINE.id && !!version && newerFirst({ version }, { version: ow.from }) <= 0;
 
-/** "Stock V15" + "V16" → "Stock V16"; "ChoralRoot" + "v0.32" → "ChoralRoot v0.32". */
+/** "Stock" + "V16" → "Stock V16"; "ChoralRoot" + "v0.32" → "ChoralRoot v0.32". */
 export function nameVer(name, version) {
   const v = shortVer(String(version || "").trim());
   if (!v || name.toLowerCase().endsWith(v.toLowerCase())) return name;
@@ -142,49 +143,36 @@ export function nameVer(name, version) {
 // firmware/validated.json is written by hands-on validation sessions (see
 // VALIDATION.md). The octopus colour is the outcome: orange = validated cleanly
 // (installed, ran, reverted to stock), purple = validated with issues, red = failed.
-// Grey = a newer stable release hasn't been tested yet. Partial records show nothing.
+// Grey = untested: a newer stable release hasn't been tested yet. Partial records show nothing.
 
 const OCTO = '<svg viewBox="0 0 32 32" class="octo" aria-hidden="true">'
   + '<path style="fill:var(--octo,#F07A2B)" d="M16 3C10 3 6 7.3 6 13c0 3.2 1.4 5.6 3.4 7.1L7 24.5c-.6 1.1-1.9 1.5-3 1-.6-.3-1.3.1-1.2.8.2 1.6 2 2.6 3.7 2.1 1.6-.5 2.6-1.8 3.4-3.2l1.6-2.8.5 4.2c.1 1.2-.6 2.3-1.7 2.7-.6.2-.6 1.1.1 1.2 2 .4 3.8-1 4-3l.4-4.3h2.4l.4 4.3c.2 2 2 3.4 4 3 .7-.1.7-1 .1-1.2-1.1-.4-1.8-1.5-1.7-2.7l.5-4.2 1.6 2.8c.8 1.4 1.8 2.7 3.4 3.2 1.7.5 3.5-.5 3.7-2.1.1-.7-.6-1.1-1.2-.8-1.1.5-2.4.1-3-1l-2.4-4.4C24.6 18.6 26 16.2 26 13c0-5.7-4-10-10-10z"/>'
   + '<circle cx="12.4" cy="13" r="2" fill="#fff"/><circle cx="19.6" cy="13" r="2" fill="#fff"/>'
   + '<circle cx="12.8" cy="13.4" r="1" fill="#2b1a10"/><circle cx="20" cy="13.4" r="1" fill="#2b1a10"/></svg>';
 
-// Card traits: source (egg cracked open / closed), checksum published (green check),
-// one-click revert to stock in the project's installer (blue first aid). Grey = no / unknown.
+// Card traits: source (egg cracked open / closed), checksum published (green check). Grey = no / unknown.
+// catalog.json still records traits.revert, requires_stock_version and install_method (checked by
+// fm1_validate.py); the cards stopped showing them in #18.
 const TRAIT_SVG = {
   open: '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="shell" d="M5 13.2l2.3 2 2.3-2.4 2.4 2.4 2.4-2.4 2.3 2.4 2.3-2C19 18.4 16 22 12 22s-7-3.6-7-8.8z"/>'
     + '<circle class="yolk" cx="12" cy="14.6" r="2.3"/>'
     + '<path class="shell" transform="rotate(-16 12 9) translate(0 -2)" d="M5.4 10.2C6.2 5.4 8.8 2 12 2s5.8 3.4 6.6 8.2l-2.2-1.6-2.3 2.3-2.1-2.3-2.2 2.3-2.2-2.3z"/></svg>',
   closed: '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="shell" d="M12 2C8.2 2 5 8 5 13.4 5 18.4 8 22 12 22s7-3.6 7-8.6C19 8 15.8 2 12 2z"/></svg>',
   sum: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="bg" cx="12" cy="12" r="10"/><path class="fg" d="M7.2 12.4l3.2 3.2 6.4-6.8" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  aid: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="bg" x="2.5" y="2.5" width="19" height="19" rx="4.5"/><path class="fg-fill" d="M10 6.5h4v3.5h3.5v4H14v3.5h-4V14H6.5v-4H10z"/></svg>',
-  // requires a stock ("original gangster") firmware version first: a bronze seal
-  og: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="bg" cx="12" cy="12" r="10.5"/><circle class="ring" cx="12" cy="12" r="8.4"/><text class="fg-text" x="12" y="15.4" text-anchor="middle">OG</text></svg>',
-  // install methods: web installer (globe), Python script (snake), M-UPGRADE (M with an up arrow)
-  web: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="bg" x="2.5" y="2.5" width="19" height="19" rx="4.5"/><g class="fg" fill="none" stroke-width="1.5"><circle cx="12" cy="12" r="6.2"/><ellipse cx="12" cy="12" rx="2.7" ry="6.2"/><path d="M5.8 12h12.4M6.8 8.8h10.4M6.8 15.2h10.4"/></g></svg>',
-  python: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="bg" x="2.5" y="2.5" width="19" height="19" rx="4.5"/><path class="fg" fill="none" stroke-width="2.2" stroke-linecap="round" d="M7 17.5c2.5 0 3.4-1.4 3.4-3s-1.6-2.6-1.6-4.2S10 7 12.4 7h2"/><circle class="fg-fill" cx="15.8" cy="7" r="2.1"/><circle class="eye" cx="16.4" cy="6.5" r=".55"/></svg>',
-  mupgrade: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="bg" x="2.5" y="2.5" width="19" height="19" rx="4.5"/><text class="fg-text" x="10.6" y="16.6" text-anchor="middle">M</text><path class="fg" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M17.6 11V5.6M15.6 7.6l2-2 2 2"/></svg>',
-};
-
-const INSTALL_METHODS = {
-  web: "Web installer: Chrome or Edge over USB, nothing to install",
-  python: "Python script installer (command line)",
-  "m-upgrade": "M-UPGRADE: M-VAVE's Windows updater",
 };
 
 function trait(kind, cls, title) {
   const s = h("span", { class: `trait ${kind} ${cls}`, title });
-  s.innerHTML = TRAIT_SVG[kind === "egg" ? cls : kind === "m-upgrade" ? "mupgrade" : kind];
+  s.innerHTML = TRAIT_SVG[kind === "egg" ? cls : kind];
   return s;
 }
 
-/** The three trait icons for a card. latest/primary: its newest release and main file (may be absent). */
+/** The trait icons for a card. latest/primary: its newest release and main file (may be absent). */
 function fwTraits(f, latest, primary) {
   const t = f.traits || {};
   // uncurated cards come from GitHub repos that had to carry a license to rank
   const open = t.source ? t.source === "open" : f.source?.type === "github";
   const sum = !latest ? null : !!(latest.sha256sums || latest.sha256files?.[primary?.name] || primary?.sha256);
-  const rev = typeof t.revert === "boolean" ? t.revert : null;
   const note = (s) => (s ? "\n" + s : "");
   return h("span", { class: "fw-traits" },
     trait("egg", open ? "open" : "closed", (open ? "Open source" : "Closed source") + note(t.sourceNote)),
@@ -192,40 +180,40 @@ function fwTraits(f, latest, primary) {
       sum === true ? `Checksum published: downloads of ${shortVer(latest.version)} are checked against the project's SHA256`
         : sum === false ? (latest.assets?.length ? `No checksum published for ${shortVer(latest.version)}: downloads can't be verified`
           : "No checksum: there is no separate firmware file to check")
-          : "Checksum unknown until Check for updates"),
-    trait("aid", rev ? "on" : "off",
-      rev === true ? "Revert to stock from its own installer" + note(t.revertNote)
-        : rev === false ? "No one-click revert to stock in its installer" + note(t.revertNote)
-          : "Revert to stock: not checked yet (card not curated)"));
+          : "Checksum unknown until Check for updates"));
 }
 
-/** Install icons, next to the Install button: stock version needed first (OG) and how it installs. */
-function fwInstallTraits(f) {
-  const t = f.traits || {};
-  const rs = t.requires_stock_version; // "V15" | null (none) | undefined (unknown)
-  const methods = Array.isArray(t.install_method) ? t.install_method.filter((m) => INSTALL_METHODS[m]) : [];
-  const note = (s) => (s ? "\n" + s : "");
-  return h("span", { class: "fw-install" },
-    trait("og", rs ? "on" : "off",
-      rs ? `Requires stock ${rs} on the FM-1 before installing` + note(t.requires_stock_note)
-        : rs === null ? "No stock version required" + note(t.requires_stock_note)
-          : "Stock version requirement: not checked yet (card not curated)"),
-    methods.map((m) => trait(m, "on", "Install with: " + INSTALL_METHODS[m])));
+// ---------------------------------------------------------------- stock baseline (#19)
+// A validation record's "stock": the stock version the test installed from and reverted to.
+// Left out = V15, the baseline (every record before stock V16 testing began). A record tested
+// against another stock version carries a small seal with that version, on its card and its
+// All Validated Firmware line. Temporary: once V16 is the baseline for everything it can go.
+export const stockOf = (v) => v?.stock || BASELINE.version;
+export const offBaseline = (v) => !!v?.stock && verKey(v.stock) !== verKey(BASELINE.version);
+const stockTip = (s) => `Tested against stock ${s}: installed from ${s} and reverted to ${s}`;
+const STOCK_SVG = (s) => '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="bg" cx="12" cy="12" r="10.5"/>'
+  + `<circle class="ring" cx="12" cy="12" r="8.6"/><text class="fg-text" x="12" y="14.9" text-anchor="middle">${s.replace(/[^A-Za-z0-9.]/g, "")}</text></svg>`;
+/** The stock seal for a record tested off the baseline, else null. */
+export function stockSeal(v, title = stockTip(v?.stock)) {
+  if (!offBaseline(v)) return null;
+  const s = h("span", { class: "trait stock on", title });
+  s.innerHTML = STOCK_SVG(v.stock.toUpperCase());
+  return s;
 }
 
-export function octoLegend() {
+/** The octopus colours; `fw` adds the stock seal while any record was tested off the baseline. */
+export function octoLegend(fw = null) {
+  const off = (fw?.validated || []).find((v) => isValidated(v) && offBaseline(v));
   return h("span", { class: "val-legend muted" },
     octo("Validated", "clean"), "validated", octo("Validated with issues", "issues"), "with issues", octo("Failed validation", "failed"), "failed",
-    octo("Newer release not tested yet", "clean older"), "newer release not tested yet");
+    octo("Untested: a newer release hasn't been tested yet", "clean older"), "untested",
+    off && [stockSeal(off), `tested on stock ${off.stock.toUpperCase()}`]);
 }
 
 export function traitLegend() {
   return h("span", { class: "trait-legend muted" },
     trait("egg", "open", "Open source"), "open", trait("egg", "closed", "Closed source"), "closed source",
-    trait("sum", "on", "Checksum published"), "checksum", trait("aid", "on", "Revert to stock in the installer"), "revert in installer",
-    trait("og", "on", "Requires a stock firmware version first"), "needs stock first",
-    trait("web", "on", INSTALL_METHODS.web), "web", trait("python", "on", INSTALL_METHODS.python), "python",
-    trait("m-upgrade", "on", INSTALL_METHODS["m-upgrade"]), "M-UPGRADE",
+    trait("sum", "on", "Checksum published"), "checksum",
     h("span", { class: "trait-off-note", text: "(grey = no or unknown)" }));
 }
 
@@ -331,6 +319,7 @@ export function stepsText(v) {
 
 export function validationTip(v) {
   return `${OUTCOME_LABEL[outcome(v)]}: ${v.version} on ${v.date}. ${stepsText(v)}${v.checks ? `\nChecks: ${v.checks}` : ""}`
+    + (offBaseline(v) ? `\n${stockTip(v.stock.toUpperCase())}.` : "")
     + (v.notes ? `\n${v.notes}` : "") + (v.method === "manual" ? `\n${MANUAL_TIP(v)}` : "");
 }
 /** Records made with the app's Validate button ("method": "manual"); "local" = not in validated.json yet. */
@@ -447,7 +436,7 @@ export function fwCard(f, fw, rank, app = null) {
       art,
       h("div", { class: "fw-headtext" },
         h("div", { class: "fw-title" }, rank && h("span", { class: "rank", text: `#${rank}` }), h("b", { text: f.name }),
-          h("span", { class: "grow" }), valBadge),
+          h("span", { class: "grow" }), val && stockSeal(val.v), valBadge),
         h("div", { class: "by" }, h("span", { class: "by-name", text: f.author }),
           f.curated === false && h("span", { class: "fw-uncur", title: "Built from GitHub metadata: no curated catalog entry (screen, tagline) yet", text: "not curated yet" })),
         h("div", { class: "fw-tag", text: f.tagline || "" }))),
@@ -469,11 +458,10 @@ export function fwCard(f, fw, rank, app = null) {
         app?.validate?.(f),
         linkBtn(L.install, "ext", f.kind === "stock" ? "Updater" : "Installer", "Open the project's own installer"),
         linkBtn(L.try, "play", "Try", "Play it in the browser, no FM-1 needed")),
-      // every card icon in one row: links, then traits, then install requirements and methods
+      // every card icon in one row: links, then traits
       h("div", { class: "fw-icons" },
         (L.docs || L.repo) && h("span", { class: "fw-tools" }, iconLink(L.docs, "doc", "Manual / docs"), iconLink(L.repo, "code", "Source code")),
-        fwTraits(f, latest, primary),
-        fwInstallTraits(f)),
+        fwTraits(f, latest, primary)),
       olderOnly && h("div", { class: "fw-lib" }, icon("check"), `${gotLabel(local[0])}: ${shortVer(local[0].version)} (older)`),
       more));
 }
@@ -540,7 +528,7 @@ export function fwSections(fw, app = null, { merged = false, boxed = false } = {
     : [h("h2", { class: "fw-section" }, ...title), h("div", { class: "fw-cards" }, cards)];
   const info = (title) => h("span", { class: "info", title, text: "ⓘ" });
   const nodes = [
-    h("div", { class: "fw-legend-row" }, octoLegend(), h("span", { class: "legend-sep" }), traitLegend()),
+    h("div", { class: "fw-legend-row" }, octoLegend(fw), h("span", { class: "legend-sep" }), traitLegend()),
     group(["Official"], official.map((f) => fwCard(f, fw, null, app))),
   ];
   if (merged) {

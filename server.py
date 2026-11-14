@@ -1156,6 +1156,7 @@ def set_installed(body):
 
 STEPS = ("install", "run", "revert")
 RESULTS = ("clean", "issues", "failed")
+STOCK_RE = re.compile(r"^V\d{1,3}$")  # a validation's stock baseline: "V15", "V16"
 # same rule as tools/fm1_validate.py: records get published, so no local paths, device IDs or emails
 PRIVATE = re.compile(r"[A-Za-z]:\\|/Users/|/home/|\d&[0-9A-Fa-f]{6,}|USB\\|VID_[0-9A-F]{4}&PID|\S+@\S+\.\w+")
 
@@ -1202,6 +1203,8 @@ def set_trial(body):
         for k in ("checks", "notes", "result"):  # the form as typed so far
             if isinstance(body.get(k), str):
                 t[k] = body[k][:2000]
+        if isinstance(body.get("stock"), str) and STOCK_RE.match(body["stock"].strip().upper()):
+            t["stock"] = body["stock"].strip().upper()
         trials[fid] = t
     write_json(FW_STATE, state)
     return trials.get(fid)
@@ -1228,11 +1231,15 @@ def save_manual_validation(body):
         if hit:
             raise ValueError(f"{name} contains {hit.group(0)!r}, which looks like a local path, device ID or email; "
                              "records get published, so leave it out")
+    # the stock version the test installed from and reverted to (#19); records without it are V15
+    stock = str(body.get("stock") or "V15").strip().upper()
+    if not STOCK_RE.match(stock):
+        raise ValueError(f"stock should be a stock version like V15 or V16, not {stock!r}")
     if not (HOME / meta["path"]).is_file() or sha256_file(HOME / meta["path"]) != meta["sha256"]:
         raise ValueError(f"{meta['name']} changed or is gone from the library; download it again")
     rec = {"id": fid, "version": meta["version"], "file": meta["name"], "sha256": meta["sha256"],
            "date": time.strftime("%Y-%m-%d"), "steps": steps, "result": result,
-           "checks": checks, "notes": notes, "method": "manual"}
+           "checks": checks, "notes": notes, "method": "manual", "stock": stock}
     doc = read_json(LOCAL_VALIDATED, {})
     doc = {"schema_version": 1,
            "about": "Validations recorded in the Octo-Vave app (Validate), not yet in firmware/validated.json. "

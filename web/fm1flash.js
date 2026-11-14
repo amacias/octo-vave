@@ -332,8 +332,8 @@ export function installAction(v, opts, { card = false, title = "" } = {}) {
 export function openInstall(v, o) {
   let file = null, stockFile = null, running = false, lastLeg = null;
   const two = !o.isStock && !!o.stock;   // can go back to stock on the way
-  const stockName = o.stock?.name || "Stock V15";
-  const label = nameVer(o.name, v.version);   // "Stock V15" names its version; V16 → "Stock V16"
+  const stockName = o.stock ? nameVer(o.stock.name, o.stock.v.version) : "Stock V15";   // "Stock" + V15
+  const label = nameVer(o.name, v.version);   // "Stock" + V16 → "Stock V16"
   const title = o.isStock ? `Back to ${label}` : `Install ${label}`;
   const inst = o.installed;
   // stock from V16 on doesn't go back to V15 cleanly (o.oneWay, catalog.json): warn on the way up and on the way back

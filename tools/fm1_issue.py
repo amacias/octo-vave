@@ -106,8 +106,14 @@ def report(body):
     date = str(rec.get("date", ""))
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", date):
         date = datetime.date.today().isoformat()
+    # the stock the test installed from and reverted to (#19): "V16", "v16", "16", "Stock V16"; empty = V15
+    said = s.get("Stock firmware before installing", "").strip() or str(rec.get("stock") or "")
+    m = re.fullmatch(r"(?:stock\s*)?v?\s*(\d{1,3})", said.strip(), re.I)
+    if said and not m:
+        raise Problem(f"Stock firmware before installing {said!r} should be a stock version like V15 or V16.")
     return {"id": fid, "version": version, "file": file, "sha256": sha, "result": result, "steps": steps,
-            "checks": s.get("What you checked", ""), "notes": s.get("Notes", ""), "date": date}
+            "checks": s.get("What you checked", ""), "notes": s.get("Notes", ""), "date": date,
+            "stock": f"V{int(m.group(1))}" if m else ""}
 
 
 def top_ids():
@@ -171,6 +177,8 @@ def add(rec, dry_run):
     args = [sys.executable, "-I", str(ROOT / "tools" / "fm1_validate.py"), "add", rec["id"], rec["version"],
             "--file", rec["file"], "--sha256", rec["sha256"], "--result", rec["result"], "--steps", ",".join(rec["steps"]),
             "--checks", rec["checks"], "--notes", rec["notes"], "--date", rec["date"], "--method", "manual"]
+    if rec.get("stock"):
+        args += ["--stock", rec["stock"]]
     if dry_run:
         return "dry run: " + " ".join(args[3:7]) + " ..."
     r = subprocess.run(args, capture_output=True, text=True)

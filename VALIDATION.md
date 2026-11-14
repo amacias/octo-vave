@@ -28,7 +28,7 @@ and checks. Ask for each action as one clearly marked prompt, separate from stat
 5. **Run.** The firmware boots and its screen matches the project's docs. In the dashboard,
    Sound check *Generic MIDI* mode: at least step 1 (notes) and step 2 (channel scan). Play
    the FM-1's own keys and knobs. Note anything odd.
-6. **Revert.** Return to stock with **Install** on Octo-Vave's Stock V15 card. Other ways:
+6. **Revert.** Return to stock with **Install V15** on Octo-Vave's Stock card. Other ways:
    the installer's *Return to official V15* (some now fetch M-VAVE's newer V16 instead), or
    M-UPGRADE and the library's `FM-1.fwsc`. Confirm the stock screen, then Sound check
    *Stock M-VAVE* steps 1 and 6 (notes and SysEx voice) work again.
@@ -38,7 +38,12 @@ and checks. Ask for each action as one clearly marked prompt, separate from stat
    python tools/fm1_validate.py add <id> <version> --checks "generic 1-2, stock 1+6 after revert" --notes "..."
    python tools/fm1_validate.py add <id> <version> --result issues --notes "what needed a workaround"
    python tools/fm1_validate.py add <id> <version> --result failed --steps install --notes "what failed"
+   python tools/fm1_validate.py add <id> <version> --stock V16 ...   # tested from and back to stock V16
    ```
+
+   `--stock` records the stock version the test installed from and reverted to; left out, the
+   record counts as V15, the baseline. Records tested on V16 get a small **V16** seal in the app
+   and on the homepage.
 
    The person who did the test decides the outcome; the session proposes the record and
    writes it only after they confirm.

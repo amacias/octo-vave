@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for testing! A validation is a hands-on session on a real FM-1: **install → play → Sound check → revert to stock V15**.
+        Thanks for testing! A validation is a hands-on session on a real FM-1: **install from stock → play → Sound check → revert to the same stock** (V15, the baseline, or V16).
         The full procedure is in [VALIDATION.md](../blob/main/VALIDATION.md). Once a maintainer accepts the report, a workflow checks
         the file against the release and prepares the record for `firmware/validated.json`; the maintainer reviews and merges it.
         Reports are accepted for M-VAVE's own firmware (stock and official) and for firmware on the **top 30 leaderboard** (the homepage ranking).
@@ -59,7 +59,7 @@ body:
       options:
         - label: Installed (with the project's installer or Octo-Vave)
         - label: Ran and played it (screen, keys, knobs, sound)
-        - label: Reverted to stock V15 and stock works again
+        - label: Reverted to the stock version below, and stock works again
   - type: textarea
     id: checks
     attributes:
@@ -77,7 +77,7 @@ body:
     id: stock
     attributes:
       label: Stock firmware before installing
-      description: The version you started from (shown at boot or in M-UPGRADE).
+      description: The stock version you installed from and reverted to (shown at boot or in M-UPGRADE). Left empty, it counts as V15.
       placeholder: V15
   - type: checkboxes
     id: privacy

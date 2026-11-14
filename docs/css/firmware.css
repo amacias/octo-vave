@@ -113,6 +113,8 @@ button.fw-validate.failed { color: var(--bad); border-color: color-mix(in srgb, 
 .val-legend .octo { width: 15px; height: 15px; }
 .val-legend .octo-wrap + .octo-wrap, .val-legend .octo-wrap { margin-left: 8px; }
 .val-legend .octo-wrap:first-child { margin-left: 0; }
+.val-legend .trait.stock { margin-left: 8px; }
+.val-legend .trait.stock svg { width: 16px; height: 16px; }
 .dir-main .octo-wrap { margin-left: 5px; vertical-align: -3px; }
 .dir-main .octo { width: 15px; height: 15px; }
 
@@ -133,27 +135,16 @@ button.fw-validate.failed { color: var(--bad); border-color: color-mix(in srgb, 
 .trait .yolk { fill: #F2B705; }
 .trait.sum .bg { fill: #2FB36A; }
 .trait.sum .fg { stroke: #fff; }
-.trait.aid .bg { fill: #2F7DE1; }
-.trait.aid .fg-fill { fill: #fff; }
-.trait.og .bg { fill: #B7791F; }
-.trait.og .ring { fill: none; stroke: #F6D9A3; stroke-width: .8; opacity: .7; }
-.trait .fg-text { fill: #fff; font: 800 9.5px system-ui, sans-serif; }
-.trait.web .bg { fill: #0E9AA7; }
-.trait.web .fg { stroke: #fff; }
-.trait.python .bg { fill: #E3B505; }
-.trait.python .fg { stroke: #2B2205; }
-.trait.python .fg-fill { fill: #2B2205; }
-.trait.python .eye { fill: #E3B505; }
-.trait.m-upgrade .bg { fill: #475569; }
-.trait.m-upgrade .fg { stroke: #fff; }
-.trait.m-upgrade .fg-text { font-size: 11px; }
-.fw-install { display: inline-flex; align-items: center; gap: 3px; }
+/* stock seal (#19): a validation tested against a stock version other than the V15 baseline */
+.trait.stock .bg { fill: #2F6FB0; }
+.trait.stock .ring { fill: none; stroke: #CFE2F6; stroke-width: .8; opacity: .75; }
+.trait .fg-text { fill: #fff; font: 800 7.4px system-ui, sans-serif; letter-spacing: -.2px; }
+.fw-title .trait.stock svg { width: 22px; height: 22px; }
+.val-row .trait.stock svg { width: 16px; height: 16px; }
 /* all card icons in one row under the buttons, groups split by a thin rule */
 .fw-icons { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 6px -14px 0; padding: 7px 14px;
   background: var(--panel-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .fw-icons > * + * { padding-left: 7px; border-left: 1px solid var(--line); }
-/* the newer install icons (OG, install methods) sit at the right edge */
-.fw-icons > .fw-install { margin-left: auto; border-left: 0; }
 /* the validated file's pinned sha256 */
 .fw-pin { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12px; margin: 2px 0 6px; }
 .fw-pin .octo { width: 15px; height: 15px; }
