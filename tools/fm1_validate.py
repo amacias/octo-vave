@@ -119,8 +119,9 @@ def cmd_add(doc, args):
         **({"method": args.method} if args.method else {}),
         **({"stock": stock} if stock else {}),
     }
-    rows = [v for v in doc.setdefault("validations", [])
-            if not (v["id"] == args.id and norm(v["version"]) == norm(args.version))]
+    # one record per firmware, version and stock: a V16 test doesn't replace the V15 one
+    key = lambda v: (v["id"], norm(v["version"]), (v.get("stock") or "V15").upper())
+    rows = [v for v in doc.setdefault("validations", []) if key(v) != key(rec)]
     rows.append(rec)
     doc["validations"] = sorted(rows, key=lambda v: (v["id"], v["date"]))
     save(doc)
@@ -173,9 +174,9 @@ def problems(doc, cat):
             out.append(f"{where}: unknown firmware id")
         if not isinstance(v.get("version"), str) or not v["version"].strip():
             out.append(f"{where}: version missing")
-        key = (v.get("id"), norm(v.get("version", "")))
+        key = (v.get("id"), norm(v.get("version", "")), str(v.get("stock") or "V15").upper())
         if key in seen:
-            out.append(f"{where}: duplicate record for this firmware and version")
+            out.append(f"{where}: duplicate record for this firmware, version and stock")
         seen.add(key)
         if not DATE_RE.match(str(v.get("date", ""))):
             out.append(f"{where}: date must be YYYY-MM-DD")

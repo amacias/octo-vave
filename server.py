@@ -1165,12 +1165,18 @@ def _norm_ver(v):
     return str(v).strip().lower().lstrip("v")
 
 
+def _val_key(v):
+    """A record's identity: firmware, version and the stock it was tested on (left out = V15), so a
+    V16 test of a version validated on V15 is a record of its own, not a duplicate."""
+    return v.get("id"), _norm_ver(v.get("version", "")), str(v.get("stock") or "V15").upper()
+
+
 def all_validations():
     """validated.json plus this computer's manual records (marked "local") not in it yet."""
     repo = read_json(shipped(VALIDATED), {"validations": []}).get("validations", [])
-    have = {(v.get("id"), _norm_ver(v.get("version", ""))) for v in repo}
+    have = {_val_key(v) for v in repo}
     local = [{**v, "local": True} for v in read_json(LOCAL_VALIDATED, {"validations": []}).get("validations", [])
-             if (v.get("id"), _norm_ver(v.get("version", ""))) not in have]
+             if _val_key(v) not in have]
     return repo + local
 
 
@@ -1244,8 +1250,7 @@ def save_manual_validation(body):
     doc = {"schema_version": 1,
            "about": "Validations recorded in the Octo-Vave app (Validate), not yet in firmware/validated.json. "
                     "Move a record there with a pull request.",
-           "validations": [v for v in doc.get("validations", [])
-                           if not (v.get("id") == fid and _norm_ver(v.get("version", "")) == _norm_ver(rec["version"]))] + [rec]}
+           "validations": [v for v in doc.get("validations", []) if _val_key(v) != _val_key(rec)] + [rec]}
     write_json(LOCAL_VALIDATED, doc)
     state = read_json(FW_STATE, {})
     state.get("trials", {}).pop(fid, None)

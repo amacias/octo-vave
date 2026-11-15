@@ -70,7 +70,7 @@ you press **Install**; anything else goes through each project's own installer.
 
 <img src="docs/img/octo.svg" height="20" alt="orange octopus"> **Orange is the stamp of validation.**
 A firmware gets it only after someone has installed it on a real FM-1, played it, run the Sound check,
-and reverted to stock V15, with everything working. The colour tells you how it went:
+and reverted to stock (V16 since the V16 rebase, V15 before), with everything working. The colour tells you how it went:
 
 | Octopus | Meaning |
 |---|---|
@@ -158,7 +158,7 @@ firmware the FM-1 reports, and results are kept per firmware.
 
 | Tab | What it does |
 |---|---|
-| Firmware | The exploration hub, and the page the app opens on. An orange octopus is the stamp of validation (see above). The ranking comes from a nightly scan of the [awesome-fm-1](https://github.com/cicloid/awesome-fm-1) list and GitHub search, which ranks every free, open-source firmware with a `.fwsc` release by ln(1+stars) + ln(1+downloads): top 10 as cards, #11–#30 under **Also popular**. Official cards: Stock, FM-1 Open. Curated cards lead with a real screen capture from the project (`web/img/fw/`, credited in `catalog.json`); a project that enters the top 10 without a curated entry gets a card from its GitHub metadata with a placeholder screen and a *not curated yet* marker. The repository's nightly Action runs that scan with its own token and publishes the result, with every card's release list, as `docs/data/firmware.json`; **Check for updates** downloads that one file (no GitHub API, so no rate limit), and the header shows when it was published. Until then the app uses the copy it came with. The same scan refreshes `firmware/directory.json`, the leaderboard snapshot; `python tools/fm1_discover.py` runs the scan by hand. Free closed-source firmware (FM-1+VA, April OS) has no stars or downloads to rank by, so it gets its own curated, unranked section; FM-1+VA's versions and SHA256s are read from its install page, and FM-1 Open's from open.m-vave.com (M-VAVE publishes there before its GitHub mirror, with a SHA256SUMS file per release). Paid firmware is never listed. Each card carries two tags: an egg, cracked open for open source or whole for closed source, and a green check when the latest release publishes a checksum (grey = no or unknown, details in the tooltip). All of a card's icons sit in one row under its buttons: docs and source links, then those two tags. A grey octopus means *untested*: a newer release hasn't been tested yet. A validation tested against stock V16 instead of the V15 baseline shows a small blue **V16** seal next to its octopus, on the card and on its All Validated Firmware line (temporary, while new firmware moves to a V16 baseline). A validated card shows the tested file's pinned SHA256 with a Copy button. Downloads go into `firmware/library/` with SHA256 checks; a downloaded card's button reads *Downloaded*, or *Validated* when a passing validation pins that file. Below the cards come **Also popular** and then **All Validated Firmware**: one line per firmware with its newest tested version, the same on the homepage; older tested versions stay in `validated.json`. Opening **More** on a card opens the other cards in its row too. **Install** on a card puts that firmware's newest validated file on the FM-1, going back to stock V15 first when needed (see Flashing below); without a passing validation it stays greyed out. **Installer** opens the project's own installer. |
+| Firmware | The exploration hub, and the page the app opens on. An orange octopus is the stamp of validation (see above). The ranking comes from a nightly scan of the [awesome-fm-1](https://github.com/cicloid/awesome-fm-1) list and GitHub search, which ranks every free, open-source firmware with a `.fwsc` release by ln(1+stars) + ln(1+downloads): top 10 as cards, #11–#30 under **Also popular**. Official cards: Stock, FM-1 Open. Curated cards lead with a real screen capture from the project (`web/img/fw/`, credited in `catalog.json`); a project that enters the top 10 without a curated entry gets a card from its GitHub metadata with a placeholder screen and a *not curated yet* marker. The repository's nightly Action runs that scan with its own token and publishes the result, with every card's release list, as `docs/data/firmware.json`; **Check for updates** downloads that one file (no GitHub API, so no rate limit), and the header shows when it was published. Until then the app uses the copy it came with. The same scan refreshes `firmware/directory.json`, the leaderboard snapshot; `python tools/fm1_discover.py` runs the scan by hand. Free closed-source firmware (FM-1+VA, April OS) has no stars or downloads to rank by, so it gets its own curated, unranked section; FM-1+VA's versions and SHA256s are read from its install page, and FM-1 Open's from open.m-vave.com (M-VAVE publishes there before its GitHub mirror, with a SHA256SUMS file per release). Paid firmware is never listed. Each card carries two tags: an egg, cracked open for open source or whole for closed source, and a green check when the latest release publishes a checksum (grey = no or unknown, details in the tooltip). All of a card's icons sit in one row under its buttons: docs and source links, then those two tags. A grey octopus means *untested*: a newer release hasn't been tested yet. Every firmware's validation shows the stock it was tested on, at the right end of the card's icon row and on its All Validated Firmware line: a blue **V16** seal once it's rebased on stock V16, a pink **V15** seal until then (temporary, until everything is rebased). A version that failed on V16 has no Install button, even if it passed on V15 (FM-1+VA 102: installed from V16, its menus and presets are corrupted). A validated card shows the tested file's pinned SHA256 with a Copy button. Downloads go into `firmware/library/` with SHA256 checks; a downloaded card's button reads *Downloaded*, or *Validated* when a passing validation pins that file. Below the cards come **Also popular** and then **All Validated Firmware**: one line per firmware with its newest tested version, the same on the homepage; older tested versions stay in `validated.json`. Opening **More** on a card opens the other cards in its row too. **Install** on a card puts that firmware's newest validated file on the FM-1, going back to stock V16 first when needed (see Flashing below); without a passing validation it stays greyed out. **Installer** opens the project's own installer. |
 | FM-1 Home | Everything FM-1 on one page. **Perform**: connection and logged firmware, voice program ◀▶, MIDI clock, Panic, and an **FX ▾** pull-down (six FX units, FX channel, Send all, Save to Patches). The **FM-1 key bed**: 27 pill keys F–G with the device's OP1–OP6 / PIT / GLO / MONO / POLY labels in black and teal, OCT− / OCT+ (or ← →; at octave 4 it spans F3–G5). **Favorite patches** below the key bed. The **Voice editor**: full DX7-layout SysEx editor (`F0 43 10 pp qq vv F7`), 6 operators, algorithm, feedback, LFO, pitch EG, name, operator on/off, `.syx` import/export, randomize, and **Notes** that are saved with the patch in Patches and come back when it is loaded. **About the FM-1** at the bottom: specs, MIDI implementation, things to try, firmware history, sources. Sections fold up; pick sections, theme and accent under **Customize**. |
 | Patches | Firmware-aware patches in `data/patches/*.json` (schema v2): each records the firmware it was made for (`firmware: {id, version}`) and a `format`. The list shows both, filters by firmware (default: the one logged on the device), sorts or groups by firmware. Sending a patch made for another firmware asks for confirmation on the card; formats with no known transport can be stored but not sent. Star a patch to pin it on FM-1 Home; ✎ on a row edits its name and hashtags. Older patches load as stock patches and are upgraded when saved. Patches are personal data: `data/` is git-ignored, so they never go into the repository (back them up with Export / JSON or by copying `data/patches/`). |
 | Play & MIDI | A plain MIDI I/O utility for the FM-1 under any firmware (the app only ever lists and uses the FM-1's ports, never other MIDI gear on the same hub): ports, note channel, SysEx spacing, controllers (mod, bend, aftertouch, sustain), Program Change with bank and any CC, a raw hex sender with Identity request, and a classic 3-octave keyboard (computer keys Z–M / Q–U). The **MIDI monitor** uses standard CC and SysEx manufacturer names, filters by type and exports the log as text. **CC discovery** shows each controller's standard name, last value and range; click a row to resend it. |
@@ -167,7 +167,7 @@ firmware the FM-1 reports, and results are kept per firmware.
 ## <img src="docs/img/octo.svg" height="24" alt=""> Validating firmware
 
 A firmware card gets an octopus once that firmware has been **installed, run and reverted to
-stock V15 on a real FM-1**. If the project then publishes a newer stable release, the octopus stays
+stock V16 on a real FM-1** (V15 for records from before the V16 rebase). If the project then publishes a newer stable release, the octopus stays
 but turns grey until that release is retested. Testing happens hands-on, not in the app: follow
 [VALIDATION.md](VALIDATION.md) and record the result with
 `python tools/fm1_validate.py add … [--result clean|issues|failed]`, which writes
@@ -214,7 +214,7 @@ Fields other tools can rely on:
 | validated | `validations[].result` | `"clean"`, `"issues"` or `"failed"` |
 | validated | `validations[].steps` | `install`, `run`, `revert` as true/false |
 | validated | `validations[].supersededBy` | set when a newer stable release exists (grey octopus: "untested") |
-| validated | `validations[].stock` | the stock version the test installed from and reverted to, e.g. `"V16"`; left out = `"V15"` (the baseline) |
+| validated | `validations[].stock` | the stock version the test installed from and reverted to, e.g. `"V16"` (the baseline since the V16 rebase); left out = `"V15"`. A firmware version can have one record per stock |
 | validated | `validations[].method` | `"manual"` for a hands-on test reported by an FM-1 owner (the app's Validate and Submit, or a validation report); left out for records from validation sessions |
 
 `python tools/fm1_validate.py check` validates both files.
@@ -229,9 +229,11 @@ press **Install** on a firmware card or in the All Validated Firmware list:
   release hasn't been tested yet, the button names the tested version (*Install v2.8.1*).
 - **The exact tested file.** It's read from the library (downloaded first if needed) and checked
   against the SHA256 pinned in `validated.json`; any other file is refused.
-- **Always through stock V15.** If the FM-1 doesn't report stock (`FM-1_015`), one click installs
-  stock V15 first, checks that the FM-1 reports it, then installs the firmware you picked. That's
-  about 5 minutes instead of 2 to 3. The reasons:
+- **Always through stock V16.** If the FM-1 doesn't report stock V16 (`FM-1_016`), one click installs
+  stock V16 first, checks that the FM-1 reports it, then installs the firmware you picked. That's
+  about 5 minutes instead of 2 to 3. Stock itself (V16, or V15 from its line in the list) installs
+  in one step; going from V16 back to V15 garbles presets, and the dialog warns about it. The
+  route was V15 until the V16 rebase. The reasons:
   - Validation tests stock → firmware → stock, never one firmware installed over another.
   - Several firmware install the same identity, which the FM-1 refuses as an update to the version
     it already runs: SLOOP, GHOULBOX and Hortator are all `FM-1_900`, and both ChoralRoot releases
@@ -241,14 +243,14 @@ press **Install** on a firmware card or in the All Validated Firmware list:
   page open. It speaks the FM-1's own update protocol over Web MIDI SysEx (`web/fm1flash.js`,
   written from FM-1-RE's notes).
 - **The homepage** has the same Install button on its Validated list, but it installs over stock
-  only. On any other firmware it asks you to install Stock V15 first.
+  only. On any other firmware it asks you to install Stock V16 first.
 
 Everything else goes through the project's own tools:
 
 - **Firmware not validated yet:** each project's web installer (Chrome/Edge over USB). Melodee and TransitFM1
   add interrupted-write protection; TransitFM1 is meant as a stop between firmwares.
 - **FM-1 Open:** its Workbench page, which flashes itself and has its own *Restore original V15*.
-- **Without the app:** M-UPGRADE (download `M-UPGRADE.zip` from the Official card) with `FM-1.fwsc` (V15).
+- **Without the app:** M-UPGRADE (download `M-UPGRADE.zip` from the Official card) with `FM-1.fwsc` (M-VAVE's link now serves V16).
 
 Windows MIDI ports are exclusive. Press **Release MIDI port** (Play & MIDI tab) or close the
 Octo-Vave tab before running an installer or M-UPGRADE. USB rescue: hold **OCT−** while switching on.
@@ -257,7 +259,7 @@ log it under **On the device** so Octo-Vave knows what's running. The Voice edit
 FM-1 Home only target the stock firmware, and a banner warns you otherwise.
 
 Flashing firmware is at your own risk. Keep USB and power connected while flashing, and keep the
-stock V15 file and M-UPGRADE at hand as the way back.
+stock V16 file and M-UPGRADE at hand as the way back.
 
 ## <img src="docs/img/octo.svg" height="24" alt=""> Patch formats
 

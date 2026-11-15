@@ -1,7 +1,7 @@
 import * as DX from "./dx7.js";
 import { mountFm1Keys, fm1LowNote } from "./fm1keys.js";
 import { h, fmtBytes, normVer, fwDirectory, fwSections, octo, outcome,
-  verKey, shortVer, relTime, icon, installableState, validatedSection, newerFirst, isBaseline, nameVer, oneWayFor, isOneWay, stockOf } from "./fwcards.js";
+  verKey, shortVer, relTime, icon, installableState, validatedSection, newerFirst, isBaseline, nameVer, oneWayFor, isOneWay, stockOf, onBaseline, failsOnBaseline } from "./fwcards.js";
 import { installAction, openInstall, BASELINE, fm1PortRank } from "./fm1flash.js";
 
 // ================================================================ helpers
@@ -1500,7 +1500,7 @@ function appValidatedSection(fw) {
     const f = fw.catalog.find((c) => c.id === v.id);
     const val = f && !offered.has(f.id) && validateButton(f);
     if (val) offered.add(f.id);
-    return [v.local && submitLink(fw, v), f && installAction(v, installOpts(f, v)), val];
+    return [v.local && submitLink(fw, v), f && !failsOnBaseline(fw, v) && installAction(v, installOpts(f, v)), val];
   }, { empty: "Nothing validated yet. Validation is hands-on: flash, run, revert to stock (see VALIDATION.md), or Validate on a card." });
 }
 
@@ -1559,12 +1559,12 @@ function logInstall(f, v, result) {
     note: `Install button${result.identity ? `: the FM-1 reports ${result.identity}` : ""}` }) }).catch(() => {});
 }
 
-/** The Install hooks for a validated record; off stock, the way goes back through stock V15 first. */
+/** The Install hooks for a validated record; off stock, the way goes back through the baseline stock first. */
 function installOpts(f, v) {
   const inst = S.fw?.installed;
   const o = {
-    // only stock V15 itself installs on its own; newer stock (V16 …) goes through V15 like any firmware
-    name: f.name, isStock: isBaseline(v), installUrl: f.links?.install, oneWay: oneWayFor(S.fw?.catalog),
+    // stock (V15 or V16) installs on its own; everything else goes through the baseline (V16)
+    name: f.name, isStock: v.id === BASELINE.id, installUrl: f.links?.install, oneWay: oneWayFor(S.fw?.catalog),
     installed: inst && { id: inst.id, version: inst.version, label: fwNameVer(inst.id, inst.version) },
     prefer: () => S.out?.name,
     async getAccess() {
@@ -1589,14 +1589,14 @@ function installOpts(f, v) {
   return o;
 }
 
-/** The passing stock V15 record with its pinned .fwsc: the baseline every install and validation goes back to. */
+/** The passing baseline stock record (V16) with its pinned .fwsc: what every install and validation goes back to. */
 function baselineRecord(fw = S.fw) {
   return (fw?.validated || []).find((r) => isBaseline(r) && ["clean", "issues"].includes(outcome(r)) && r.sha256 && /\.fwsc$/i.test(r.file || ""));
 }
 
 /**
  * A card's Install <version> button: its newest passing validation, none until there is one
- * (Validate shows instead). The Stock card always installs V15, the baseline, even after a newer
+ * (Validate shows instead). The Stock card always installs the baseline (V16), even after another
  * stock version is validated (that one installs from All Validated Firmware).
  */
 function cardInstall(f) {
@@ -1606,16 +1606,16 @@ function cardInstall(f) {
       title: `Put the validated ${nameVer(f.name, v.version)} back on the FM-1: the baseline every firmware goes back to` });
   }
   const st = installableState(S.fw, f);
-  if (!st) return null;   // never passed: the card shows Validate only
+  if (!st || failsOnBaseline(S.fw, st.v)) return null;   // never passed (or failed on V16): Validate only
   // FM-1 Open (no .fwsc): its Workbench installs it, the card's Installer link
   return installAction(st.v, installOpts(f, st.v), { card: true,
-    title: `Install the validated ${nameVer(f.name, st.v.version)} on the FM-1, going back to stock V15 first when needed`
+    title: `Install the validated ${nameVer(f.name, st.v.version)} on the FM-1, going back to stock ${BASELINE.version} first when needed`
       + (st.current ? "" : `\nNewer release ${shortVer(st.newer.version)} hasn't been validated yet.`) });
 }
 
 // ---------------------------------------------------------------- Validate
 // The newest release that no passing record covers (or a firmware never validated) can be
-// installed for a hands-on test: install, play, back to stock V15, record the result. The
+// installed for a hands-on test: install, play, back to baseline stock (V16), record the result. The
 // record goes in data/validated-local.json marked "method": "manual" (the server keeps it apart
 // from validated.json until a pull request moves it there); the steps done so far are kept by
 // the server, so the test can span a reload or a Sound check run.
@@ -1634,10 +1634,13 @@ const STOCK_BASES = ["V15", "V16"];   // stock versions a validation can be test
  * - a test under way comes first;
  * - a firmware never tested gets Validate for its newest stable release, as long as that release
  *   has an FM-1 .fwsc (web installers and FM-1 Open's Workbench keep their Installer link);
- * - Stock counts too: a newer official version (V16 …) is tested from stock V15 and back.
+ * - Stock counts too: a newer official version is tested from the stock before it and back;
+ * - since the V16 rebase only tests on the baseline count: a firmware validated on V15 alone gets
+ *   Validate for its newest stable release (stock's own records always count).
  */
 function validateTarget(fw, f) {
-  const recs = (fw.validated || []).filter((v) => v.id === f.id && outcome(v));
+  const counts = (v) => f.id === BASELINE.id || onBaseline(v);
+  const recs = (fw.validated || []).filter((v) => v.id === f.id && outcome(v) && counts(v));
   const pass = recs.filter((v) => PASSING.includes(outcome(v)));
   const pinned = (l) => pass.some((v) => (v.sha256 ? v.sha256 === l.sha256 : verKey(v.version) === verKey(l.version)));
   const best = [...pass].sort(newerFirst)[0];
@@ -1650,7 +1653,7 @@ function validateTarget(fw, f) {
   // the release: the stable one newer than the last pass (validationState reads the release order),
   // or, never passed, the newest stable release
   const rels = fw.releases?.sources?.[f.id]?.releases || [];
-  const st = installableState(fw, f);
+  const st = installableState({ ...fw, validated: (fw.validated || []).filter((v) => v.id !== f.id || counts(v)) }, f);
   const rel = st ? (!st.current && rels.find((r) => verKey(r.version) === verKey(st.newer.version)))
     : rels.find((r) => !r.prerelease);
   const asset = rel && rel.assets?.find((a) => /\.fwsc$/i.test(a.name) && !OTHER_DEVICE.test(a.name));
@@ -1687,7 +1690,7 @@ function validateButton(f) {
     redo && `${nameVer(f.name, redo.version)} was recorded on this computer on ${redo.date} and isn't in the repository yet: `
       + "test it again or correct the result. Saving replaces that record.",
     `${going ? "Carry on with" : "Start"} the hands-on test of ${l ? `the downloaded ${l.name}` : `${asset.name} (downloaded first)`}: `
-      + "install it, play it, go back to stock V15 and record the result.",
+      + `install it, play it, go back to stock ${BASELINE.version} and record the result.`,
   ].filter(Boolean).join("\n");
   const b = h("button", { class: "ghost fw-validate" + (failed ? " failed" : ""), title },
     icon("check"), `${going ? "Validating" : redo ? "Revalidate" : "Validate"} ${ver}`);
@@ -1727,15 +1730,15 @@ async function openValidate(f, l, redo = null) {
   const box = (k) => h("input", { type: "checkbox", "data-step": k, checked: !!t.steps[k] });
   const boxes = { install: box("install"), run: box("run"), revert: box("revert") };
   // The stock the test installs from and goes back to (#19), stored in the record. The app's
-  // Install buttons go through stock V15, so with another stock they step aside: install and
-  // revert by hand (M-UPGRADE or the project's installer). V16 → V15 garbles presets.
+  // Install buttons go through the baseline stock (V16), so with another stock they step aside:
+  // install and revert by hand (M-UPGRADE or the project's installer). V16 → V15 garbles presets.
   const stockSel = h("select", { title: "The stock version on the FM-1 before installing, and the one you go back to" },
     STOCK_BASES.map((s) => h("option", { value: s, text: s === BASELINE.version ? `${s} (baseline)` : s, selected: (t.stock || BASELINE.version) === s })));
   const onBase = () => stockSel.value === BASELINE.version;
   const instBtn = h("button", { type: "button", class: "ghost", text: `Install ${shortVer(l.version)}` });
   const stockBtn = stockRec && stockF && h("button", { type: "button", class: "ghost", text: `Install ${nameVer(stockF.name, stockRec.version)}` });
   const byHand = (what) => h("span", { class: "muted", text: what });
-  const instAlt = byHand("by hand: the app's Install goes through stock V15");
+  const instAlt = byHand(`by hand: the app's Install goes through stock ${BASELINE.version}`);
   const revertLabel = h("span"), revertAlt = byHand("");
   const show = (el, on) => { if (el) el.style.display = on ? "" : "none"; };   // buttons' CSS beats [hidden]
   const syncStock = () => {
@@ -2231,7 +2234,7 @@ function checkMode() {
   return m;
 }
 
-/** The stock version this FM-1 last reported to the Install button ("FM-1_015" → V15), else V15:
+/** The stock version this FM-1 last reported to the Install button ("FM-1_016" → V16), else the baseline:
  *  the port name can't tell stock versions apart, and M-VAVE's newest release isn't necessarily the
  *  one on the device. */
 function stockVersion(history = []) {

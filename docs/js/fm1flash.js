@@ -16,13 +16,15 @@
 // or in the app the downloaded file under a hands-on test), and the dialog refuses any other
 // file. Nothing starts without the Install click in the dialog.
 //
-// Every route goes through stock V15 (planRoute): off stock, one click installs stock first,
-// checks that the FM-1 reports it, then installs the firmware asked for.
+// Every route goes through the baseline stock, V16 since the rebase (BASELINE, planRoute): off
+// stock, one click installs stock first, checks that the FM-1 reports it, then installs the
+// firmware asked for. Stock itself (any version) always installs in one step.
 
 import { h, outcome, verKey, nameVer, shortVer, icon, BASELINE, isOneWay } from "./fwcards.js";
 
 // The stock firmware every validation is tested against (defined with the cards, fwcards.js).
 export { BASELINE };
+const BASE_NAME = `Stock ${BASELINE.version}`;
 
 const HANDSHAKE = [0xf0, 0x00, 0x32, 0x45, 0x00, 0x00, 0x00, 0x40, 0x7f, 0xf7];
 const UPGRADE = [0xf0, 0x22, 0x24, 0x35, 0x7f, 0xf7];
@@ -241,9 +243,10 @@ export async function locate(access, prefer) {
  * another, and several firmware share an identity (SLOOP, GHOULBOX and Hortator all install
  * FM-1_900), which the FM-1 refuses as an update to the version it runs. In update mode the
  * write is finished with stock, unless `resume` says this dialog was writing the target.
+ * `stock`: the target is a stock version itself (V15 or V16): one step, never via the baseline.
  */
-export function planRoute(id, target, base = BASELINE.identity, resume = null) {
-  if (target.product === base) return id.text === base && !id.ota ? [] : ["target"];
+export function planRoute(id, target, base = BASELINE.identity, resume = null, stock = false) {
+  if (stock || target.product === base) return id.text === target.product && !id.ota ? [] : ["target"];
   if (id.ota) return resume === "target" ? ["target"] : ["stock", "target"];
   return id.text === base ? ["target"] : ["stock", "target"];
 }
@@ -313,7 +316,7 @@ export function installAction(v, opts, { card = false, title = "" } = {}) {
       title: `${opts.name} installs from its own page`, text: "Installer ↗" });
   }
   const b = h("button", { class: card ? "fw-inst" : "ghost fw-install-btn",
-    title: title || (opts.isStock ? "Put stock V15 back on the FM-1 (the validated file)" : `Install the validated ${nameVer(opts.name, v.version)} on the FM-1`) },
+    title: title || (opts.isStock ? `Put stock ${shortVer(v.version)} on the FM-1 (the validated file)` : `Install the validated ${nameVer(opts.name, v.version)} on the FM-1`) },
     card && icon("flash"), `Install ${shortVer(v.version)}`);
   b.onclick = () => openInstall(v, opts);
   return b;
@@ -332,13 +335,15 @@ export function installAction(v, opts, { card = false, title = "" } = {}) {
 export function openInstall(v, o) {
   let file = null, stockFile = null, running = false, lastLeg = null;
   const two = !o.isStock && !!o.stock;   // can go back to stock on the way
-  const stockName = o.stock ? nameVer(o.stock.name, o.stock.v.version) : "Stock V15";   // "Stock" + V15
+  const stockName = o.stock ? nameVer(o.stock.name, o.stock.v.version) : BASE_NAME;   // "Stock" + V16
   const label = nameVer(o.name, v.version);   // "Stock" + V16 → "Stock V16"
   const title = o.isStock ? `Back to ${label}` : `Install ${label}`;
   const inst = o.installed;
-  // stock from V16 on doesn't go back to V15 cleanly (o.oneWay, catalog.json): warn on the way up and on the way back
+  // stock from V16 on doesn't go back to V15 cleanly (o.oneWay, catalog.json): warn on the way up,
+  // and when this install puts older stock on (V15, by its own Install): the V16 leg isn't going back
   const ow = o.oneWay;
-  const goingBack = ow && (o.isStock || two);
+  const backTo = o.isStock ? v : two ? o.stock.v : null;
+  const goingBack = ow && backTo && !isOneWay(ow, backTo.id, backTo.version);
   const oneWayNotes = ow && [
     isOneWay(ow, v.id, v.version) && h("li", { class: "warn", text: `One-way: ${ow.note}` }),
     goingBack && inst && isOneWay(ow, inst.id, inst.version) && h("li", { class: "warn", text: `The log says the FM-1 runs ${inst.label}. ${ow.note}` }),
@@ -367,7 +372,7 @@ export function openInstall(v, o) {
   const dlg = h("dialog", { class: "fw-flash" },
     h("h3", { text: title }),
     h("p", { class: "muted", text: two
-      ? `Off stock V15, the FM-1 goes back to stock first and then gets ${label}: 4 restarts, about 5 minutes. On stock it's one install, 2 to 3 minutes. Keep it plugged in and this page open until it says Done.`
+      ? `Off ${stockName}, the FM-1 goes back to it first and then gets ${label}: 4 restarts, about 5 minutes. On stock it's one install, 2 to 3 minutes. Keep it plugged in and this page open until it says Done.`
       : "The FM-1 restarts twice and the whole update takes 2 to 3 minutes. Keep it plugged in and this page open until it says Done." }),
     h("ul", { class: "fw-i-notes" },
       o.trial && h("li", { class: "warn", text: `Not validated yet: this installs ${v.file} for your hands-on test. Nobody has recorded it working on an FM-1.` }),
@@ -376,7 +381,7 @@ export function openInstall(v, o) {
       inst?.id === "fm1open" && h("li", { class: "warn", text: "The log says FM-1 Open is on the FM-1. It doesn't answer this update protocol: go back to stock with its Workbench (Restore original V15) first." }),
       h("li", { text: "Some firmware resets voices, patterns or projects: save what you want to keep first." }),
       h("li", { text: "Close other programs using the FM-1 (M-UPGRADE, web installers, MIDI editors)." }),
-      !o.isStock && !two && h("li", { text: "This installs over stock V15 only: on any other firmware, Install Stock V15 first." }),
+      !o.isStock && !two && h("li", { text: `This installs over ${BASE_NAME} only: on any other firmware, Install ${BASE_NAME} first.` }),
       o.isStock ? null : h("li", { text: `Going back later: Install on ${stockName}.` })),
     route, fileMsg, stockMsg, pick, stepList, bar, msg,
     h("div", { class: "fw-i-actions" }, close, go));
@@ -439,15 +444,15 @@ export function openInstall(v, o) {
       if (o.before) await o.before();
       mark("find");
       let dev = await locate(access, o.prefer?.());
-      const id = dev.id, plan = planRoute(id, pkg, base, lastLeg);
+      const id = dev.id, plan = planRoute(id, pkg, base, lastLeg, !!o.isStock);
       // same identity off stock: the log tells whether it's this firmware or another that shares it
       const there = !plan.length || (plan[0] === "stock" && sameIdentity(id.text, pkg.product) && !id.ota
         && inst?.id === v.id && verKey(inst.version) === verKey(v.version));
       if (there || (plan[0] === "stock" && !two)) {
         dev.link.close();
         if (!there) {
-          throw fail("stockfirst", id.ota ? `The FM-1 is in update mode. Install Stock V15 first to finish it, then ${label}.`
-            : `The FM-1 reports ${id.text}, not stock V15 (${base}). Install Stock V15 first, then ${label}: each validation tested the install from stock.`);
+          throw fail("stockfirst", id.ota ? `The FM-1 is in update mode. Install ${BASE_NAME} first to finish it, then ${label}.`
+            : `The FM-1 reports ${id.text}, not ${BASE_NAME} (${base}). Install ${BASE_NAME} first, then ${label}: each validation tested the install from stock.`);
         }
         stepList.hidden = true;
         msg.className = "fw-i-msg ok";
