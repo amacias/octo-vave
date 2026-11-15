@@ -335,7 +335,7 @@
       "result": "clean",
       "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_900); notes on ch 1-3 and 10 sounded on the FM-1's USB audio, one octave below the note sent and mono (Minimoog-style patch); reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
       "notes": "MIDI port 'FM-1 Midi' (same name as stock), USB audio 'Line (Felucca)'. Screen, knobs and keys not checked.",
-      "supersededBy": "v2.5.12"
+      "supersededBy": "v2.5.14"
     },
     {
       "id": "fomni",
