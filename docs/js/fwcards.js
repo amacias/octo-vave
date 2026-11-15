@@ -83,7 +83,7 @@ export function validatedList(fw, extra = () => null) {
       const st = base ? { current: true } : validationState({ ...fw, validated: [v] }, { id: v.id });
       const o = outcome(v);
       const tip = validationTip(v) + (st.current ? "" : `\nNewer release ${shortVer(st.newer.version)} hasn't been tested yet.`)
-        + (base ? "\nThe baseline: every Install goes back to stock V15 first, and every validation reverts to it." : "");
+        + (base ? `\nThe baseline: every Install goes back to stock ${BASELINE.version} first, and every validation reverts to it.` : "");
       return h("div", { class: "val-row " + o, title: tip },
         octoFor(v, tip, st.current),
         h("b", { text: name(v.id) }),
@@ -92,7 +92,7 @@ export function validatedList(fw, extra = () => null) {
         !st.current && h("span", { class: "val-newer", text: `newer ${shortVer(st.newer.version)}` }),
         h("span", { class: "muted", text: v.date }),
         o !== "clean" && h("span", { class: "val-label " + o, text: o === "issues" ? "with issues" : "failed" }),
-        base && h("span", { class: "val-label baseline", title: "Stock V15 stays the baseline: every Install goes back to it first", text: "baseline" }),
+        base && h("span", { class: "val-label baseline", title: `Stock ${BASELINE.version} stays the baseline: every Install goes back to it first`, text: "baseline" }),
         v.method === "manual" && h("span", { class: "val-label manual", title: MANUAL_TIP(v), text: v.local ? "manual · this computer" : "manual" }),
         h("span", { class: "val-steps " + o, text: stepsText(v) }),
         h("span", { class: "val-note", text: v.notes || "" }),
@@ -121,10 +121,12 @@ export function icon(k) {
 
 // ---------------------------------------------------------------- validation
 
-/** The stock firmware every validation is tested against, and the identity its package installs.
- *  Newer stock (V16 …) can be validated too, but V15 stays the baseline: the reversion image the
- *  Install button routes through (fm1flash.js) and a line of its own in the validated list. */
-export const BASELINE = { id: "official", version: "V15", identity: "FM-1_015" };
+/** The stock firmware every validation is tested against, and the identity its package installs:
+ *  the reversion image the Install button routes through (fm1flash.js) and a line of its own in
+ *  the validated list. V16 since the V16 rebase (V15 before; V16 → V15 garbles presets). */
+export const BASELINE = { id: "official", version: "V16", identity: "FM-1_016" };
+/** The stock every record without "stock" was tested on: all records before the V16 rebase. */
+export const LEGACY_STOCK = "V15";
 export const isBaseline = (v) => v?.id === BASELINE.id && verKey(v.version) === verKey(BASELINE.version);
 /**
  * Stock versions that don't go back to the baseline cleanly: catalog.json's stock traits.oneWay,
@@ -185,29 +187,43 @@ function fwTraits(f, latest, primary) {
 
 // ---------------------------------------------------------------- stock baseline (#19)
 // A validation record's "stock": the stock version the test installed from and reverted to.
-// Left out = V15, the baseline (every record before stock V16 testing began). A record tested
-// against another stock version carries a small seal with that version, on its card and its
-// All Validated Firmware line. Temporary: once V16 is the baseline for everything it can go.
-export const stockOf = (v) => v?.stock || BASELINE.version;
-export const offBaseline = (v) => !!v?.stock && verKey(v.stock) !== verKey(BASELINE.version);
-const stockTip = (s) => `Tested against stock ${s}: installed from ${s} and reverted to ${s}`;
+// Left out = V15 (LEGACY_STOCK: every record before the V16 rebase). During the rebase every
+// record shows a small seal with its stock, on its card and its All Validated Firmware line:
+// blue V16 = rebased, pink V15 = not rebased yet. Stock's own records get none (its V16 record
+// was tested from V15). Temporary: once every firmware has a V16 record the seals can go.
+export const stockOf = (v) => v?.stock || LEGACY_STOCK;
+/** Tested on stock newer than V15. */
+export const offBaseline = (v) => verKey(stockOf(v)) !== verKey(LEGACY_STOCK);
+/** Tested on the current baseline: what a test needs to count under the V16 routing. */
+export const onBaseline = (v) => verKey(stockOf(v)) === verKey(BASELINE.version);
+/** A pass on older stock whose version failed on the baseline (FM-1+VA 102 on V16): every Install
+ *  now goes through the baseline, so it isn't offered. */
+export const failsOnBaseline = (fw, v) => v.id !== BASELINE.id && !onBaseline(v)
+  && (fw.validated || []).some((r) => r.id === v.id && verKey(r.version) === verKey(v.version) && onBaseline(r) && outcome(r) === "failed");
+const stockTip = (v) => {
+  const s = stockOf(v).toUpperCase();
+  return onBaseline(v) || offBaseline(v) ? `Tested against stock ${s}: installed from ${s} and reverted to ${s}`
+    : `Tested against stock ${s}: not rebased on stock ${BASELINE.version} yet`;
+};
 const STOCK_SVG = (s) => '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="bg" cx="12" cy="12" r="10.5"/>'
   + `<circle class="ring" cx="12" cy="12" r="8.6"/><text class="fg-text" x="12" y="14.9" text-anchor="middle">${s.replace(/[^A-Za-z0-9.]/g, "")}</text></svg>`;
-/** The stock seal for a record tested off the baseline, else null. */
-export function stockSeal(v, title = stockTip(v?.stock)) {
-  if (!offBaseline(v)) return null;
-  const s = h("span", { class: "trait stock on", title });
-  s.innerHTML = STOCK_SVG(v.stock.toUpperCase());
+/** The stock seal for a firmware's record (blue V16, pink V15), none for stock itself. */
+export function stockSeal(v, title = stockTip(v)) {
+  if (!v || v.id === BASELINE.id) return null;
+  const s = h("span", { class: "trait stock on" + (offBaseline(v) ? "" : " legacy"), title });
+  s.innerHTML = STOCK_SVG(stockOf(v).toUpperCase());
   return s;
 }
 
-/** The octopus colours; `fw` adds the stock seal while any record was tested off the baseline. */
+/** The octopus colours, then a stock seal per stock the firmware records were tested on. */
 export function octoLegend(fw = null) {
-  const off = (fw?.validated || []).find((v) => isValidated(v) && offBaseline(v));
+  const recs = (fw?.validated || []).filter((v) => isValidated(v) && v.id !== BASELINE.id);
+  const now = recs.find(offBaseline), old = recs.find((v) => !offBaseline(v));
   return h("span", { class: "val-legend muted" },
     octo("Validated", "clean"), "validated", octo("Validated with issues", "issues"), "with issues", octo("Failed validation", "failed"), "failed",
     octo("Untested: a newer release hasn't been tested yet", "clean older"), "untested",
-    off && [stockSeal(off), `tested on stock ${off.stock.toUpperCase()}`]);
+    now && [stockSeal(now), `tested on stock ${stockOf(now).toUpperCase()}`],
+    old && [stockSeal(old), `stock ${LEGACY_STOCK}, not rebased yet`]);
 }
 
 export function traitLegend() {
@@ -250,7 +266,7 @@ export function newerFirst(a, b) {
 /**
  * The validated-firmware list: once a newer version of a firmware has been tested, the older
  * records drop out of the list (they stay in validated.json as history). If the newest test
- * failed, the newest passing record stays too, so its Install button is still there. Stock V15
+ * failed, the newest passing record stays too, so its Install button is still there. The baseline stock
  * (BASELINE) always keeps its line: it's what every other firmware goes back to.
  */
 export function latestValidations(fw) {
@@ -267,7 +283,7 @@ export function latestValidations(fw) {
   });
 }
 
-/** Stock V15's line once a newer stock version has been tested: kept as the baseline, not outdated. */
+/** The baseline stock's line once a newer stock version has been tested: kept as the baseline, not outdated. */
 const keptBaseline = (fw, v) => isBaseline(v) && (fw.validated || []).some((r) => r.id === v.id && isValidated(r) && newerFirst(r, v) < 0);
 
 /**
@@ -319,7 +335,7 @@ export function stepsText(v) {
 
 export function validationTip(v) {
   return `${OUTCOME_LABEL[outcome(v)]}: ${v.version} on ${v.date}. ${stepsText(v)}${v.checks ? `\nChecks: ${v.checks}` : ""}`
-    + (offBaseline(v) ? `\n${stockTip(v.stock.toUpperCase())}.` : "")
+    + (v.id !== BASELINE.id ? `\n${stockTip(v)}.` : "")
     + (v.notes ? `\n${v.notes}` : "") + (v.method === "manual" ? `\n${MANUAL_TIP(v)}` : "");
 }
 /** Records made with the app's Validate button ("method": "manual"); "local" = not in validated.json yet. */
@@ -436,7 +452,7 @@ export function fwCard(f, fw, rank, app = null) {
       art,
       h("div", { class: "fw-headtext" },
         h("div", { class: "fw-title" }, rank && h("span", { class: "rank", text: `#${rank}` }), h("b", { text: f.name }),
-          h("span", { class: "grow" }), val && stockSeal(val.v), valBadge),
+          h("span", { class: "grow" }), valBadge),
         h("div", { class: "by" }, h("span", { class: "by-name", text: f.author }),
           f.curated === false && h("span", { class: "fw-uncur", title: "Built from GitHub metadata: no curated catalog entry (screen, tagline) yet", text: "not curated yet" })),
         h("div", { class: "fw-tag", text: f.tagline || "" }))),
@@ -458,10 +474,11 @@ export function fwCard(f, fw, rank, app = null) {
         app?.validate?.(f),
         linkBtn(L.install, "ext", f.kind === "stock" ? "Updater" : "Installer", "Open the project's own installer"),
         linkBtn(L.try, "play", "Try", "Play it in the browser, no FM-1 needed")),
-      // every card icon in one row: links, then traits
+      // every card icon in one row: links, then traits, then the shown record's stock seal (V16 / V15)
       h("div", { class: "fw-icons" },
         (L.docs || L.repo) && h("span", { class: "fw-tools" }, iconLink(L.docs, "doc", "Manual / docs"), iconLink(L.repo, "code", "Source code")),
-        fwTraits(f, latest, primary)),
+        fwTraits(f, latest, primary),
+        val && stockSeal(val.v)),
       olderOnly && h("div", { class: "fw-lib" }, icon("check"), `${gotLabel(local[0])}: ${shortVer(local[0].version)} (older)`),
       more));
 }

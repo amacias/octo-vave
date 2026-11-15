@@ -195,7 +195,7 @@
   // The Firmware section renders with the app's own card code (js/fwcards.js, a copy of web/fwcards.js)
   // from the nightly snapshot docs/data/firmware.json (tools/fm1_site.py). Read from the repository
   // first, so a new snapshot shows before Pages republishes; this site's own copy is the fallback.
-  import { h, fwSections, fwDirectory, validatedSection, relTime, copySha, verKey, isBaseline, oneWayFor, installableState, outcome, BASELINE }
+  import { h, fwSections, fwDirectory, validatedSection, relTime, copySha, verKey, isBaseline, oneWayFor, installableState, outcome, BASELINE, failsOnBaseline }
     from "./js/fwcards.js";
   import { installAction } from "./js/fm1flash.js";
   const SNAPSHOTS = ["https://raw.githubusercontent.com/amacias/octo-vave/main/docs/data/firmware.json", "data/firmware.json"];
@@ -218,12 +218,12 @@
       const copy = v.sha256 && h("button", { class: "ghost mini-btn copy", text: "SHA256", title: `Copy the full SHA256 of ${v.file || "the tested file"}:
 ${v.sha256}` });
       if (copy) copy.onclick = () => copySha(v, copy);
-      return [copy, installAction(v, installOpts(fw, v))];
+      return [copy, !failsOnBaseline(fw, v) && installAction(v, installOpts(fw, v))];
     }, {
       note: h("p", { class: "val-intro" }, "The newest tested version of each firmware, from ",
         link("https://github.com/amacias/octo-vave/blob/main/firmware/validated.json", "validated.json"),
         ". Grey octopus (untested): a newer release hasn't been tested yet. ", h("b", { text: "Install" }),
-        " puts that exact file on your FM-1 (Chrome or Edge, USB cable); Install V15 on the Stock line takes it back to stock. ",
+        " puts that exact file on your FM-1 (Chrome or Edge, USB cable), from stock V16; Install V16 on the Stock line takes it back to stock. ",
         h("b", { text: "SHA256" }), " copies the checksum to compare a file you got elsewhere."),
       foot: h("p", { class: "val-foot" }, "Tested one yourself? ",
         link("https://github.com/amacias/octo-vave/issues/new?template=validation-report.yml", "Send a validation report"), "."),
@@ -241,7 +241,7 @@ ${v.sha256}` });
     const asset = rel?.assets?.find((a) => a.name === v.file);
     let access = null;
     return {
-      name: f.name, isStock: isBaseline(v), installUrl: f.links?.install, downloadUrl: asset?.url || rel?.url, oneWay: oneWayFor(fw.catalog),
+      name: f.name, isStock: v.id === BASELINE.id, installUrl: f.links?.install, downloadUrl: asset?.url || rel?.url, oneWay: oneWayFor(fw.catalog),
       async getAccess() {
         if (!navigator.requestMIDIAccess) throw new Error("This browser has no Web MIDI. Use Chrome or Edge on a computer.");
         try { access = access || await navigator.requestMIDIAccess({ sysex: true }); }
@@ -258,13 +258,14 @@ ${v.sha256}` });
     };
   }
 
-  // A card's Install <version>, as in the app: its newest passing validation (Stock: V15, the
-  // baseline), with the same installer as the list. Release files download from More.
+  // A card's Install <version>, as in the app: its newest passing validation (Stock: V16, the
+  // baseline; none when that version failed on V16), with the same installer as the list.
+  // Release files download from More.
   function cardInstall(fw, f) {
     const v = f.id === BASELINE.id
       ? (fw.validated || []).find((r) => isBaseline(r) && ["clean", "issues"].includes(outcome(r)))
       : installableState(fw, f)?.v;
-    return v ? installAction(v, installOpts(fw, v), { card: true }) : null;
+    return v && !failsOnBaseline(fw, v) ? installAction(v, installOpts(fw, v), { card: true }) : null;
   }
 
   loadSnapshot().then((fw) => {

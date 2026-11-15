@@ -138,13 +138,17 @@ button.fw-validate.failed { color: var(--bad); border-color: color-mix(in srgb, 
 /* stock seal (#19): a validation tested against a stock version other than the V15 baseline */
 .trait.stock .bg { fill: #2F6FB0; }
 .trait.stock .ring { fill: none; stroke: #CFE2F6; stroke-width: .8; opacity: .75; }
+/* pink V15: tested on the old baseline, not rebased on V16 yet */
+.trait.stock.legacy .bg { fill: #D6457F; }
+.trait.stock.legacy .ring { stroke: #F9D2E2; }
 .trait .fg-text { fill: #fff; font: 800 7.4px system-ui, sans-serif; letter-spacing: -.2px; }
-.fw-title .trait.stock svg { width: 22px; height: 22px; }
 .val-row .trait.stock svg { width: 16px; height: 16px; }
 /* all card icons in one row under the buttons, groups split by a thin rule */
 .fw-icons { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 6px -14px 0; padding: 7px 14px;
   background: var(--panel-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .fw-icons > * + * { padding-left: 7px; border-left: 1px solid var(--line); }
+/* the stock seal (V16 / V15) sits at the right edge */
+.fw-icons > .trait.stock { margin-left: auto; padding-left: 0; border-left: 0; }
 /* the validated file's pinned sha256 */
 .fw-pin { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12px; margin: 2px 0 6px; }
 .fw-pin .octo { width: 15px; height: 15px; }

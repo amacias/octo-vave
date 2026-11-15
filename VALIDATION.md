@@ -1,7 +1,8 @@
 # Firmware validation
 
 A firmware gets an **octopus** on its card once it has been tested on a real FM-1: **installed**,
-**run**, and the device **reverted to stock V15**. The colour is the outcome:
+**run**, and the device **reverted to stock V16** (the baseline since the V16 rebase; older records
+were tested on V15). The colour is the outcome:
 
 | Octopus | `result` | Meaning |
 |---|---|---|
@@ -18,7 +19,7 @@ by the dashboard itself. The dashboard only reads `firmware/validated.json`.
 Run one firmware at a time. The person at the synth does every flash; the session only guides
 and checks. Ask for each action as one clearly marked prompt, separate from status updates.
 
-1. **Baseline.** The FM-1 runs stock V15. In the dashboard's Sound check, *Stock M-VAVE* mode,
+1. **Baseline.** The FM-1 runs stock V16. In the dashboard's Sound check, *Stock M-VAVE* mode,
    step 1 (notes) works.
 2. **Download.** On the Firmware tab, download the firmware's `.fwsc` so it is in the library
    with its SHA256 (verified when the project publishes checksums).
@@ -28,9 +29,9 @@ and checks. Ask for each action as one clearly marked prompt, separate from stat
 5. **Run.** The firmware boots and its screen matches the project's docs. In the dashboard,
    Sound check *Generic MIDI* mode: at least step 1 (notes) and step 2 (channel scan). Play
    the FM-1's own keys and knobs. Note anything odd.
-6. **Revert.** Return to stock with **Install V15** on Octo-Vave's Stock card. Other ways:
-   the installer's *Return to official V15* (some now fetch M-VAVE's newer V16 instead), or
-   M-UPGRADE and the library's `FM-1.fwsc`. Confirm the stock screen, then Sound check
+6. **Revert.** Return to stock with **Install V16** on Octo-Vave's Stock card. Other ways:
+   M-UPGRADE and M-VAVE's `FM-1.fwsc` (V16), or an installer's return to official firmware when
+   it fetches V16 (not one that puts V15 back: V16 → V15 garbles presets). Confirm the stock screen, then Sound check
    *Stock M-VAVE* steps 1 and 6 (notes and SysEx voice) work again.
 7. **Record.**
 
@@ -41,9 +42,10 @@ and checks. Ask for each action as one clearly marked prompt, separate from stat
    python tools/fm1_validate.py add <id> <version> --stock V16 ...   # tested from and back to stock V16
    ```
 
-   `--stock` records the stock version the test installed from and reverted to; left out, the
-   record counts as V15, the baseline. Records tested on V16 get a small **V16** seal in the app
-   and on the homepage.
+   `--stock` records the stock version the test installed from and reverted to: pass `--stock V16`
+   for every new test. Left out, the record counts as V15 (the old baseline). A version can have
+   one record per stock. In the app and on the homepage, V16 records get a blue **V16** seal and
+   V15 records a pink **V15** one; a version that failed on V16 loses its Install button.
 
    The person who did the test decides the outcome; the session proposes the record and
    writes it only after they confirm.
@@ -82,7 +84,7 @@ Validations from other FM-1 owners are welcome for M-VAVE's own firmware (stock 
 for firmware on the **top 30 leaderboard** (the homepage ranking); reports for anything else are
 declined. The flow:
 
-1. **Run the session** above on your own FM-1: install, play it, run the Sound check, revert to stock V15.
+1. **Run the session** above on your own FM-1: install, play it, run the Sound check, revert to stock V16.
    In Octo-Vave, **Validate <version>** on a card walks through it for the newest release that hasn't
    passed yet (a failed version keeps the button for a retest until a newer one comes out), and saves
    the result on your computer as a manual validation
