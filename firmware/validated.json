@@ -207,7 +207,7 @@
       "result": "clean",
       "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_901); notes on ch 1 sounded on the FM-1's USB audio (with a strong sub octave), ch 2-3 and 10 silent; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
       "notes": "MIDI port 'DUELL', USB audio 'Line (Felucca)'. Bitimbral; how the second part takes MIDI was not looked into. Screen, knobs and keys not checked.",
-      "supersededBy": "v1.3.1"
+      "supersededBy": "v1.3.2"
     },
     {
       "id": "felucca",
