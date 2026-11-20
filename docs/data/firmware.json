@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-11-19T15:55:13Z",
+ "generated_at": "2026-11-20T15:38:40Z",
  "catalog": [
   {
    "id": "official",
@@ -1415,9 +1415,9 @@
    "url": "https://github.com/isod89/sloop-fm1",
    "desc": "Live four-track groovebox by 3dSam: three synths plus a drum machine, 37 drum kits, punch-in FX, layer system, song mode, web editor",
    "license": "GPL-3.0",
-   "stars": 838,
-   "downloads": 12582,
-   "score": 16.172,
+   "stars": 846,
+   "downloads": 13069,
+   "score": 16.22,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1434,9 +1434,9 @@
    "url": "https://github.com/keremimo/melodee",
    "desc": "Felucca derivative that went its own way: ten engines, eight patterns per track, STUDIO workspaces, four-channel USB audio input, TR-808 kit",
    "license": "GPL-3.0",
-   "stars": 214,
-   "downloads": 23614,
-   "score": 15.44,
+   "stars": 215,
+   "downloads": 24561,
+   "score": 15.484,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1453,9 +1453,9 @@
    "url": "https://github.com/hugelton/Felucca",
    "desc": "Multi-engine synth firmware by Leo Kuroshita (Hügelton Instruments)",
    "license": "GPL-3.0",
-   "stars": 755,
-   "downloads": 4302,
-   "score": 14.995,
+   "stars": 758,
+   "downloads": 4494,
+   "score": 15.043,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1472,9 +1472,9 @@
    "url": "https://github.com/illuminus5/skiff",
    "desc": "Six-track groovebox with fourteen synth and drum engines, 143 factory sounds, a 64-step sequencer with chords, ratchets, trig conditions and parameter locks…",
    "license": "GPL-3.0",
-   "stars": 192,
-   "downloads": 8686,
-   "score": 14.332,
+   "stars": 195,
+   "downloads": 9156,
+   "score": 14.4,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1492,8 +1492,8 @@
    "desc": "Orchid-style chord instrument: one hand plays roots, the other shapes chords, with voicings, key modes, bass and a looper",
    "license": "GPL-3.0",
    "stars": 109,
-   "downloads": 10266,
-   "score": 13.937,
+   "downloads": 10407,
+   "score": 13.951,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1510,9 +1510,9 @@
    "url": "https://github.com/charlesvestal/fm1-x0x",
    "desc": "ReBirth-style groovebox by Charles Vestal: TR-909, TR-808, two TB-303s with TB-3PO acid generators and a breakbeat slicer, each with its own sequencer",
    "license": "GPL-3.0",
-   "stars": 242,
-   "downloads": 3240,
-   "score": 13.577,
+   "stars": 243,
+   "downloads": 3400,
+   "score": 13.629,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1530,8 +1530,8 @@
    "desc": "Single eight-voice analog-style polysynth after the classic American poly synths of 1979-84, with hard sync, cross-modulation, SEM-style filter morph…",
    "license": "GPL-3.0",
    "stars": 65,
-   "downloads": 5487,
-   "score": 12.8,
+   "downloads": 5608,
+   "score": 12.822,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1549,8 +1549,8 @@
    "desc": "Generative ambient machine inspired by Music for Airports that plays itself from power-on: tape loops of unequal length, gliding bass, Euclidean percussion",
    "license": "MPL-2.0",
    "stars": 139,
-   "downloads": 2250,
-   "score": 12.661,
+   "downloads": 2378,
+   "score": 12.716,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1568,8 +1568,8 @@
    "desc": "Eight-track drum machine by DEADACTIVE with 808, 909 and Plaits drum models, samples, Mutable Instruments Grids, a pumping compressor and resonators",
    "license": "GPL-3.0",
    "stars": 64,
-   "downloads": 3234,
-   "score": 12.256,
+   "downloads": 3334,
+   "score": 12.287,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1586,9 +1586,9 @@
    "url": "https://github.com/jasonpersinger/ghoulbox-fm1-dungeon-synth",
    "desc": "Dungeon synth firmware by Jason Persinger: cathedral reverb, worn-tape effect, hurdy-gurdy engine with drones, dark ambient presets and an old-RPG screen",
    "license": "GPL-3.0",
-   "stars": 92,
-   "downloads": 2144,
-   "score": 12.203,
+   "stars": 93,
+   "downloads": 2222,
+   "score": 12.25,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1605,14 +1605,14 @@
    "url": "https://github.com/charlesvestal/fm1-loom",
    "desc": "OP-XY-inspired groovebox by Charles Vestal: eight colour-coded tracks, 85 factory presets, a 64-step sequencer with step tricks and parameter locks, weave…",
    "license": "MPL-2.0",
-   "stars": 85,
-   "downloads": 2069,
-   "score": 12.09,
+   "stars": 86,
+   "downloads": 2170,
+   "score": 12.149,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
    "latest": {
-    "version": "v0.16.3",
+    "version": "v0.17",
     "date": "2026-11-19"
    },
    "rank": 11
@@ -1625,8 +1625,8 @@
    "desc": "Omnichord-style chord harp by Charles Vestal: strum the white keys, pick chords on the black ones, with rhythm patterns and auto bass",
    "license": "GPL-3.0",
    "stars": 83,
-   "downloads": 1974,
-   "score": 12.019,
+   "downloads": 2035,
+   "score": 12.05,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1644,8 +1644,8 @@
    "desc": "Experimental synthesizer firmware that grew out of SLOOP, with per-voice ENV2/ENV3 and LFO2/LFO3 modulation",
    "license": "GPL-3.0",
    "stars": 91,
-   "downloads": 1554,
-   "score": 11.871,
+   "downloads": 1646,
+   "score": 11.928,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1663,8 +1663,8 @@
    "desc": "Modular firmware platform derived from SLOOP: a firmware builder lets you pick which engines, kits and effects fit in flash",
    "license": "GPL-3.0",
    "stars": 38,
-   "downloads": 3627,
-   "score": 11.86,
+   "downloads": 3650,
+   "score": 11.866,
    "curated": false,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1682,8 +1682,8 @@
    "desc": "Joakim Eriksson's one-install firmware: synths are modules in flash slots that you pick from the HOME screen and deploy over USB MIDI, with a browser console…",
    "license": "GPL-3.0",
    "stars": 45,
-   "downloads": 2114,
-   "score": 11.485,
+   "downloads": 2298,
+   "score": 11.569,
    "curated": false,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1701,8 +1701,8 @@
    "desc": "Felucca fork adding superwave analog, a modulation matrix, latched drones, ratchets and synthesized drum kits",
    "license": "GPL-3.0",
    "stars": 39,
-   "downloads": 2207,
-   "score": 11.389,
+   "downloads": 2271,
+   "score": 11.417,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1713,6 +1713,25 @@
    "rank": 16
   },
   {
+   "id": "tessera",
+   "repo": "Rastapopolix/tessera",
+   "name": "Tessera",
+   "url": "https://github.com/Rastapopolix/tessera",
+   "desc": "Generative firmware, formerly Melodee (Tess): 13 generators, song forms and modulation on four tracks",
+   "license": "GPL-3.0",
+   "stars": 36,
+   "downloads": 2408,
+   "score": 11.398,
+   "curated": false,
+   "origin": "awesome-fm-1",
+   "live": true,
+   "latest": {
+    "version": "v3.7.4",
+    "date": "2026-11-20"
+   },
+   "rank": 17
+  },
+  {
    "id": "orbit",
    "repo": "dspaudio/orbit",
    "name": "ORBIT",
@@ -1720,33 +1739,14 @@
    "desc": "SLOOP-based groovebox with OP-1-inspired screens, sample tools and an event tape for moving what the four tracks play",
    "license": "GPL-3.0",
    "stars": 42,
-   "downloads": 1966,
-   "score": 11.345,
+   "downloads": 2025,
+   "score": 11.375,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
    "latest": {
     "version": "v1.0.1B",
     "date": "2026-11-04"
-   },
-   "rank": 17
-  },
-  {
-   "id": "tessera",
-   "repo": "Rastapopolix/tessera",
-   "name": "Tessera",
-   "url": "https://github.com/Rastapopolix/tessera",
-   "desc": "Generative firmware, formerly Melodee (Tess): 13 generators, song forms and modulation on four tracks",
-   "license": "GPL-3.0",
-   "stars": 35,
-   "downloads": 2294,
-   "score": 11.322,
-   "curated": false,
-   "origin": "awesome-fm-1",
-   "live": true,
-   "latest": {
-    "version": "v3.7.2",
-    "date": "2026-11-19"
    },
    "rank": 18
   },
@@ -1758,8 +1758,8 @@
    "desc": "Eight-track groovebox for sound design where synth, struck and drum tracks trigger, excite and modulate one another, with thirteen synth engines, a graph…",
    "license": "GPL-3.0",
    "stars": 35,
-   "downloads": 2271,
-   "score": 11.312,
+   "downloads": 2323,
+   "score": 11.335,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1777,8 +1777,8 @@
    "desc": "Minimoog Model D emulation by Guilherme Ruppert with effects, arpeggiator and sequencer",
    "license": "GPL-3.0",
    "stars": 45,
-   "downloads": 1714,
-   "score": 11.276,
+   "downloads": 1812,
+   "score": 11.331,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1795,9 +1795,9 @@
    "url": "https://github.com/GRiMMBIENT/grimm",
    "desc": "Dark ambient, dungeon synth and deathdream firmware: four tracks, seven sound sources, long dark effects, a 64-step sequencer and one-key chords",
    "license": "GPL-3.0",
-   "stars": 53,
-   "downloads": 1359,
-   "score": 11.204,
+   "stars": 54,
+   "downloads": 1433,
+   "score": 11.276,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1815,8 +1815,8 @@
    "desc": "Generative dub techno machine that plays itself from power-on: chord stabs into a tape echo, FM pings, sub bass, kick, shaker and hat on an eight-bar…",
    "license": "GPL-3.0",
    "stars": 45,
-   "downloads": 1474,
-   "score": 11.125,
+   "downloads": 1533,
+   "score": 11.164,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1833,17 +1833,36 @@
    "url": "https://github.com/Quixotic7/RemoteFM1",
    "desc": "Firmware that sends the keys, buttons and encoders to a computer as MIDI and draws the computer's screen output on the FM-1, so an emulator-built firmware can…",
    "license": "GPL-3.0",
-   "stars": 49,
-   "downloads": 1183,
-   "score": 10.989,
+   "stars": 51,
+   "downloads": 1258,
+   "score": 11.089,
    "curated": false,
    "origin": "awesome-fm-1",
    "live": true,
    "latest": {
-    "version": "v0.3.6",
-    "date": "2026-11-09"
+    "version": "v0.4.0",
+    "date": "2026-11-20"
    },
    "rank": 23
+  },
+  {
+   "id": "coralflower",
+   "repo": "FicusFicusov/CoralFlower",
+   "name": "CoralFlower",
+   "url": "https://github.com/FicusFicusov/CoralFlower",
+   "desc": "Chord instrument inspired by the Telepathic Instruments Orchid: every note becomes a chord with a bass underneath, while a pixel flower grows on screen",
+   "license": "GPL-3.0",
+   "stars": 27,
+   "downloads": 2191,
+   "score": 11.025,
+   "curated": true,
+   "origin": "awesome-fm-1",
+   "live": true,
+   "latest": {
+    "version": "v0.7.1",
+    "date": "2026-11-10"
+   },
+   "rank": 24
   },
   {
    "id": "frodhes",
@@ -1853,33 +1872,14 @@
    "desc": "Physically modelled electric piano, vibraphone and marimba with no samples, plus effects, arpeggiator, sequencer, scales and a web emulator",
    "license": "GPL-3.0",
    "stars": 15,
-   "downloads": 3581,
-   "score": 10.956,
+   "downloads": 3714,
+   "score": 10.993,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
    "latest": {
     "version": "v0.9.13",
     "date": "2026-11-17"
-   },
-   "rank": 24
-  },
-  {
-   "id": "coralflower",
-   "repo": "FicusFicusov/CoralFlower",
-   "name": "CoralFlower",
-   "url": "https://github.com/FicusFicusov/CoralFlower",
-   "desc": "Chord instrument inspired by the Telepathic Instruments Orchid: every note becomes a chord with a bass underneath, while a pixel flower grows on screen",
-   "license": "GPL-3.0",
-   "stars": 26,
-   "downloads": 2113,
-   "score": 10.952,
-   "curated": true,
-   "origin": "awesome-fm-1",
-   "live": true,
-   "latest": {
-    "version": "v0.7.1",
-    "date": "2026-11-10"
    },
    "rank": 25
   },
@@ -1891,8 +1891,8 @@
    "desc": "Turns the FM-1 into a MIDI controller, with General MIDI sounds of its own",
    "license": "MPL-2.0",
    "stars": 29,
-   "downloads": 1890,
-   "score": 10.946,
+   "downloads": 1935,
+   "score": 10.97,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1910,8 +1910,8 @@
    "desc": "QY70-style pocket arranger by Charles Vestal: a style plays a band of eight instruments steered by the chords you play, with General MIDI sounds from Sonivox…",
    "license": "GPL-3.0",
    "stars": 28,
-   "downloads": 1862,
-   "score": 10.897,
+   "downloads": 1915,
+   "score": 10.925,
    "curated": true,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1929,8 +1929,8 @@
    "desc": "Six-track generative instrument by Kid Bunka / Christoph Link: twelve engines, editable Biomes, user banks, shared effects and a browser instrument and live…",
    "license": "GPL-3.0",
    "stars": 34,
-   "downloads": 1343,
-   "score": 10.759,
+   "downloads": 1413,
+   "score": 10.81,
    "curated": false,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1948,8 +1948,8 @@
    "desc": "Physically modelled kalimba with mbira patterns, granular cloud and tape",
    "license": "GPL-3.0",
    "stars": 23,
-   "downloads": 1808,
-   "score": 10.679,
+   "downloads": 1851,
+   "score": 10.702,
    "curated": false,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1967,8 +1967,8 @@
    "desc": "Shigin accompaniment instrument inspired by Suikohsha's ST-50, with koto, sho, shakuhachi and taiko voices and the ST-50's just tuning",
    "license": "GPL-3.0",
    "stars": 21,
-   "downloads": 1704,
-   "score": 10.532,
+   "downloads": 1759,
+   "score": 10.564,
    "curated": false,
    "origin": "awesome-fm-1",
    "live": true,
@@ -1980,16 +1980,16 @@
   }
  ],
  "discovery": {
-  "checked": "2026-11-19T15:55:09",
+  "checked": "2026-11-20T15:38:36",
   "notes": [],
   "stats": {
-   "scanned": 311,
+   "scanned": 310,
    "skipped": 0,
    "top": 26,
    "topSkipped": 0,
-   "wider": 285,
+   "wider": 284,
    "widerSkipped": 0,
-   "requests": 408,
+   "requests": 409,
    "notModified": 0,
    "candidates": 344
   },
@@ -2203,7 +2203,7 @@
    "result": "clean",
    "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_901); notes on ch 1 sounded on the FM-1's USB audio (with a strong sub octave), ch 2-3 and 10 silent; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
    "notes": "MIDI port 'DUELL', USB audio 'Line (Felucca)'. Bitimbral; how the second part takes MIDI was not looked into. Screen, knobs and keys not checked.",
-   "supersededBy": "v1.3.2"
+   "supersededBy": "v1.3.3"
   },
   {
    "id": "felucca",
@@ -2489,7 +2489,7 @@
    "result": "clean",
    "checks": "automated test, the owner not at the synth: installed over stock with Octo-Vave's flasher (FM-1 reports FM-1_100; the package header says FM-1_10001400); notes on ch 2 sounded on the FM-1's USB audio (bright, percussive), ch 3 faint, ch 1 and 10 silent; reverted with Octo-Vave's Stock V15 Install (FM-1_015), stock notes sound again",
    "notes": "MIDI port 'LOOM-8 FM-1', USB audio 'Line (Felucca)'. Screen, knobs and keys not checked.",
-   "supersededBy": "v0.16.3"
+   "supersededBy": "v0.17"
   },
   {
    "id": "melodee",
@@ -2833,7 +2833,7 @@
   }
  ],
  "releases": {
-  "checked": "2026-11-19T15:55:09",
+  "checked": "2026-11-20T15:38:36",
   "sources": {
    "official": {
     "releases": [
@@ -2871,7 +2871,7 @@
         "name": "FM1-Open-V14-Workbench.html",
         "size": 2543243,
         "url": "https://github.com/m-vave/fm1_open/releases/download/V14/FM1-Open-V14-Workbench.html",
-        "downloads": 1504
+        "downloads": 1522
        }
       ],
       "sha256sums": "https://github.com/m-vave/fm1_open/releases/download/V14/SHA256SUMS-V14",
@@ -2888,7 +2888,7 @@
         "name": "FM1-Open-V12-Workbench.html",
         "size": 2435522,
         "url": "https://github.com/m-vave/fm1_open/releases/download/V12/FM1-Open-V12-Workbench.html",
-        "downloads": 229
+        "downloads": 232
        }
       ],
       "sha256sums": "https://github.com/m-vave/fm1_open/releases/download/V12/SHA256SUMS-V12",
@@ -2917,7 +2917,7 @@
         "name": "felucca-1.8.2.fwsc",
         "size": 610286,
         "url": "https://github.com/hugelton/Felucca/releases/download/v1.8.2/felucca-1.8.2.fwsc",
-        "downloads": 480
+        "downloads": 670
        }
       ],
       "sha256sums": null,
@@ -2951,7 +2951,7 @@
         "name": "felucca-1.6.1.fwsc",
         "size": 610090,
         "url": "https://github.com/hugelton/Felucca/releases/download/v1.6.1/felucca-1.6.1.fwsc",
-        "downloads": 1183
+        "downloads": 1184
        }
       ],
       "sha256sums": null,
@@ -3002,7 +3002,7 @@
         "name": "felucca-1.5.fwsc",
         "size": 610086,
         "url": "https://github.com/hugelton/Felucca/releases/download/v1.5/felucca-1.5.fwsc",
-        "downloads": 206
+        "downloads": 207
        }
       ],
       "sha256sums": null,
@@ -3011,11 +3011,11 @@
     ],
     "error": null,
     "stats": {
-     "stars": 755,
+     "stars": 758,
      "license": "GPL-3.0",
      "pushed": "2026-11-15",
      "releases": 21,
-     "downloads": 4302
+     "downloads": 4494
     }
    },
    "sloop": {
@@ -3031,13 +3031,13 @@
         "name": "sloop-2.8.5.fwsc",
         "size": 610076,
         "url": "https://github.com/isod89/sloop-fm1/releases/download/v2.8.5/sloop-2.8.5.fwsc",
-        "downloads": 1907
+        "downloads": 2164
        },
        {
         "name": "sloop-editor-2.8.5.html",
         "size": 966079,
         "url": "https://github.com/isod89/sloop-fm1/releases/download/v2.8.5/sloop-editor-2.8.5.html",
-        "downloads": 303
+        "downloads": 314
        }
       ],
       "sha256sums": null,
@@ -3054,7 +3054,7 @@
         "name": "sloop-2.8.4.fwsc",
         "size": 610052,
         "url": "https://github.com/isod89/sloop-fm1/releases/download/v2.8.4/sloop-2.8.4.fwsc",
-        "downloads": 1218
+        "downloads": 1246
        },
        {
         "name": "sloop-editor-2.8.4.html",
@@ -3077,7 +3077,7 @@
         "name": "sloop-2.8.3.fwsc",
         "size": 610052,
         "url": "https://github.com/isod89/sloop-fm1/releases/download/v2.8.3/sloop-2.8.3.fwsc",
-        "downloads": 1222
+        "downloads": 1250
        },
        {
         "name": "sloop-editor-2.8.3.html",
@@ -3100,7 +3100,7 @@
         "name": "sloop-2.8.1.fwsc",
         "size": 610035,
         "url": "https://github.com/isod89/sloop-fm1/releases/download/v2.8.1/sloop-2.8.1.fwsc",
-        "downloads": 1325
+        "downloads": 1354
        },
        {
         "name": "sloop-editor-2.8.1.html",
@@ -3123,7 +3123,7 @@
         "name": "sloop-2.8.fwsc",
         "size": 610035,
         "url": "https://github.com/isod89/sloop-fm1/releases/download/v2.8/sloop-2.8.fwsc",
-        "downloads": 1000
+        "downloads": 1028
        },
        {
         "name": "sloop-editor-2.8.html",
@@ -3146,7 +3146,7 @@
         "name": "sloop-2.7.1.fwsc",
         "size": 610035,
         "url": "https://github.com/isod89/sloop-fm1/releases/download/v2.7.1/sloop-2.7.1.fwsc",
-        "downloads": 1245
+        "downloads": 1268
        },
        {
         "name": "sloop-editor-2.7.1.html",
@@ -3161,11 +3161,11 @@
     ],
     "error": null,
     "stats": {
-     "stars": 838,
+     "stars": 846,
      "license": "GPL-3.0",
      "pushed": "2026-11-04",
      "releases": 16,
-     "downloads": 12582
+     "downloads": 13069
     }
    },
    "x0x": {
@@ -3181,7 +3181,7 @@
         "name": "x0x-1.2.2.fwsc",
         "size": 609682,
         "url": "https://github.com/charlesvestal/fm1-x0x/releases/download/v1.2.2/x0x-1.2.2.fwsc",
-        "downloads": 374
+        "downloads": 530
        }
       ],
       "sha256sums": "https://github.com/charlesvestal/fm1-x0x/releases/download/v1.2.2/SHA256SUMS",
@@ -3198,7 +3198,7 @@
         "name": "x0x-1.2.1.fwsc",
         "size": 609682,
         "url": "https://github.com/charlesvestal/fm1-x0x/releases/download/v1.2.1/x0x-1.2.1.fwsc",
-        "downloads": 260
+        "downloads": 262
        }
       ],
       "sha256sums": "https://github.com/charlesvestal/fm1-x0x/releases/download/v1.2.1/SHA256SUMS",
@@ -3275,11 +3275,11 @@
     ],
     "error": null,
     "stats": {
-     "stars": 242,
+     "stars": 243,
      "license": "GPL-3.0",
      "pushed": "2026-11-11",
      "releases": 27,
-     "downloads": 3240
+     "downloads": 3400
     }
    },
    "melodee": {
@@ -3295,13 +3295,13 @@
         "name": "fm1-recover-1.6.1-windows-x64.zip",
         "size": 9335428,
         "url": "https://github.com/keremimo/melodee/releases/download/v1.6.1/fm1-recover-1.6.1-windows-x64.zip",
-        "downloads": 65
+        "downloads": 67
        },
        {
         "name": "melodee-1.6.1.fwsc",
         "size": 668948,
         "url": "https://github.com/keremimo/melodee/releases/download/v1.6.1/melodee-1.6.1.fwsc",
-        "downloads": 1343
+        "downloads": 1550
        }
       ],
       "sha256sums": "https://github.com/keremimo/melodee/releases/download/v1.6.1/SHA256SUMS",
@@ -3324,7 +3324,7 @@
         "name": "melodee-1.6.0.fwsc",
         "size": 668692,
         "url": "https://github.com/keremimo/melodee/releases/download/v1.6.0/melodee-1.6.0.fwsc",
-        "downloads": 733
+        "downloads": 811
        }
       ],
       "sha256sums": "https://github.com/keremimo/melodee/releases/download/v1.6.0/SHA256SUMS",
@@ -3347,7 +3347,7 @@
         "name": "melodee-1.6.0-rc.8.fwsc",
         "size": 668692,
         "url": "https://github.com/keremimo/melodee/releases/download/v1.6.0-rc.8/melodee-1.6.0-rc.8.fwsc",
-        "downloads": 1091
+        "downloads": 1171
        }
       ],
       "sha256sums": "https://github.com/keremimo/melodee/releases/download/v1.6.0-rc.8/SHA256SUMS",
@@ -3370,7 +3370,7 @@
         "name": "melodee-1.6.0-rc.7.fwsc",
         "size": 610583,
         "url": "https://github.com/keremimo/melodee/releases/download/v1.6.0-rc.7/melodee-1.6.0-rc.7.fwsc",
-        "downloads": 2349
+        "downloads": 2431
        }
       ],
       "sha256sums": "https://github.com/keremimo/melodee/releases/download/v1.6.0-rc.7/SHA256SUMS",
@@ -3393,7 +3393,7 @@
         "name": "melodee-1.6.0-rc.6.fwsc",
         "size": 610583,
         "url": "https://github.com/keremimo/melodee/releases/download/v1.6.0-rc.6/melodee-1.6.0-rc.6.fwsc",
-        "downloads": 2048
+        "downloads": 2123
        }
       ],
       "sha256sums": "https://github.com/keremimo/melodee/releases/download/v1.6.0-rc.6/SHA256SUMS",
@@ -3416,7 +3416,7 @@
         "name": "melodee-1.6.0-rc.5.fwsc",
         "size": 610583,
         "url": "https://github.com/keremimo/melodee/releases/download/v1.6.0-rc.5/melodee-1.6.0-rc.5.fwsc",
-        "downloads": 1966
+        "downloads": 2042
        }
       ],
       "sha256sums": "https://github.com/keremimo/melodee/releases/download/v1.6.0-rc.5/SHA256SUMS",
@@ -3425,11 +3425,11 @@
     ],
     "error": null,
     "stats": {
-     "stars": 214,
+     "stars": 215,
      "license": "GPL-3.0",
      "pushed": "2026-11-04",
      "releases": 41,
-     "downloads": 23614
+     "downloads": 24561
     }
    },
    "choralroot": {
@@ -3445,7 +3445,7 @@
         "name": "choralroot-0.42.fwsc",
         "size": 676628,
         "url": "https://github.com/Quixotic7/ChoralRootFM1/releases/download/v0.42/choralroot-0.42.fwsc",
-        "downloads": 35
+        "downloads": 138
        }
       ],
       "sha256sums": "https://github.com/Quixotic7/ChoralRootFM1/releases/download/v0.42/SHA256SUMS",
@@ -3509,7 +3509,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-19",
      "releases": 68,
-     "downloads": 10266
+     "downloads": 10407
     }
    },
    "fomni": {
@@ -3525,7 +3525,7 @@
         "name": "omni-0.4.1.fwsc",
         "size": 609659,
         "url": "https://github.com/charlesvestal/fm1-fomni/releases/download/v0.4.1/omni-0.4.1.fwsc",
-        "downloads": 270
+        "downloads": 331
        }
       ],
       "sha256sums": "https://github.com/charlesvestal/fm1-fomni/releases/download/v0.4.1/SHA256SUMS",
@@ -3623,7 +3623,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-08",
      "releases": 7,
-     "downloads": 1974
+     "downloads": 2035
     }
    },
    "ghoulbox": {
@@ -3639,13 +3639,13 @@
         "name": "ghoulbox-2.4.fwsc",
         "size": 610086,
         "url": "https://github.com/jasonpersinger/ghoulbox-fm1-dungeon-synth/releases/download/ghoulbox-v2.4/ghoulbox-2.4.fwsc",
-        "downloads": 836
+        "downloads": 914
        },
        {
         "name": "GHOULBOX-User-Guide-2.4.pdf",
         "size": 1092824,
         "url": "https://github.com/jasonpersinger/ghoulbox-fm1-dungeon-synth/releases/download/ghoulbox-v2.4/GHOULBOX-User-Guide-2.4.pdf",
-        "downloads": 284
+        "downloads": 290
        }
       ],
       "sha256sums": null,
@@ -3754,7 +3754,7 @@
         "name": "GHOULBOX-User-Guide-2.1.pdf",
         "size": 1073387,
         "url": "https://github.com/jasonpersinger/ghoulbox-fm1-dungeon-synth/releases/download/ghoulbox-v2.1/GHOULBOX-User-Guide-2.1.pdf",
-        "downloads": 264
+        "downloads": 265
        }
       ],
       "sha256sums": null,
@@ -3763,11 +3763,11 @@
     ],
     "error": null,
     "stats": {
-     "stars": 92,
+     "stars": 93,
      "license": "GPL-3.0",
      "pushed": "2026-11-01",
      "releases": 12,
-     "downloads": 2144
+     "downloads": 2222
     }
    },
    "amb1": {
@@ -3783,7 +3783,7 @@
         "name": "amb-1.3.2.fwsc",
         "size": 614938,
         "url": "https://github.com/charlesvestal/fm1-amb/releases/download/v1.3.2/amb-1.3.2.fwsc",
-        "downloads": 556
+        "downloads": 684
        }
       ],
       "sha256sums": "https://github.com/charlesvestal/fm1-amb/releases/download/v1.3.2/SHA256SUMS",
@@ -3881,7 +3881,7 @@
      "license": "MPL-2.0",
      "pushed": "2026-11-11",
      "releases": 6,
-     "downloads": 2250
+     "downloads": 2378
     }
    },
    "jangada": {
@@ -3897,7 +3897,7 @@
         "name": "jangada-1.0.1.fwsc",
         "size": 610133,
         "url": "https://github.com/zednaked/jangada/releases/download/v1.0.1/jangada-1.0.1.fwsc",
-        "downloads": 1149
+        "downloads": 1210
        }
       ],
       "sha256sums": null,
@@ -3954,7 +3954,7 @@
         "name": "jangada-0.9.8.fwsc",
         "size": 610133,
         "url": "https://github.com/zednaked/jangada/releases/download/v0.9.8/jangada-0.9.8.fwsc",
-        "downloads": 171
+        "downloads": 174
        }
       ],
       "sha256sums": null,
@@ -4007,7 +4007,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-01",
      "releases": 23,
-     "downloads": 2207
+     "downloads": 2271
     }
    },
    "skiff": {
@@ -4023,7 +4023,7 @@
         "name": "skiff-2.7.fwsc",
         "size": 610429,
         "url": "https://github.com/illuminus5/skiff/releases/download/v2.7/skiff-2.7.fwsc",
-        "downloads": 386
+        "downloads": 515
        }
       ],
       "sha256sums": null,
@@ -4040,7 +4040,7 @@
         "name": "skiff-2.6.fwsc",
         "size": 610429,
         "url": "https://github.com/illuminus5/skiff/releases/download/v2.6/skiff-2.6.fwsc",
-        "downloads": 529
+        "downloads": 564
        }
       ],
       "sha256sums": null,
@@ -4057,7 +4057,7 @@
         "name": "skiff-2.5.1.fwsc",
         "size": 610429,
         "url": "https://github.com/illuminus5/skiff/releases/download/v2.5.1/skiff-2.5.1.fwsc",
-        "downloads": 466
+        "downloads": 500
        }
       ],
       "sha256sums": null,
@@ -4074,7 +4074,7 @@
         "name": "skiff-2.5.fwsc",
         "size": 610429,
         "url": "https://github.com/illuminus5/skiff/releases/download/v2.5/skiff-2.5.fwsc",
-        "downloads": 266
+        "downloads": 296
        }
       ],
       "sha256sums": null,
@@ -4091,7 +4091,7 @@
         "name": "skiff-2.2.fwsc",
         "size": 610429,
         "url": "https://github.com/illuminus5/skiff/releases/download/v2.2/skiff-2.2.fwsc",
-        "downloads": 477
+        "downloads": 504
        }
       ],
       "sha256sums": null,
@@ -4108,7 +4108,7 @@
         "name": "skiff-2.1.1.fwsc",
         "size": 610429,
         "url": "https://github.com/illuminus5/skiff/releases/download/v2.1.1/skiff-2.1.1.fwsc",
-        "downloads": 427
+        "downloads": 453
        }
       ],
       "sha256sums": null,
@@ -4117,11 +4117,11 @@
     ],
     "error": null,
     "stats": {
-     "stars": 192,
+     "stars": 195,
      "license": "GPL-3.0",
      "pushed": "2026-11-17",
      "releases": 20,
-     "downloads": 8686
+     "downloads": 9156
     }
    },
    "hortator": {
@@ -4137,7 +4137,7 @@
         "name": "hortator-1.0.1.fwsc",
         "size": 609649,
         "url": "https://github.com/DeadActive/hortator/releases/download/drum-v1.0.1/hortator-1.0.1.fwsc",
-        "downloads": 323
+        "downloads": 379
        }
       ],
       "sha256sums": null,
@@ -4235,7 +4235,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-11",
      "releases": 13,
-     "downloads": 3234
+     "downloads": 3334
     }
    },
    "fm1va": {
@@ -4390,7 +4390,7 @@
         "name": "obervave-3.5.2.fwsc",
         "size": 612223,
         "url": "https://github.com/zvenson/obervave/releases/download/v3.5.2/obervave-3.5.2.fwsc",
-        "downloads": 247
+        "downloads": 322
        }
       ],
       "sha256sums": "https://github.com/zvenson/obervave/releases/download/v3.5.2/SHA256SUMS",
@@ -4488,11 +4488,28 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-13",
      "releases": 11,
-     "downloads": 5487
+     "downloads": 5608
     }
    },
    "loom-8": {
     "releases": [
+     {
+      "version": "v0.17",
+      "title": "LOOM-8 0.17",
+      "date": "2026-11-19",
+      "prerelease": false,
+      "url": "https://github.com/charlesvestal/fm1-loom/releases/tag/v0.17",
+      "assets": [
+       {
+        "name": "loom-0.17.fwsc",
+        "size": 706324,
+        "url": "https://github.com/charlesvestal/fm1-loom/releases/download/v0.17/loom-0.17.fwsc",
+        "downloads": 74
+       }
+      ],
+      "sha256sums": "https://github.com/charlesvestal/fm1-loom/releases/download/v0.17/SHA256SUMS",
+      "sha256files": {}
+     },
      {
       "version": "v0.16.3",
       "title": "LOOM-8 0.16.3",
@@ -4504,7 +4521,7 @@
         "name": "loom-0.16.3.fwsc",
         "size": 706324,
         "url": "https://github.com/charlesvestal/fm1-loom/releases/download/v0.16.3/loom-0.16.3.fwsc",
-        "downloads": 31
+        "downloads": 56
        }
       ],
       "sha256sums": "https://github.com/charlesvestal/fm1-loom/releases/download/v0.16.3/SHA256SUMS",
@@ -4521,7 +4538,7 @@
         "name": "loom-0.16.2.fwsc",
         "size": 706324,
         "url": "https://github.com/charlesvestal/fm1-loom/releases/download/v0.16.2/loom-0.16.2.fwsc",
-        "downloads": 230
+        "downloads": 232
        }
       ],
       "sha256sums": "https://github.com/charlesvestal/fm1-loom/releases/download/v0.16.2/SHA256SUMS",
@@ -4577,32 +4594,15 @@
       ],
       "sha256sums": "https://github.com/charlesvestal/fm1-loom/releases/download/v0.15.1/SHA256SUMS",
       "sha256files": {}
-     },
-     {
-      "version": "v0.15",
-      "title": "LOOM-8 0.15",
-      "date": "2026-11-11",
-      "prerelease": false,
-      "url": "https://github.com/charlesvestal/fm1-loom/releases/tag/v0.15",
-      "assets": [
-       {
-        "name": "loom-0.15.fwsc",
-        "size": 614938,
-        "url": "https://github.com/charlesvestal/fm1-loom/releases/download/v0.15/loom-0.15.fwsc",
-        "downloads": 49
-       }
-      ],
-      "sha256sums": "https://github.com/charlesvestal/fm1-loom/releases/download/v0.15/SHA256SUMS",
-      "sha256files": {}
      }
     ],
     "error": null,
     "stats": {
-     "stars": 85,
+     "stars": 86,
      "license": "MPL-2.0",
      "pushed": "2026-11-19",
-     "releases": 27,
-     "downloads": 2069
+     "releases": 28,
+     "downloads": 2170
     }
    },
    "clipper": {
@@ -4618,7 +4618,7 @@
         "name": "clipper-1.3.1.fwsc",
         "size": 610105,
         "url": "https://github.com/isod89/clipper-fm1/releases/download/v1.3.1/clipper-1.3.1.fwsc",
-        "downloads": 449
+        "downloads": 539
        }
       ],
       "sha256sums": null,
@@ -4669,7 +4669,7 @@
         "name": "clipper-1.1-experimental.fwsc",
         "size": 610055,
         "url": "https://github.com/isod89/clipper-fm1/releases/download/v1.1-experimental/clipper-1.1-experimental.fwsc",
-        "downloads": 486
+        "downloads": 488
        }
       ],
       "sha256sums": null,
@@ -4699,7 +4699,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-04",
      "releases": 5,
-     "downloads": 1554
+     "downloads": 1646
     }
    },
    "orbit": {
@@ -4715,7 +4715,7 @@
         "name": "orbit-ble.fwsc",
         "size": 610032,
         "url": "https://github.com/dspaudio/orbit/releases/download/v1.0.1B/orbit-ble.fwsc",
-        "downloads": 163
+        "downloads": 187
        }
       ],
       "sha256sums": "https://github.com/dspaudio/orbit/releases/download/v1.0.1B/SHA256SUMS",
@@ -4749,7 +4749,7 @@
         "name": "orbit.fwsc",
         "size": 610032,
         "url": "https://github.com/dspaudio/orbit/releases/download/v1.0.0/orbit.fwsc",
-        "downloads": 133
+        "downloads": 168
        }
       ],
       "sha256sums": "https://github.com/dspaudio/orbit/releases/download/v1.0.0/SHA256SUMS",
@@ -4813,7 +4813,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-04",
      "releases": 15,
-     "downloads": 1966
+     "downloads": 2025
     }
    },
    "polly": {
@@ -4829,7 +4829,7 @@
         "name": "polly-0.6.4.fwsc",
         "size": 661268,
         "url": "https://github.com/charlesvestal/fm1-polly/releases/download/v0.6.4/polly-0.6.4.fwsc",
-        "downloads": 100
+        "downloads": 153
        }
       ],
       "sha256sums": "https://github.com/charlesvestal/fm1-polly/releases/download/v0.6.4/SHA256SUMS",
@@ -4927,7 +4927,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-13",
      "releases": 13,
-     "downloads": 1862
+     "downloads": 1915
     }
    },
    "dub-1": {
@@ -4943,7 +4943,7 @@
         "name": "dub-1.4.3.fwsc",
         "size": 609666,
         "url": "https://github.com/sbegueria/fm1-dub/releases/download/v1.4.3/dub-1.4.3.fwsc",
-        "downloads": 409
+        "downloads": 468
        }
       ],
       "sha256sums": null,
@@ -5041,7 +5041,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-08",
      "releases": 8,
-     "downloads": 1474
+     "downloads": 1533
     }
    },
    "coralflower": {
@@ -5057,7 +5057,7 @@
         "name": "coralflower-0.7.1.fwsc",
         "size": 610313,
         "url": "https://github.com/FicusFicusov/CoralFlower/releases/download/v0.7.1/coralflower-0.7.1.fwsc",
-        "downloads": 286
+        "downloads": 364
        }
       ],
       "sha256sums": "https://github.com/FicusFicusov/CoralFlower/releases/download/v0.7.1/SHA256SUMS",
@@ -5151,11 +5151,11 @@
     ],
     "error": null,
     "stats": {
-     "stars": 26,
+     "stars": 27,
      "license": "GPL-3.0",
      "pushed": "2026-11-17",
      "releases": 12,
-     "downloads": 2113
+     "downloads": 2191
     }
    },
    "ctl-1": {
@@ -5171,13 +5171,13 @@
         "name": "ctl-1.0.3.fwsc",
         "size": 614938,
         "url": "https://github.com/charlesvestal/fm1-ctl/releases/download/v1.0.3/ctl-1.0.3.fwsc",
-        "downloads": 167
+        "downloads": 209
        },
        {
         "name": "ctl-usb-1.0.3.fwsc",
         "size": 614938,
         "url": "https://github.com/charlesvestal/fm1-ctl/releases/download/v1.0.3/ctl-usb-1.0.3.fwsc",
-        "downloads": 103
+        "downloads": 106
        }
       ],
       "sha256sums": "https://github.com/charlesvestal/fm1-ctl/releases/download/v1.0.3/SHA256SUMS",
@@ -5293,7 +5293,7 @@
      "license": "MPL-2.0",
      "pushed": "2026-11-11",
      "releases": 7,
-     "downloads": 1890
+     "downloads": 1935
     }
    },
    "gr-mm": {
@@ -5309,7 +5309,7 @@
         "name": "grimm.fwsc",
         "size": 610160,
         "url": "https://github.com/GRiMMBIENT/grimm/releases/download/v2.0.2/grimm.fwsc",
-        "downloads": 276
+        "downloads": 340
        }
       ],
       "sha256sums": null,
@@ -5326,7 +5326,7 @@
         "name": "grimm.fwsc",
         "size": 610160,
         "url": "https://github.com/GRiMMBIENT/grimm/releases/download/v2.0.1/grimm.fwsc",
-        "downloads": 171
+        "downloads": 179
        }
       ],
       "sha256sums": null,
@@ -5343,7 +5343,7 @@
         "name": "grimm.fwsc",
         "size": 610160,
         "url": "https://github.com/GRiMMBIENT/grimm/releases/download/v2.0/grimm.fwsc",
-        "downloads": 117
+        "downloads": 119
        }
       ],
       "sha256sums": null,
@@ -5369,11 +5369,11 @@
     ],
     "error": null,
     "stats": {
-     "stars": 53,
+     "stars": 54,
      "license": "GPL-3.0",
      "pushed": "2026-11-07",
      "releases": 4,
-     "downloads": 1359
+     "downloads": 1433
     }
    },
    "fmini-1": {
@@ -5389,7 +5389,7 @@
         "name": "fmini-1-fm1-2.6.0.fwsc",
         "size": 610220,
         "url": "https://github.com/ruppert/fmini-1/releases/download/v2.6.0/fmini-1-fm1-2.6.0.fwsc",
-        "downloads": 156
+        "downloads": 232
        }
       ],
       "sha256sums": null,
@@ -5406,7 +5406,7 @@
         "name": "fmini-1-fm1-2.5.12.fwsc",
         "size": 610220,
         "url": "https://github.com/ruppert/fmini-1/releases/download/v2.5.12/fmini-1-fm1-2.5.12.fwsc",
-        "downloads": 152
+        "downloads": 153
        }
       ],
       "sha256sums": null,
@@ -5423,7 +5423,7 @@
         "name": "FMini-1-v2.5.0.fwsc",
         "size": 610220,
         "url": "https://github.com/ruppert/fmini-1/releases/download/v2.5.0/FMini-1-v2.5.0.fwsc",
-        "downloads": 97
+        "downloads": 98
        }
       ],
       "sha256sums": null,
@@ -5485,13 +5485,30 @@
     "stats": {
      "stars": 45,
      "license": "GPL-3.0",
-     "pushed": "2026-11-18",
+     "pushed": "2026-11-19",
      "releases": 9,
-     "downloads": 1714
+     "downloads": 1812
     }
    },
    "duell": {
     "releases": [
+     {
+      "version": "v1.3.3",
+      "title": "DUELL 1.3.3",
+      "date": "2026-11-20",
+      "prerelease": false,
+      "url": "https://github.com/oscillr/DUELL/releases/tag/v1.3.3",
+      "assets": [
+       {
+        "name": "duell-1.3.3.fwsc",
+        "size": 614666,
+        "url": "https://github.com/oscillr/DUELL/releases/download/v1.3.3/duell-1.3.3.fwsc",
+        "downloads": 23
+       }
+      ],
+      "sha256sums": "https://github.com/oscillr/DUELL/releases/download/v1.3.3/SHA256SUMS",
+      "sha256files": {}
+     },
      {
       "version": "v1.3.2",
       "title": "DUELL 1.3.2",
@@ -5503,7 +5520,7 @@
         "name": "duell-1.3.2.fwsc",
         "size": 614666,
         "url": "https://github.com/oscillr/DUELL/releases/download/v1.3.2/duell-1.3.2.fwsc",
-        "downloads": 40
+        "downloads": 78
        }
       ],
       "sha256sums": "https://github.com/oscillr/DUELL/releases/download/v1.3.2/SHA256SUMS",
@@ -5576,32 +5593,15 @@
       ],
       "sha256sums": "https://github.com/oscillr/DUELL/releases/download/v1.1/SHA256SUMS",
       "sha256files": {}
-     },
-     {
-      "version": "v1.0",
-      "title": "DUELL 1.0",
-      "date": "2026-10-22",
-      "prerelease": false,
-      "url": "https://github.com/oscillr/DUELL/releases/tag/v1.0",
-      "assets": [
-       {
-        "name": "duell-1.0.fwsc",
-        "size": 614666,
-        "url": "https://github.com/oscillr/DUELL/releases/download/v1.0/duell-1.0.fwsc",
-        "downloads": 490
-       }
-      ],
-      "sha256sums": null,
-      "sha256files": {}
      }
     ],
     "error": null,
     "stats": {
      "stars": 21,
      "license": "GPL-3.0",
-     "pushed": "2026-11-18",
-     "releases": 10,
-     "downloads": 1658
+     "pushed": "2026-11-20",
+     "releases": 11,
+     "downloads": 1721
     }
    },
    "frodhes": {
@@ -5617,13 +5617,13 @@
         "name": "frodhes-0.9.13.fwsc",
         "size": 612225,
         "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.13/frodhes-0.9.13.fwsc",
-        "downloads": 42
+        "downloads": 55
        },
        {
         "name": "frodhes.fwsc",
         "size": 612225,
         "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.13/frodhes.fwsc",
-        "downloads": 26
+        "downloads": 42
        }
       ],
       "sha256sums": null,
@@ -5663,25 +5663,25 @@
         "name": "frodhes-0.9.11-c1.fwsc",
         "size": 612225,
         "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.11/frodhes-0.9.11-c1.fwsc",
-        "downloads": 55
+        "downloads": 87
        },
        {
         "name": "frodhes-0.9.11.fwsc",
         "size": 612225,
         "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.11/frodhes-0.9.11.fwsc",
-        "downloads": 64
+        "downloads": 85
        },
        {
         "name": "frodhes-c1.fwsc",
         "size": 612225,
         "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.11/frodhes-c1.fwsc",
-        "downloads": 32
+        "downloads": 33
        },
        {
         "name": "frodhes.fwsc",
         "size": 612225,
         "url": "https://github.com/leonardoMirabal/frodhes/releases/download/v0.9.11/frodhes.fwsc",
-        "downloads": 49
+        "downloads": 50
        }
       ],
       "sha256sums": null,
@@ -5775,7 +5775,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-17",
      "releases": 15,
-     "downloads": 3581
+     "downloads": 3714
     }
    },
    "ravel": {
@@ -5791,7 +5791,7 @@
         "name": "Ravel-FM1.fwsc",
         "size": 609686,
         "url": "https://github.com/De-Pattern/Ravel_FM1/releases/download/v1.42.0/Ravel-FM1.fwsc",
-        "downloads": 66
+        "downloads": 116
        }
       ],
       "sha256sums": "https://github.com/De-Pattern/Ravel_FM1/releases/download/v1.42.0/SHA256SUMS.txt",
@@ -5889,7 +5889,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-17",
      "releases": 79,
-     "downloads": 2271
+     "downloads": 2323
     }
    },
    "shine-on": {
@@ -5905,7 +5905,7 @@
         "name": "shineon-3.5.fwsc",
         "size": 612233,
         "url": "https://github.com/zvenson/shineon/releases/download/v3.5/shineon-3.5.fwsc",
-        "downloads": 101
+        "downloads": 142
        }
       ],
       "sha256sums": "https://github.com/zvenson/shineon/releases/download/v3.5/SHA256SUMS",
@@ -6003,7 +6003,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-12",
      "releases": 6,
-     "downloads": 3771
+     "downloads": 3830
     }
    },
    "optimist": {
@@ -6019,25 +6019,25 @@
         "name": "optimist-0.3-drum-machines.fwsc",
         "size": 688698,
         "url": "https://github.com/w0ts/optimist/releases/download/v0.3/optimist-0.3-drum-machines.fwsc",
-        "downloads": 59
+        "downloads": 63
        },
        {
         "name": "optimist-0.3-mots-config.fwsc",
         "size": 856356,
         "url": "https://github.com/w0ts/optimist/releases/download/v0.3/optimist-0.3-mots-config.fwsc",
-        "downloads": 56
+        "downloads": 57
        },
        {
         "name": "optimist-0.3-synths-2.fwsc",
         "size": 692813,
         "url": "https://github.com/w0ts/optimist/releases/download/v0.3/optimist-0.3-synths-2.fwsc",
-        "downloads": 49
+        "downloads": 50
        },
        {
         "name": "optimist-0.3-synths.fwsc",
         "size": 692813,
         "url": "https://github.com/w0ts/optimist/releases/download/v0.3/optimist-0.3-synths.fwsc",
-        "downloads": 60
+        "downloads": 66
        }
       ],
       "sha256sums": "https://github.com/w0ts/optimist/releases/download/v0.3/SHA256SUMS.txt",
@@ -6064,25 +6064,25 @@
         "name": "optimist-0.2-drum-machines.fwsc",
         "size": 610819,
         "url": "https://github.com/w0ts/optimist/releases/download/v0.2/optimist-0.2-drum-machines.fwsc",
-        "downloads": 234
+        "downloads": 236
        },
        {
         "name": "optimist-0.2-synths-2.fwsc",
         "size": 610819,
         "url": "https://github.com/w0ts/optimist/releases/download/v0.2/optimist-0.2-synths-2.fwsc",
-        "downloads": 221
+        "downloads": 223
        },
        {
         "name": "optimist-0.2-synths.fwsc",
         "size": 610819,
         "url": "https://github.com/w0ts/optimist/releases/download/v0.2/optimist-0.2-synths.fwsc",
-        "downloads": 227
+        "downloads": 229
        },
        {
         "name": "optimist-0.2-synths_USBaudio_BTaudio_BTmidi.fwsc",
         "size": 610819,
         "url": "https://github.com/w0ts/optimist/releases/download/v0.2/optimist-0.2-synths_USBaudio_BTaudio_BTmidi.fwsc",
-        "downloads": 225
+        "downloads": 227
        }
       ],
       "sha256sums": "https://github.com/w0ts/optimist/releases/download/v0.2/SHA256SUMS.txt",
@@ -6489,6 +6489,12 @@
         "size": 856356,
         "url": "https://github.com/w0ts/optimist/releases/download/cloud-builds/optimist-mots-config-7d0bb4a1c3dde6d8.fwsc",
         "downloads": 7
+       },
+       {
+        "name": "optimist-mots-config-b0d63fb0248f6b72.fwsc",
+        "size": 856356,
+        "url": "https://github.com/w0ts/optimist/releases/download/cloud-builds/optimist-mots-config-b0d63fb0248f6b72.fwsc",
+        "downloads": 3
        },
        {
         "name": "optimist-mots-config-bdbb0584ad58e342.fwsc",
@@ -7123,9 +7129,9 @@
     "stats": {
      "stars": 38,
      "license": "GPL-3.0",
-     "pushed": "2026-11-19",
+     "pushed": "2026-11-20",
      "releases": 5,
-     "downloads": 3627
+     "downloads": 3650
     }
    },
    "fm1-dock": {
@@ -7141,25 +7147,25 @@
         "name": "fm1-dock-0.9.0-analog.fwsc",
         "size": 610157,
         "url": "https://github.com/joakimeriksson/fm1-dock/releases/download/v0.9.0/fm1-dock-0.9.0-analog.fwsc",
-        "downloads": 89
+        "downloads": 132
        },
        {
         "name": "fm1-dock-0.9.0-digital.fwsc",
         "size": 610157,
         "url": "https://github.com/joakimeriksson/fm1-dock/releases/download/v0.9.0/fm1-dock-0.9.0-digital.fwsc",
-        "downloads": 65
+        "downloads": 87
        },
        {
         "name": "fm1-dock-0.9.0-empty.fwsc",
         "size": 610157,
         "url": "https://github.com/joakimeriksson/fm1-dock/releases/download/v0.9.0/fm1-dock-0.9.0-empty.fwsc",
-        "downloads": 69
+        "downloads": 90
        },
        {
         "name": "fm1-dock-0.9.0.fwsc",
         "size": 610157,
         "url": "https://github.com/joakimeriksson/fm1-dock/releases/download/v0.9.0/fm1-dock-0.9.0.fwsc",
-        "downloads": 78
+        "downloads": 119
        }
       ],
       "sha256sums": "https://github.com/joakimeriksson/fm1-dock/releases/download/v0.9.0/SHA256SUMS",
@@ -7257,11 +7263,57 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-17",
      "releases": 8,
-     "downloads": 2114
+     "downloads": 2298
     }
    },
    "tessera": {
     "releases": [
+     {
+      "version": "v3.7.4",
+      "title": "Tessera 3.7.4",
+      "date": "2026-11-20",
+      "prerelease": false,
+      "url": "https://github.com/Rastapopolix/tessera/releases/tag/v3.7.4",
+      "assets": [
+       {
+        "name": "tessera-3.7.4-1core.fwsc",
+        "size": 610617,
+        "url": "https://github.com/Rastapopolix/tessera/releases/download/v3.7.4/tessera-3.7.4-1core.fwsc",
+        "downloads": 14
+       },
+       {
+        "name": "tessera-3.7.4.fwsc",
+        "size": 610617,
+        "url": "https://github.com/Rastapopolix/tessera/releases/download/v3.7.4/tessera-3.7.4.fwsc",
+        "downloads": 19
+       }
+      ],
+      "sha256sums": "https://github.com/Rastapopolix/tessera/releases/download/v3.7.4/SHA256SUMS",
+      "sha256files": {}
+     },
+     {
+      "version": "v3.7.3",
+      "title": "Tessera 3.7.3",
+      "date": "2026-11-19",
+      "prerelease": false,
+      "url": "https://github.com/Rastapopolix/tessera/releases/tag/v3.7.3",
+      "assets": [
+       {
+        "name": "tessera-3.7.3-1core.fwsc",
+        "size": 610617,
+        "url": "https://github.com/Rastapopolix/tessera/releases/download/v3.7.3/tessera-3.7.3-1core.fwsc",
+        "downloads": 13
+       },
+       {
+        "name": "tessera-3.7.3.fwsc",
+        "size": 610617,
+        "url": "https://github.com/Rastapopolix/tessera/releases/download/v3.7.3/tessera-3.7.3.fwsc",
+        "downloads": 35
+       }
+      ],
+      "sha256sums": "https://github.com/Rastapopolix/tessera/releases/download/v3.7.3/SHA256SUMS",
+      "sha256files": {}
+     },
      {
       "version": "v3.7.2",
       "title": "Tessera 3.7.2",
@@ -7273,13 +7325,13 @@
         "name": "tessera-3.7.2-1core.fwsc",
         "size": 610617,
         "url": "https://github.com/Rastapopolix/tessera/releases/download/v3.7.2/tessera-3.7.2-1core.fwsc",
-        "downloads": 8
+        "downloads": 28
        },
        {
         "name": "tessera-3.7.2.fwsc",
         "size": 610617,
         "url": "https://github.com/Rastapopolix/tessera/releases/download/v3.7.2/tessera-3.7.2.fwsc",
-        "downloads": 10
+        "downloads": 21
        }
       ],
       "sha256sums": "https://github.com/Rastapopolix/tessera/releases/download/v3.7.2/SHA256SUMS",
@@ -7319,7 +7371,7 @@
         "name": "tessera-3.7-1core.fwsc",
         "size": 610617,
         "url": "https://github.com/Rastapopolix/tessera/releases/download/v3.7/tessera-3.7-1core.fwsc",
-        "downloads": 18
+        "downloads": 19
        },
        {
         "name": "tessera-3.7.fwsc",
@@ -7353,65 +7405,48 @@
       ],
       "sha256sums": "https://github.com/Rastapopolix/tessera/releases/download/v3.6.2/SHA256SUMS",
       "sha256files": {}
-     },
-     {
-      "version": "v3.6.1",
-      "title": "Tessera 3.6.1",
-      "date": "2026-11-17",
-      "prerelease": false,
-      "url": "https://github.com/Rastapopolix/tessera/releases/tag/v3.6.1",
-      "assets": [
-       {
-        "name": "tessera-3.6.1-1core.fwsc",
-        "size": 610617,
-        "url": "https://github.com/Rastapopolix/tessera/releases/download/v3.6.1/tessera-3.6.1-1core.fwsc",
-        "downloads": 13
-       },
-       {
-        "name": "tessera-3.6.1.fwsc",
-        "size": 610617,
-        "url": "https://github.com/Rastapopolix/tessera/releases/download/v3.6.1/tessera-3.6.1.fwsc",
-        "downloads": 23
-       }
-      ],
-      "sha256sums": "https://github.com/Rastapopolix/tessera/releases/download/v3.6.1/SHA256SUMS",
-      "sha256files": {}
-     },
-     {
-      "version": "v3.6",
-      "title": "Tessera 3.6",
-      "date": "2026-11-17",
-      "prerelease": false,
-      "url": "https://github.com/Rastapopolix/tessera/releases/tag/v3.6",
-      "assets": [
-       {
-        "name": "tessera-3.6-1core.fwsc",
-        "size": 610617,
-        "url": "https://github.com/Rastapopolix/tessera/releases/download/v3.6/tessera-3.6-1core.fwsc",
-        "downloads": 7
-       },
-       {
-        "name": "tessera-3.6.fwsc",
-        "size": 610617,
-        "url": "https://github.com/Rastapopolix/tessera/releases/download/v3.6/tessera-3.6.fwsc",
-        "downloads": 10
-       }
-      ],
-      "sha256sums": "https://github.com/Rastapopolix/tessera/releases/download/v3.6/SHA256SUMS",
-      "sha256files": {}
      }
     ],
     "error": null,
     "stats": {
-     "stars": 35,
+     "stars": 36,
      "license": "GPL-3.0",
-     "pushed": "2026-11-19",
-     "releases": 30,
-     "downloads": 2294
+     "pushed": "2026-11-20",
+     "releases": 32,
+     "downloads": 2408
     }
    },
    "remotefm1": {
     "releases": [
+     {
+      "version": "v0.4.0",
+      "title": "RemoteFM1 0.4.0",
+      "date": "2026-11-20",
+      "prerelease": false,
+      "url": "https://github.com/Quixotic7/RemoteFM1/releases/tag/v0.4.0",
+      "assets": [
+       {
+        "name": "remote-0.4.0.fwsc",
+        "size": 614938,
+        "url": "https://github.com/Quixotic7/RemoteFM1/releases/download/v0.4.0/remote-0.4.0.fwsc",
+        "downloads": 28
+       },
+       {
+        "name": "remote-usb-0.4.0.fwsc",
+        "size": 614938,
+        "url": "https://github.com/Quixotic7/RemoteFM1/releases/download/v0.4.0/remote-usb-0.4.0.fwsc",
+        "downloads": 12
+       },
+       {
+        "name": "remote-wifi-0.4.0.fwsc",
+        "size": 614938,
+        "url": "https://github.com/Quixotic7/RemoteFM1/releases/download/v0.4.0/remote-wifi-0.4.0.fwsc",
+        "downloads": 13
+       }
+      ],
+      "sha256sums": "https://github.com/Quixotic7/RemoteFM1/releases/download/v0.4.0/SHA256SUMS",
+      "sha256files": {}
+     },
      {
       "version": "v0.3.6",
       "title": "RemoteFM1 0.3.6",
@@ -7423,13 +7458,13 @@
         "name": "remote-0.3.6.fwsc",
         "size": 614938,
         "url": "https://github.com/Quixotic7/RemoteFM1/releases/download/v0.3.6/remote-0.3.6.fwsc",
-        "downloads": 132
+        "downloads": 140
        },
        {
         "name": "remote-usb-0.3.6.fwsc",
         "size": 614938,
         "url": "https://github.com/Quixotic7/RemoteFM1/releases/download/v0.3.6/remote-usb-0.3.6.fwsc",
-        "downloads": 80
+        "downloads": 82
        }
       ],
       "sha256sums": "https://github.com/Quixotic7/RemoteFM1/releases/download/v0.3.6/SHA256SUMS",
@@ -7530,11 +7565,11 @@
     ],
     "error": null,
     "stats": {
-     "stars": 49,
+     "stars": 51,
      "license": "GPL-3.0",
-     "pushed": "2026-11-19",
-     "releases": 13,
-     "downloads": 1183
+     "pushed": "2026-11-20",
+     "releases": 14,
+     "downloads": 1258
     }
    },
    "mutable-dreams": {
@@ -7550,7 +7585,7 @@
         "name": "Mutable-Dreams-2.3.fwsc",
         "size": 614944,
         "url": "https://github.com/kidbee85-beep/mutable-dreams/releases/download/v2.3/Mutable-Dreams-2.3.fwsc",
-        "downloads": 116
+        "downloads": 186
        }
       ],
       "sha256sums": null,
@@ -7646,9 +7681,9 @@
     "stats": {
      "stars": 34,
      "license": "GPL-3.0",
-     "pushed": "2026-11-19",
+     "pushed": "2026-11-20",
      "releases": 10,
-     "downloads": 1343
+     "downloads": 1413
     }
    },
    "fimba-1": {
@@ -7664,7 +7699,7 @@
         "name": "fimba-0.7.0.fwsc",
         "size": 609659,
         "url": "https://github.com/jadamsowers/fm1-fimba/releases/download/v0.7.0/fimba-0.7.0.fwsc",
-        "downloads": 124
+        "downloads": 167
        }
       ],
       "sha256sums": "https://github.com/jadamsowers/fm1-fimba/releases/download/v0.7.0/SHA256SUMS",
@@ -7762,7 +7797,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-09",
      "releases": 11,
-     "downloads": 1808
+     "downloads": 1851
     }
    },
    "fumi-1": {
@@ -7778,7 +7813,7 @@
         "name": "fumi-1.1.1.fwsc",
         "size": 609659,
         "url": "https://github.com/cartesive/fumi-1/releases/download/fumi-1.1.1/fumi-1.1.1.fwsc",
-        "downloads": 37
+        "downloads": 92
        }
       ],
       "sha256sums": null,
@@ -7876,7 +7911,7 @@
      "license": "GPL-3.0",
      "pushed": "2026-11-18",
      "releases": 10,
-     "downloads": 1704
+     "downloads": 1759
     }
    }
   }
